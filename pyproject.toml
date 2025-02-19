@@ -1,0 +1,82 @@
+[project]
+name = "aws-annoying"
+description = "Utils to handle some annoying AWS tasks."
+version = "0.1.0"
+authors = [{ name = "Yuchan Lee", email = "lasuillard@gmail.com" }]
+license = "MIT"
+requires-python = ">=3.9, <4.0"
+dependencies = []
+
+[project.scripts]
+"aws-annoying" = "aws_annoying.cli:main"
+
+[project.optional-dependencies]
+dev = ["mypy~=1.14.1", "ruff~=0.8.1"]
+test = [
+  "coverage~=7.6.0",
+  "pytest~=8.3.2",
+  "pytest-cov~=5.0.0",
+  "pytest-env~=1.1.1",
+  "pytest-sugar~=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["aws_annoying"]
+
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["FIX", "TD003", "ANN401", "D100", "D105", "D106", "ANN204"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["D104"]
+"tests/*" = ["D", "S101", "PLR2004", "SLF001"]
+"scripts/*" = ["INP001", "T201"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.9"
+exclude = ['^\.venv/*']
+namespace_packages = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_return_any = true
+show_error_codes = true
+strict_optional = true
+no_implicit_reexport = true
+
+[tool.pytest.ini_options]
+addopts = [
+  "--strict-markers",
+  "--doctest-modules",
+  "--cov",
+  "--cov-report=term",
+  "--cov-report=xml",
+  "--show-capture=no",
+  "--junitxml=junit.xml",
+]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning::"]
+
+[tool.coverage.run]
+include = ["pre_commit_hooks/*"]
+omit = ["*tests*"]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true
+show_missing = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING"]
