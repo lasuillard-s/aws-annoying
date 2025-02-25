@@ -5,10 +5,10 @@ version = "0.1.0"
 authors = [{ name = "Yuchan Lee", email = "lasuillard@gmail.com" }]
 license = "MIT"
 requires-python = ">=3.9, <4.0"
-dependencies = []
+dependencies = ["typer>=0.15.1"]
 
 [project.scripts]
-"aws-annoying" = "aws_annoying.cli:main"
+"aws-annoying" = "aws_annoying.main:entrypoint"
 
 [project.optional-dependencies]
 dev = ["mypy~=1.14.1", "ruff~=0.8.1"]
