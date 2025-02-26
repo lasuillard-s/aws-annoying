@@ -1,19 +1,17 @@
+# flake8: noqa: F401
 from __future__ import annotations
 
-import typer
-
+import aws_annoying.ecs_task_definition_lifecycle
+import aws_annoying.load_variables
 from aws_annoying.utils.debugger import input_as_args
 
-from .ecs_task_definition_lifecycle import ecs_task_definition_lifecycle
-from .load_variables import load_variables
+# App with all commands registered
+from .app import app
 
-app = typer.Typer()
-
-app.command()(ecs_task_definition_lifecycle)
-app.command()(load_variables)
+__all__ = ("app",)
 
 
-def entrypoint() -> None:  # noqa: D103  # pragma: no cover
+def entrypoint() -> None:  # pragma: no cover
     app()
 
 

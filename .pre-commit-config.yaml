@@ -23,6 +23,10 @@ repos:
         args:
           - --target
           - aws_annoying
+          - --extend-exclude
+          - "**/conftest.py"
+          - --extend-exclude
+          - _*/*.py
       - id: preferred-suffix
         args: [--rename]
 
