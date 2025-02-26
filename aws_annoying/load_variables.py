@@ -35,17 +35,15 @@ def load_variables(
         help="Overwrite the existing environment variables with the same name.",
     ),
 ) -> NoReturn:
-    """Wrapper command to run command with AWS secrets & parameters injected as environment variables.
+    """Wrapper command to run command with variables from AWS resources injected as environment variables.
 
     This script is intended to be used in the ECS environment, where currently AWS does not support
     injecting whole JSON dictionary of secrets or parameters as environment variables directly.
 
     It first loads the variables from the AWS sources then runs the command with the variables injected as environment variables.
 
-    The variable takes precedence as follows:
-
-    - The variables are loaded in the order of the ARNs, overwriting the variables with the same name in the order of the ARNs.
-    - The existing environment variables are preserved by default, unless `--overwrite-env` is provided.
+    The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
+    Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
     command = ctx.args
     if not command:
