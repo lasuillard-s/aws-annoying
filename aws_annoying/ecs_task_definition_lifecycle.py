@@ -22,11 +22,17 @@ def ecs_task_definition_lifecycle(
         min=1,
         max=100,
     ),
+    dry_run: bool = typer.Option(
+        False,  # noqa: FBT003
+        help="Do not perform any changes, only show what would be done.",
+    ),
 ) -> None:
     """Execute ECS task definition lifecycle."""
     ecs = boto3.client("ecs")
     task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
     expired_defs = task_definitions["taskDefinitionArns"][:-keep_latest]
     for arn in expired_defs:
-        ecs.deregister_task_definition(taskDefinition=arn)
+        if not dry_run:
+            ecs.deregister_task_definition(taskDefinition=arn)
+
         print(f"✅ Deregistered task definition [yellow]{arn!r}[/yellow]")
