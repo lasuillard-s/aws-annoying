@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any, NoReturn
+from typing import Any, NoReturn, Optional
 
 import boto3
 import typer
@@ -32,6 +32,10 @@ def load_variables(
             " overwriting the variables with the same name in the order of the ARNs."
         ),
     ),
+    env_prefix: Optional[str] = typer.Option(
+        None,
+        help="Prefix of the environment variables to load the ARNs from.",
+    ),
     overwrite_env: bool = typer.Option(
         False,  # noqa: FBT003
         help="Overwrite the existing environment variables with the same name.",
@@ -48,6 +52,20 @@ def load_variables(
 
     It first loads the variables from the AWS sources then runs the command with the variables injected as environment variables.
 
+    In addition to `--arns` option, you can provide ARNs as the environment variables by providing `--env-prefix`.
+    For example, if you have the following environment variables:
+
+    ```shell
+    export LOAD_AWS_CONFIG__001_app_config=arn:aws:secretsmanager:...
+    export LOAD_AWS_CONFIG__002_db_config=arn:aws:ssm:...
+    ```
+
+    You can run the following command:
+
+    ```shell
+    aws-annoying load-variables --env-prefix LOAD_AWS_CONFIG__ -- ...
+    ```
+
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
@@ -55,12 +73,23 @@ def load_variables(
     if not command:
         raise typer.Exit(0)
 
-    console = Console(quiet=quiet)
+    console = Console(quiet=quiet, emoji=False)
 
     # Mapping of the ARNs by index (index used for ordering)
-    # TODO(lasuillard): Allow users to define custom priority keys (options passed via environment variables)
-    #                   e.g. `AWS_LOAD_VARIABLES__001_app_config=arn:aws:secretsmanager:...`
     map_arns_by_index = {str(idx): arn for idx, arn in enumerate(arns)}
+    if env_prefix:
+        console.print(f"🔍 Loading ARNs from environment variables with prefix: {env_prefix!r}")
+        arns_env = {
+            key.removeprefix(env_prefix): value for key, value in os.environ.items() if key.startswith(env_prefix)
+        }
+        console.print(f"🔍 Found {len(arns_env)} sources from environment variables.")
+        map_arns_by_index = arns_env | map_arns_by_index
+
+    table = Table("Index", "ARN")
+    for idx, arn in sorted(map_arns_by_index.items()):
+        table.add_row(idx, arn)
+
+    console.print(table)
 
     # Retrieve the variables
     variables = _load_variables(map_arns_by_index, console=console)
@@ -89,11 +118,6 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console) -> dict[str,
     in the order of the keys.
     """
     console.print("🔍 Retrieving variables from AWS resources...")
-    table = Table("Index", "ARN")
-    for idx, arn in sorted(map_arns.items()):
-        table.add_row(idx, arn)
-
-    console.print(table)
 
     # Split the ARNs by resource types
     secrets_map, parameters_map = {}, {}

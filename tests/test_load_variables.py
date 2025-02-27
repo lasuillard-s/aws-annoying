@@ -64,17 +64,18 @@ def test_load_variables(moto_server: str) -> None:
         ),
         Type="SecureString",
     )
-    keycloak_oidc = ssm.get_parameter(Name="/my-app/override")
+    override = ssm.get_parameter(Name="/my-app/override")
 
     # Act
     arns_to_load = [
         django_sensitive_settings["ARN"],
         django_settings["Parameter"]["ARN"],
-        keycloak_oidc["Parameter"]["ARN"],
     ]
     args = [
         "load-variables",
         *chain.from_iterable(("--arns", arn) for arn in arns_to_load),
+        "--env-prefix",
+        "LOAD_AWS_CONFIG__",
         "--",
         str((Path(__file__).parent / "_helpers" / "printenv.py").absolute()),
         "DJANGO_SETTINGS_MODULE",
@@ -82,7 +83,10 @@ def test_load_variables(moto_server: str) -> None:
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
     ]
-    local_vars = {"DJANGO_SETTINGS_MODULE": "config.settings.development"}
+    local_vars = {
+        "LOAD_AWS_CONFIG__900_override": override["Parameter"]["ARN"],
+        "DJANGO_SETTINGS_MODULE": "config.settings.development",
+    }
     env = os.environ | local_vars | {"AWS_ENDPOINT_URL": moto_server}
     result = subprocess.run(  # noqa: S603
         ["aws-annoying", *args],  # noqa: S607
@@ -97,14 +101,16 @@ def test_load_variables(moto_server: str) -> None:
     assert (
         result.stdout.strip()
         == """
+🔍 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
+🔍 Found 1 sources from environment variables.
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index        ┃ ARN                                                           ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0            │ arn:aws:secretsmanager:us-east-1:123456789012:secret:my-app/… │
+│ 1            │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-s… │
+│ 900_override │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/override  │
+└──────────────┴───────────────────────────────────────────────────────────────┘
 🔍 Retrieving variables from AWS resources...
-┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Index ┃ ARN                                                                  ┃
-┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 0     │ arn:aws:secretsmanager:us-east-1:123456789012㊙my-app/django-sensit… │
-│ 1     │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-settings  │
-│ 2     │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/override         │
-└───────┴──────────────────────────────────────────────────────────────────────┘
 ✅ Retrieved 1 secrets and 2 parameters.
 🚀 Running the command with the variables injected as environment variables...
 DJANGO_SETTINGS_MODULE=config.settings.development
