@@ -7,6 +7,8 @@ from typing import Any, NoReturn
 
 import boto3
 import typer
+from rich.console import Console
+from rich.table import Table
 
 from .app import app
 
@@ -34,6 +36,10 @@ def load_variables(
         False,  # noqa: FBT003
         help="Overwrite the existing environment variables with the same name.",
     ),
+    quiet: bool = typer.Option(
+        False,  # noqa: FBT003
+        help="Suppress all outputs from this command.",
+    ),
 ) -> NoReturn:
     """Wrapper command to run command with variables from AWS resources injected as environment variables.
 
@@ -49,13 +55,15 @@ def load_variables(
     if not command:
         raise typer.Exit(0)
 
+    console = Console(quiet=quiet)
+
     # Mapping of the ARNs by index (index used for ordering)
     # TODO(lasuillard): Allow users to define custom priority keys (options passed via environment variables)
     #                   e.g. `AWS_LOAD_VARIABLES__001_app_config=arn:aws:secretsmanager:...`
     map_arns_by_index = {str(idx): arn for idx, arn in enumerate(arns)}
 
     # Retrieve the variables
-    variables = _load_variables(map_arns=map_arns_by_index)
+    variables = _load_variables(map_arns_by_index, console=console)
 
     # Prepare the environment variables
     env = os.environ.copy()
@@ -67,10 +75,11 @@ def load_variables(
             env.setdefault(key, str(value))
 
     # Run the command with the variables injected as environment variables, replacing current process
+    console.print("🚀 Running the command with the variables injected as environment variables...")
     os.execvpe(command[0], command, env=env)  # noqa: S606
 
 
-def _load_variables(map_arns: dict[str, _ARN]) -> dict[str, Any]:
+def _load_variables(map_arns: dict[str, _ARN], *, console: Console) -> dict[str, Any]:
     """Load the variables from the AWS Secrets Manager and SSM Parameter Store.
 
     Each secret or parameter should be a valid dictionary, where the keys are the variable names
@@ -79,6 +88,13 @@ def _load_variables(map_arns: dict[str, _ARN]) -> dict[str, Any]:
     The items are merged in the order of the key of provided mapping, overwriting the variables with the same name
     in the order of the keys.
     """
+    console.print("🔍 Retrieving variables from AWS resources...")
+    table = Table("Index", "ARN")
+    for idx, arn in sorted(map_arns.items()):
+        table.add_row(idx, arn)
+
+    console.print(table)
+
     # Split the ARNs by resource types
     secrets_map, parameters_map = {}, {}
     for idx, arn in map_arns.items():
@@ -90,12 +106,14 @@ def _load_variables(map_arns: dict[str, _ARN]) -> dict[str, Any]:
             msg = f"ARN of unsupported resource: {arn!r}"
             raise ValueError(msg)
 
-    # Retrieve the secrets and parameters
-    secrets = _retrieve_secrets(secrets_map)
-    parameters = _retrieve_parameters(parameters_map)
-    if secrets.keys() & parameters.keys():
+    if secrets_map.keys() & parameters_map.keys():
         msg = "Keys in secrets and parameters MUST NOT conflict."
         raise ValueError(msg)
+
+    # Retrieve variables from AWS resources
+    secrets = _retrieve_secrets(secrets_map)
+    parameters = _retrieve_parameters(parameters_map)
+    console.print(f"✅ Retrieved {len(secrets)} secrets and {len(parameters)} parameters.")
 
     # Merge the variables in order
     full_variables = secrets | parameters  # Keys MUST NOT conflict

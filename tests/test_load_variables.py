@@ -97,6 +97,16 @@ def test_load_variables(moto_server: str) -> None:
     assert (
         result.stdout.strip()
         == """
+🔍 Retrieving variables from AWS resources...
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ ARN                                                                  ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0     │ arn:aws:secretsmanager:us-east-1:123456789012㊙my-app/django-sensit… │
+│ 1     │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-settings  │
+│ 2     │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/override         │
+└───────┴──────────────────────────────────────────────────────────────────────┘
+✅ Retrieved 1 secrets and 2 parameters.
+🚀 Running the command with the variables injected as environment variables...
 DJANGO_SETTINGS_MODULE=config.settings.development
 DJANGO_SECRET_KEY=my-secret-key
 DJANGO_DEBUG=False
