@@ -86,7 +86,7 @@ def load_variables(  # noqa: PLR0913
 
     command = ctx.args
     if not command:
-        console.print("⚠️  No command provided. Exiting...")
+        console.print("⚠️ No command provided. Exiting...")
         raise typer.Exit(0)
 
     # Mapping of the ARNs by index (index used for ordering)
@@ -120,7 +120,7 @@ def load_variables(  # noqa: PLR0913
 
     # Run the command with the variables injected as environment variables, replacing current process
     console.print(f"🚀 Running the command: [bold orchid]{' '.join(command)}[/bold orchid]")
-    if replace:
+    if replace:  # pragma: no cover (not coverable)
         os.execvpe(command[0], command, env=env)  # noqa: S606
         # The above line should never return
 
@@ -141,7 +141,7 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: boo
     """
     console.print("🔍 Retrieving variables from AWS resources...")
     if dry_run:
-        console.print("⚠️  Dry run mode enabled. Variables won't be loaded actually.")
+        console.print("⚠️ Dry run mode enabled. Variables won't be loaded from AWS.")
 
     # Split the ARNs by resource types
     secrets_map, parameters_map = {}, {}
