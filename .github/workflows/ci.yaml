@@ -36,11 +36,16 @@ jobs:
         if: always()
 
   test:
-    name: Test
+    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,6 +55,9 @@ jobs:
         with:
           version: latest
           enable-cache: true
+
+      - name: Set Python version
+        run: uv python pin "${{ matrix.python-version }}"
 
       - name: Install deps
         run: uv sync --all-extras
@@ -64,6 +72,8 @@ jobs:
           fail_ci_if_error: false
           report_type: test_results
           files: junit.xml
+          flags: >-
+            python-${{ matrix.python-version }}
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5
@@ -71,3 +81,5 @@ jobs:
           use_oidc: true
           fail_ci_if_error: false
           files: coverage.xml
+          flags: >-
+            python-${{ matrix.python-version }}
