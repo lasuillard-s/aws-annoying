@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from typing import Any, NoReturn, Optional
 
 import boto3
@@ -35,6 +36,7 @@ def load_variables(  # noqa: PLR0913
     env_prefix: Optional[str] = typer.Option(
         None,
         help="Prefix of the environment variables to load the ARNs from.",
+        show_default=False,
     ),
     overwrite_env: bool = typer.Option(
         False,  # noqa: FBT003
@@ -47,6 +49,13 @@ def load_variables(  # noqa: PLR0913
     dry_run: bool = typer.Option(
         False,  # noqa: FBT003
         help="Print the progress only. Neither load variables nor run the command.",
+    ),
+    replace: bool = typer.Option(
+        True,  # noqa: FBT003
+        help=(
+            "Replace the current process (`os.execvpe`) with the command."
+            " If disabled, run the command as a `subprocess`."
+        ),
     ),
 ) -> NoReturn:
     """Wrapper command to run command with variables from AWS resources injected as environment variables.
@@ -90,6 +99,7 @@ def load_variables(  # noqa: PLR0913
         console.print(f"🔍 Found {len(arns_env)} sources from environment variables.")
         map_arns_by_index = arns_env | map_arns_by_index
 
+    # Briefly show the ARNs
     table = Table("Index", "ARN")
     for idx, arn in sorted(map_arns_by_index.items()):
         table.add_row(idx, arn)
@@ -109,8 +119,13 @@ def load_variables(  # noqa: PLR0913
             env.setdefault(key, str(value))
 
     # Run the command with the variables injected as environment variables, replacing current process
-    console.print("🚀 Running the command with the variables injected as environment variables...")
-    os.execvpe(command[0], command, env=env)  # noqa: S606
+    console.print(f"🚀 Running the command: [bold orchid]{' '.join(command)}[/bold orchid]")
+    if replace:
+        os.execvpe(command[0], command, env=env)  # noqa: S606
+        # The above line should never return
+
+    result = subprocess.run(command, env=env, check=False)  # noqa: S603
+    raise typer.Exit(result.returncode)
 
 
 # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)

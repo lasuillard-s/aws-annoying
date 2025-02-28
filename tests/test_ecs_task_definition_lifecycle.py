@@ -3,6 +3,8 @@ from typer.testing import CliRunner
 
 from aws_annoying.main import app
 
+from ._helpers import normalize_console_output
+
 runner = CliRunner()
 
 # ?: Moto (v5.1.1) `ecs.list_task_definitions` does not handle `status` filter properly
@@ -44,7 +46,7 @@ def test_ecs_task_definition_lifecycle() -> None:
     # Assert
     assert result.exit_code == 0
     assert (
-        result.stdout
+        normalize_console_output(result.stdout)
         == """
 ✅ Deregistered task definition 'my-task:1'
 ✅ Deregistered task definition 'my-task:2'
@@ -61,7 +63,7 @@ def test_ecs_task_definition_lifecycle() -> None:
 ✅ Deregistered task definition 'my-task:13'
 ✅ Deregistered task definition 'my-task:14'
 ✅ Deregistered task definition 'my-task:15'
-""".lstrip()
+""".strip()
     )
 
     task_definitions = [
@@ -111,7 +113,7 @@ def test_ecs_task_definition_lifecycle_dry_run() -> None:
 
     # Assert
     assert result.exit_code == 0
-    assert result.stdout == (
+    assert normalize_console_output(result.stdout) == (
         """
 ✅ Deregistered task definition 'my-task:1'
 ✅ Deregistered task definition 'my-task:2'
@@ -128,7 +130,7 @@ def test_ecs_task_definition_lifecycle_dry_run() -> None:
 ✅ Deregistered task definition 'my-task:13'
 ✅ Deregistered task definition 'my-task:14'
 ✅ Deregistered task definition 'my-task:15'
-""".lstrip()
+""".strip()
     )
 
     task_definitions = [
