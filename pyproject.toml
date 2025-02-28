@@ -37,7 +37,7 @@ packages = ["aws_annoying"]
 moto = { git = "https://git@github.com/lasuillard/moto", rev = "master" }
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 120
 
 [tool.ruff.lint]
@@ -62,7 +62,7 @@ ignore = [
 convention = "google"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 exclude = ['^\.venv/*']
 namespace_packages = true
 check_untyped_defs = true
