@@ -30,7 +30,7 @@ def test_nothing() -> None:
 
     # Assert
     assert result.exit_code == 0
-    assert result.stdout == ""
+    assert result.stdout == "⚠️  No command provided. Exiting...\n"
 
 
 def test_load_variables(moto_server: str) -> None:
@@ -83,13 +83,20 @@ def test_load_variables(moto_server: str) -> None:
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
     ]
-    local_vars = {
-        "LOAD_AWS_CONFIG__900_override": override["Parameter"]["ARN"],
-        "DJANGO_SETTINGS_MODULE": "config.settings.development",
-    }
-    env = os.environ | local_vars | {"AWS_ENDPOINT_URL": moto_server}
+    env = (
+        os.environ
+        | {
+            # Direct environment variables
+            "LOAD_AWS_CONFIG__900_override": override["Parameter"]["ARN"],
+            "DJANGO_SETTINGS_MODULE": "config.settings.development",
+        }
+        | {
+            # Test environment variables
+            "AWS_ENDPOINT_URL": moto_server,
+        }
+    )
     result = subprocess.run(  # noqa: S603
-        ["aws-annoying", *args],  # noqa: S607
+        ["uv", "run", "aws-annoying", *args],  # noqa: S607
         check=False,
         capture_output=True,
         text=True,

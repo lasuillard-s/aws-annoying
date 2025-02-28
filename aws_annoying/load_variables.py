@@ -20,7 +20,7 @@ from .app import app
         "ignore_unknown_options": True,
     },
 )
-def load_variables(
+def load_variables(  # noqa: PLR0913
     *,
     ctx: typer.Context,
     arns: list[str] = typer.Option(
@@ -43,6 +43,10 @@ def load_variables(
     quiet: bool = typer.Option(
         False,  # noqa: FBT003
         help="Suppress all outputs from this command.",
+    ),
+    dry_run: bool = typer.Option(
+        False,  # noqa: FBT003
+        help="Print the progress only. Neither load variables nor run the command.",
     ),
 ) -> NoReturn:
     """Wrapper command to run command with variables from AWS resources injected as environment variables.
@@ -69,11 +73,12 @@ def load_variables(
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
+    console = Console(quiet=quiet, emoji=False)
+
     command = ctx.args
     if not command:
+        console.print("⚠️  No command provided. Exiting...")
         raise typer.Exit(0)
-
-    console = Console(quiet=quiet, emoji=False)
 
     # Mapping of the ARNs by index (index used for ordering)
     map_arns_by_index = {str(idx): arn for idx, arn in enumerate(arns)}
@@ -92,7 +97,7 @@ def load_variables(
     console.print(table)
 
     # Retrieve the variables
-    variables = _load_variables(map_arns_by_index, console=console)
+    variables = _load_variables(map_arns_by_index, console=console, dry_run=dry_run)
 
     # Prepare the environment variables
     env = os.environ.copy()
@@ -108,7 +113,9 @@ def load_variables(
     os.execvpe(command[0], command, env=env)  # noqa: S606
 
 
-def _load_variables(map_arns: dict[str, _ARN], *, console: Console) -> dict[str, Any]:
+# TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
+#                   ; consider adding it if needed
+def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: bool) -> dict[str, Any]:
     """Load the variables from the AWS Secrets Manager and SSM Parameter Store.
 
     Each secret or parameter should be a valid dictionary, where the keys are the variable names
@@ -118,6 +125,8 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console) -> dict[str,
     in the order of the keys.
     """
     console.print("🔍 Retrieving variables from AWS resources...")
+    if dry_run:
+        console.print("⚠️  Dry run mode enabled. Variables won't be loaded actually.")
 
     # Split the ARNs by resource types
     secrets_map, parameters_map = {}, {}
@@ -135,8 +144,15 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console) -> dict[str,
         raise ValueError(msg)
 
     # Retrieve variables from AWS resources
-    secrets = _retrieve_secrets(secrets_map)
-    parameters = _retrieve_parameters(parameters_map)
+    secrets: dict[str, _Variables]
+    parameters: dict[str, _Variables]
+    if dry_run:
+        secrets = {idx: {} for idx, _ in secrets_map.items()}
+        parameters = {idx: {} for idx, _ in parameters_map.items()}
+    else:
+        secrets = _retrieve_secrets(secrets_map)
+        parameters = _retrieve_parameters(parameters_map)
+
     console.print(f"✅ Retrieved {len(secrets)} secrets and {len(parameters)} parameters.")
 
     # Merge the variables in order

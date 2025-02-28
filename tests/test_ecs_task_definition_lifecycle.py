@@ -9,24 +9,6 @@ runner = CliRunner()
 # !:               + sorting also does not work (current behavior is ASC)
 
 
-def test_nothing() -> None:
-    """If nothing is provided, the command should do nothing."""
-    # Arrange
-    # ...
-
-    # Act
-    result = runner.invoke(
-        app,
-        [
-            "load-variables",
-        ],
-    )
-
-    # Assert
-    assert result.exit_code == 0
-    assert result.stdout == ""
-
-
 def test_ecs_task_definition_lifecycle() -> None:
     """The command should deregister the oldest task definitions."""
     # Arrange
