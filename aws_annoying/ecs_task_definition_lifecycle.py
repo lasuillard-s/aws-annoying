@@ -29,10 +29,26 @@ def ecs_task_definition_lifecycle(
 ) -> None:
     """Execute ECS task definition lifecycle."""
     ecs = boto3.client("ecs")
-    task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
-    expired_defs = task_definitions["taskDefinitionArns"][:-keep_latest]
-    for arn in expired_defs:
+
+    # Get all task definitions for the family
+    response_iter = ecs.get_paginator("list_task_definitions").paginate(
+        familyPrefix=family,
+        status="ACTIVE",
+        sort="ASC",
+    )
+    task_definition_arns = []
+    for response in response_iter:
+        task_definition_arns.extend(response["taskDefinitionArns"])
+
+    # Sort by revision number
+    task_definition_arns.sort(key=lambda arn: int(arn.split(":")[-1]))
+
+    # Keep the latest N task definitions
+    expired_taskdef_arns = task_definition_arns[:-keep_latest]
+    for arn in expired_taskdef_arns:
         if not dry_run:
             ecs.deregister_task_definition(taskDefinition=arn)
 
-        print(f"✅ Deregistered task definition [yellow]{arn!r}[/yellow]")
+        # ARN like: "arn:aws:ecs:<region>:<account-id>:task-definition/<family>:<revision>"
+        _, family_revision = arn.split(":task-definition/")
+        print(f"✅ Deregistered task definition [yellow]{family_revision!r}[/yellow]")
