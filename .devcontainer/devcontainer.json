@@ -1,0 +1,30 @@
+{
+  "name": "lasuillard/aws-annoying",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.9-bookworm",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/pre-commit:2": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/lasuillard/devcontainer-features/aws-ssm-session-manager-plugin:0.1": {}
+  },
+  "onCreateCommand": "./.devcontainer/onCreateCommand.sh",
+  "postAttachCommand": "./.devcontainer/postAttachCommand.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ldez.ignore-files",
+        "gruntfuggly.todo-tree",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "streetsidesoftware.code-spell-checker",
+        "EditorConfig.EditorConfig",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
+        "njpwerner.autodocstring",
+        "ms-python.debugpy"
+      ]
+    }
+  }
+}
