@@ -13,7 +13,7 @@ dependencies = ["boto3>=1.37.1", "typer>=0.15.1"]
 [project.optional-dependencies]
 dev = [
   "boto3-stubs[ecs,secretsmanager,ssm]>=1.37.1",
-  "mypy~=1.14.1",
+  "mypy~=1.15.0",
   "ruff~=0.8.1",
 ]
 test = [
