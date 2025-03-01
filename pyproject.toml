@@ -3,6 +3,7 @@ name = "aws-annoying"
 description = "Utils to handle some annoying AWS tasks."
 version = "0.1.0"
 authors = [{ name = "Yuchan Lee", email = "lasuillard@gmail.com" }]
+readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9, <4.0"
 dependencies = ["boto3>=1.37.1", "typer>=0.15.1"]
