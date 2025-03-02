@@ -89,6 +89,7 @@ def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]
 
 
 printenv_py = str(Path(__file__).parent / "_helpers" / "scripts" / "printenv.py")
+printenv = [printenv_py, "DJANGO_SETTINGS_MODULE", "DJANGO_SECRET_KEY", "DJANGO_DEBUG", "DJANGO_ALLOWED_HOSTS"]
 
 
 def test_nothing(snapshot: Snapshot) -> None:
@@ -141,11 +142,7 @@ def test_load_variables(snapshot: Snapshot, invoke_cli: Invoker) -> None:
         *repeat_options("--arns", setup["load_resources"]),
         "--no-replace",
         "--",
-        printenv_py,
-        "DJANGO_SETTINGS_MODULE",
-        "DJANGO_SECRET_KEY",
-        "DJANGO_DEBUG",
-        "DJANGO_ALLOWED_HOSTS",
+        *printenv,
         env=setup["env"],
     )
 
@@ -155,7 +152,7 @@ def test_load_variables(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     assert result.stderr == ""
 
 
-def test_load_variables_replace(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_load_variables_replace_quiet(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test the most common practical use-case."""
     # Arrange
     setup = setup_resources()
@@ -168,12 +165,7 @@ def test_load_variables_replace(snapshot: Snapshot, invoke_cli: Invoker) -> None
         "LOAD_AWS_CONFIG__",
         "--quiet",
         "--",
-        printenv_py,
-        "--json",
-        "DJANGO_SETTINGS_MODULE",
-        "DJANGO_SECRET_KEY",
-        "DJANGO_DEBUG",
-        "DJANGO_ALLOWED_HOSTS",
+        *printenv,
         env=setup["env"],
     )
 
@@ -196,11 +188,7 @@ def test_load_variables_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> N
         "LOAD_AWS_CONFIG__",
         "--no-replace",
         "--",
-        printenv_py,
-        "DJANGO_SETTINGS_MODULE",
-        "DJANGO_SECRET_KEY",
-        "DJANGO_DEBUG",
-        "DJANGO_ALLOWED_HOSTS",
+        *printenv,
         env=setup["env"],
     )
 
@@ -224,11 +212,7 @@ def test_load_variables_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None
         "--no-replace",
         "--dry-run",
         "--",
-        printenv_py,
-        "DJANGO_SETTINGS_MODULE",
-        "DJANGO_SECRET_KEY",
-        "DJANGO_DEBUG",
-        "DJANGO_ALLOWED_HOSTS",
+        *printenv,
         env=setup["env"],
     )
 
@@ -251,14 +235,8 @@ def test_load_variables_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -
         "LOAD_AWS_CONFIG__",
         "--no-replace",
         "--overwrite-env",
-        "--quiet",
         "--",
-        printenv_py,
-        "--json",
-        "DJANGO_SETTINGS_MODULE",
-        "DJANGO_SECRET_KEY",
-        "DJANGO_DEBUG",
-        "DJANGO_ALLOWED_HOSTS",
+        *printenv,
         env=setup["env"],
     )
 
