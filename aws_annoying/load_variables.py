@@ -151,12 +151,8 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: boo
         elif arn.startswith("arn:aws:ssm:"):
             parameters_map[idx] = arn
         else:
-            msg = f"ARN of unsupported resource: {arn!r}"
-            raise ValueError(msg)
-
-    if secrets_map.keys() & parameters_map.keys():
-        msg = "Keys in secrets and parameters MUST NOT conflict."
-        raise ValueError(msg)
+            console.print(f"❗ Unsupported resource: {arn!r}")
+            raise typer.Exit(1)
 
     # Retrieve variables from AWS resources
     secrets: dict[str, _Variables]
@@ -186,9 +182,6 @@ _Variables = dict[str, Any]
 
 def _retrieve_secrets(secrets_map: dict[str, _ARN]) -> dict[str, _Variables]:
     """Retrieve the secrets from AWS Secrets Manager."""
-    if not secrets_map:
-        return {}
-
     secretsmanager = boto3.client("secretsmanager")
 
     # Retrieve the secrets
@@ -216,9 +209,6 @@ def _retrieve_secrets(secrets_map: dict[str, _ARN]) -> dict[str, _Variables]:
 
 def _retrieve_parameters(parameters_map: dict[str, _ARN]) -> dict[str, _Variables]:
     """Retrieve the parameters from AWS SSM Parameter Store."""
-    if not parameters_map:
-        return {}
-
     ssm = boto3.client("ssm")
 
     # Retrieve the parameters

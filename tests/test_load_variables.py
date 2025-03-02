@@ -90,7 +90,104 @@ def test_nothing() -> None:
     assert result.stdout == "⚠️ No command provided. Exiting...\n"
 
 
+def test_unsupported_resource() -> None:
+    """If nothing is provided, the command should do nothing."""
+    # Arrange
+    # ...
+
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "load-variables",
+            "--arns",
+            "arn:aws:s3:::my-bucket/my-object",
+            printenv_py,
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 1
+    assert (
+        normalize_console_output(result.stdout)
+        == """
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ ARN                              ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0     │ arn:aws:s3:::my-bucket/my-object │
+└───────┴──────────────────────────────────┘
+🔍 Retrieving variables from AWS resources...
+❗ Unsupported resource: 'arn:aws:s3:::my-bucket/my-object'
+""".strip()
+    )
+
+
 def test_load_variables(moto_server: str, variables: _VariablesFixture) -> None:
+    """If nothing is provided, the command should do nothing."""
+    # Arrange
+    arns_to_load = [
+        variables["secrets"]["my-app/django-sensitive-settings"]["resource"]["ARN"],
+        variables["parameters"]["/my-app/django-settings"]["resource"]["ARN"],
+    ]
+    args = [
+        "load-variables",
+        *repeat_options("--arns", arns_to_load),
+        "--no-replace",
+        "--",
+        printenv_py,
+        "DJANGO_SETTINGS_MODULE",
+        "DJANGO_SECRET_KEY",
+        "DJANGO_DEBUG",
+        "DJANGO_ALLOWED_HOSTS",
+    ]
+    env = (
+        os.environ
+        | {
+            # Direct environment variables
+            "LOAD_AWS_CONFIG__900_override": variables["parameters"]["/my-app/override"]["resource"]["ARN"],
+            "DJANGO_SETTINGS_MODULE": "config.settings.development",
+        }
+        | {
+            # Test environment variables for subprocess
+            "AWS_ENDPOINT_URL": moto_server,
+        }
+    )
+
+    # Act
+    result = subprocess.run(  # noqa: S603
+        ["uv", "run", "aws-annoying", *args],  # noqa: S607
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    # Assert
+    assert result.returncode == 0
+    assert (
+        normalize_console_output(result.stdout)
+        == f"""
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ ARN                                                                  ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0     │ arn:aws:secretsmanager:us-east-1:123456789012:secret:my-app/django-… │
+│ 1     │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-settings  │
+└───────┴──────────────────────────────────────────────────────────────────────┘
+🔍 Retrieving variables from AWS resources...
+✅ Retrieved 1 secrets and 1 parameters.
+🚀 Running the command:
+{printenv_py}
+DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+DJANGO_SETTINGS_MODULE=config.settings.development
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=*
+""".strip()
+    )
+    assert result.stderr == ""
+
+
+def test_load_variables_env_prefix(moto_server: str, variables: _VariablesFixture) -> None:
     """If nothing is provided, the command should do nothing."""
     # Arrange
     arns_to_load = [
@@ -102,6 +199,7 @@ def test_load_variables(moto_server: str, variables: _VariablesFixture) -> None:
         *repeat_options("--arns", arns_to_load),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
+        "--no-replace",
         "--",
         printenv_py,
         "DJANGO_SETTINGS_MODULE",
@@ -159,7 +257,7 @@ DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2
     assert result.stderr == ""
 
 
-def test_load_variables_no_replace(moto_server: str, variables: _VariablesFixture) -> None:
+def test_load_variables_replace(moto_server: str, variables: _VariablesFixture) -> None:
     """If nothing is provided, the command should do nothing."""
     # Arrange
     arns_to_load = [
@@ -171,7 +269,6 @@ def test_load_variables_no_replace(moto_server: str, variables: _VariablesFixtur
         *repeat_options("--arns", arns_to_load),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
-        "--no-replace",
         "--quiet",
         "--",
         printenv_py,
