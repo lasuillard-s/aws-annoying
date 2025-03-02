@@ -128,6 +128,7 @@ def load_variables(  # noqa: PLR0913
     raise typer.Exit(result.returncode)
 
 
+# TODO(lasuillard): Various context being shared across the functions, consider refactoring to a class
 # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
 #                   ; consider adding it if needed
 def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: bool) -> dict[str, Any]:
@@ -151,12 +152,8 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: boo
         elif arn.startswith("arn:aws:ssm:"):
             parameters_map[idx] = arn
         else:
-            msg = f"ARN of unsupported resource: {arn!r}"
-            raise ValueError(msg)
-
-    if secrets_map.keys() & parameters_map.keys():
-        msg = "Keys in secrets and parameters MUST NOT conflict."
-        raise ValueError(msg)
+            console.print(f"❗ Unsupported resource: {arn!r}")
+            raise typer.Exit(1)
 
     # Retrieve variables from AWS resources
     secrets: dict[str, _Variables]
@@ -165,8 +162,8 @@ def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: boo
         secrets = {idx: {} for idx, _ in secrets_map.items()}
         parameters = {idx: {} for idx, _ in parameters_map.items()}
     else:
-        secrets = _retrieve_secrets(secrets_map)
-        parameters = _retrieve_parameters(parameters_map)
+        secrets = _retrieve_secrets(secrets_map, console=console)
+        parameters = _retrieve_parameters(parameters_map, console=console)
 
     console.print(f"✅ Retrieved {len(secrets)} secrets and {len(parameters)} parameters.")
 
@@ -184,7 +181,7 @@ _ARN = str
 _Variables = dict[str, Any]
 
 
-def _retrieve_secrets(secrets_map: dict[str, _ARN]) -> dict[str, _Variables]:
+def _retrieve_secrets(secrets_map: dict[str, _ARN], *, console: Console) -> dict[str, _Variables]:
     """Retrieve the secrets from AWS Secrets Manager."""
     if not secrets_map:
         return {}
@@ -195,8 +192,8 @@ def _retrieve_secrets(secrets_map: dict[str, _ARN]) -> dict[str, _Variables]:
     arns = list(secrets_map.values())
     response = secretsmanager.batch_get_secret_value(SecretIdList=arns)
     if errors := response["Errors"]:
-        msg = f"Failed to retrieve secrets: {errors!r}"
-        raise ValueError(msg)
+        console.print(f"❗ Failed to retrieve secrets: {errors!r}")
+        raise typer.Exit(1)
 
     # Parse the secrets
     secrets = response["SecretValues"]
@@ -214,7 +211,7 @@ def _retrieve_secrets(secrets_map: dict[str, _ARN]) -> dict[str, _Variables]:
     return result
 
 
-def _retrieve_parameters(parameters_map: dict[str, _ARN]) -> dict[str, _Variables]:
+def _retrieve_parameters(parameters_map: dict[str, _ARN], *, console: Console) -> dict[str, _Variables]:
     """Retrieve the parameters from AWS SSM Parameter Store."""
     if not parameters_map:
         return {}
@@ -225,8 +222,8 @@ def _retrieve_parameters(parameters_map: dict[str, _ARN]) -> dict[str, _Variable
     parameter_names = list(parameters_map.values())
     response = ssm.get_parameters(Names=parameter_names, WithDecryption=True)
     if errors := response["InvalidParameters"]:
-        msg = f"Failed to retrieve parameters: {errors!r}"
-        raise ValueError(msg)
+        console.print(f"❗ Failed to retrieve parameters: {errors!r}")
+        raise typer.Exit(1)
 
     # Parse the parameters
     parameters = response["Parameters"]

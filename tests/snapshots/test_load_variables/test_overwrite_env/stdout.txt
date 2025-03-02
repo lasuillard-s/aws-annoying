@@ -1,0 +1,17 @@
+🔍 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
+🔍 Found 1 sources from environment variables.
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index        ┃ ARN                                                           ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0            │ arn:aws:secretsmanager:us-east-1:123456789012:secret:my-app/… │
+│ 1            │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-s… │
+│ 900_override │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/override  │
+└──────────────┴───────────────────────────────────────────────────────────────┘
+🔍 Retrieving variables from AWS resources...
+✅ Retrieved 1 secrets and 2 parameters.
+🚀 Running the command: tests/_helpers/scripts/printenv.py
+DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+DJANGO_SETTINGS_MODULE=config.settings.local
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2

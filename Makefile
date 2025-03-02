@@ -46,7 +46,7 @@ lint:  ## Run all linters
 .PHONY: lint
 
 test:  ## Run tests
-	uv run pytest
+	uv run pytest --snapshot-update
 .PHONY: test
 
 build:  ## Build application
