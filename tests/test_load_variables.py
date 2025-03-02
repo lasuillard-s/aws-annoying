@@ -11,7 +11,7 @@ from typer.testing import CliRunner
 
 from aws_annoying.main import app
 
-from ._helpers import normalize_console_output, repeat_options
+from ._helpers import PRINTENV_PY, normalize_console_output, repeat_options
 
 if TYPE_CHECKING:
     from pytest_snapshot.plugin import Snapshot
@@ -89,7 +89,7 @@ def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]
     }
 
 
-printenv_py = str(Path(__file__).parent / "_helpers" / "scripts" / "printenv.py")
+printenv_py = str(PRINTENV_PY.relative_to(Path.cwd()))
 printenv = [printenv_py, "DJANGO_SETTINGS_MODULE", "DJANGO_SECRET_KEY", "DJANGO_DEBUG", "DJANGO_ALLOWED_HOSTS"]
 
 
