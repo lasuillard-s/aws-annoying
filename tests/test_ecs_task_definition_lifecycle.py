@@ -115,6 +115,7 @@ def test_ecs_task_definition_lifecycle_dry_run() -> None:
     assert result.exit_code == 0
     assert normalize_console_output(result.stdout) == (
         """
+⚠️ Dry run mode enabled. Will not perform any actual changes.
 ✅ Deregistered task definition 'my-task:1'
 ✅ Deregistered task definition 'my-task:2'
 ✅ Deregistered task definition 'my-task:3'
