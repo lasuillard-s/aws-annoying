@@ -131,7 +131,7 @@ def test_unsupported_resource(snapshot: Snapshot) -> None:
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
-def test_load_variables(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_basic(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test basic usage."""
     # Arrange
     setup = setup_resources()
@@ -152,7 +152,7 @@ def test_load_variables(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     assert result.stderr == ""
 
 
-def test_load_variables_replace_quiet(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_replace_quiet(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test the most common practical use-case."""
     # Arrange
     setup = setup_resources()
@@ -175,7 +175,7 @@ def test_load_variables_replace_quiet(snapshot: Snapshot, invoke_cli: Invoker) -
     assert result.stderr == ""
 
 
-def test_load_variables_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test prefixed environment variables support."""
     # Arrange
     setup = setup_resources()
@@ -198,7 +198,7 @@ def test_load_variables_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> N
     assert result.stderr == ""
 
 
-def test_load_variables_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """If dry-run mode enabled, it shouldn't load variables."""
     # Arrange
     setup = setup_resources()
@@ -222,7 +222,7 @@ def test_load_variables_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None
     assert result.stderr == ""
 
 
-def test_load_variables_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test `--overwrite-env` flag. If provided, it should overwrite the existing environment variables."""
     # Arrange
     setup = setup_resources()

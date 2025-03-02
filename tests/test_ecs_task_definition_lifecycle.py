@@ -18,7 +18,7 @@ runner = CliRunner()
 # ?:               + sorting also does not work (current behavior is ASC)
 
 
-def test_ecs_task_definition_lifecycle(snapshot: Snapshot) -> None:
+def test_basic(snapshot: Snapshot) -> None:
     """The command should deregister the oldest task definitions."""
     # Arrange
     ecs = boto3.client("ecs")
@@ -65,7 +65,7 @@ def test_ecs_task_definition_lifecycle(snapshot: Snapshot) -> None:
     )
 
 
-def test_ecs_task_definition_lifecycle_dry_run(snapshot: Snapshot) -> None:
+def test_dry_run(snapshot: Snapshot) -> None:
     """If `--dry-run` option given, the command should not perform any changes."""
     # Arrange
     ecs = boto3.client("ecs")
