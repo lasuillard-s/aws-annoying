@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import boto3
 from typer.testing import CliRunner
 
@@ -5,13 +9,16 @@ from aws_annoying.main import app
 
 from ._helpers import normalize_console_output
 
+if TYPE_CHECKING:
+    from pytest_snapshot.plugin import Snapshot
+
 runner = CliRunner()
 
 # ?: Moto (v5.1.1) `ecs.list_task_definitions` does not handle `status` filter properly
-# !:               + sorting also does not work (current behavior is ASC)
+# ?:               + sorting also does not work (current behavior is ASC)
 
 
-def test_ecs_task_definition_lifecycle() -> None:
+def test_ecs_task_definition_lifecycle(snapshot: Snapshot) -> None:
     """The command should deregister the oldest task definitions."""
     # Arrange
     ecs = boto3.client("ecs")
@@ -42,34 +49,14 @@ def test_ecs_task_definition_lifecycle() -> None:
             str(keep_latest),
         ],
     )
-
-    # Assert
-    assert result.exit_code == 0
-    assert (
-        normalize_console_output(result.stdout)
-        == """
-✅ Deregistered task definition 'my-task:1'
-✅ Deregistered task definition 'my-task:2'
-✅ Deregistered task definition 'my-task:3'
-✅ Deregistered task definition 'my-task:4'
-✅ Deregistered task definition 'my-task:5'
-✅ Deregistered task definition 'my-task:6'
-✅ Deregistered task definition 'my-task:7'
-✅ Deregistered task definition 'my-task:8'
-✅ Deregistered task definition 'my-task:9'
-✅ Deregistered task definition 'my-task:10'
-✅ Deregistered task definition 'my-task:11'
-✅ Deregistered task definition 'my-task:12'
-✅ Deregistered task definition 'my-task:13'
-✅ Deregistered task definition 'my-task:14'
-✅ Deregistered task definition 'my-task:15'
-""".strip()
-    )
-
     task_definitions = [
         ecs.describe_task_definition(taskDefinition=f"{family}:{i}")["taskDefinition"]
         for i in range(1, num_task_defs + 1)
     ]
+
+    # Assert
+    assert result.exit_code == 0
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert [td["revision"] for td in task_definitions if td["status"] == "INACTIVE"] == list(
         range(1, num_task_defs - keep_latest + 1),  # 1..15
     )
@@ -78,7 +65,7 @@ def test_ecs_task_definition_lifecycle() -> None:
     )
 
 
-def test_ecs_task_definition_lifecycle_dry_run() -> None:
+def test_ecs_task_definition_lifecycle_dry_run(snapshot: Snapshot) -> None:
     """If `--dry-run` option given, the command should not perform any changes."""
     # Arrange
     ecs = boto3.client("ecs")
@@ -110,33 +97,13 @@ def test_ecs_task_definition_lifecycle_dry_run() -> None:
             "--dry-run",
         ],
     )
-
-    # Assert
-    assert result.exit_code == 0
-    assert normalize_console_output(result.stdout) == (
-        """
-⚠️ Dry run mode enabled. Will not perform any actual changes.
-✅ Deregistered task definition 'my-task:1'
-✅ Deregistered task definition 'my-task:2'
-✅ Deregistered task definition 'my-task:3'
-✅ Deregistered task definition 'my-task:4'
-✅ Deregistered task definition 'my-task:5'
-✅ Deregistered task definition 'my-task:6'
-✅ Deregistered task definition 'my-task:7'
-✅ Deregistered task definition 'my-task:8'
-✅ Deregistered task definition 'my-task:9'
-✅ Deregistered task definition 'my-task:10'
-✅ Deregistered task definition 'my-task:11'
-✅ Deregistered task definition 'my-task:12'
-✅ Deregistered task definition 'my-task:13'
-✅ Deregistered task definition 'my-task:14'
-✅ Deregistered task definition 'my-task:15'
-""".strip()
-    )
-
     task_definitions = [
         ecs.describe_task_definition(taskDefinition=f"{family}:{i}")["taskDefinition"]
         for i in range(1, num_task_defs + 1)
     ]
+
+    # Assert
+    assert result.exit_code == 0
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert [td["revision"] for td in task_definitions if td["status"] == "INACTIVE"] == []
     assert len([td["revision"] for td in task_definitions if td["status"] == "ACTIVE"]) == num_task_defs

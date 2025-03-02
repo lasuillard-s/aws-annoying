@@ -1,40 +1,45 @@
+from __future__ import annotations
+
 import json
 import os
-import subprocess
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import boto3
-import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.main import app
 
 from ._helpers import normalize_console_output, repeat_options
 
+if TYPE_CHECKING:
+    from pytest_snapshot.plugin import Snapshot
+
+    from tests.conftest import Invoker
+
 # * Command `load-variables` cannot use Typer CLI runner because it uses `os.execvpe` internally,
 # * which replaces the current process with the new one, breaking pytest runtime.
 # * But tests that does not reach the `os.execvpe` statement can use Typer CLI runner (or provide `--no-replace` flag).
 runner = CliRunner()
 
-_VariablesFixture = dict[str, dict[str, dict[str, Any]]]
 
-
-@pytest.fixture
-def variables() -> _VariablesFixture:
+def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]:
     """Set up AWS resources."""
     _variables: dict[Literal["secrets", "parameters"], dict[str, Any]] = {
         "secrets": {
+            # Pass to CLI arguments
             "my-app/django-sensitive-settings": {
                 "DJANGO_SECRET_KEY": "my-secret-key",
             },
         },
         "parameters": {
+            # Pass to CLI arguments
             "/my-app/django-settings": {
                 "DJANGO_SETTINGS_MODULE": "config.settings.local",
                 "DJANGO_ALLOWED_HOSTS": "*",
                 "DJANGO_DEBUG": "False",
             },
+            # Pass to execution environment
             "/my-app/override": {
                 "DJANGO_ALLOWED_HOSTS": "127.0.0.1,192.168.0.2",
             },
@@ -63,16 +68,30 @@ def variables() -> _VariablesFixture:
         parameter = ssm.get_parameter(Name=name)["Parameter"]
         parameters[name] = {"data": value, "resource": parameter}
 
+    env = env_base or os.environ | {
+        # Direct environment variables
+        "LOAD_AWS_CONFIG__900_override": parameters["/my-app/override"]["resource"]["ARN"],
+        "DJANGO_SETTINGS_MODULE": "config.settings.development",
+    }
+    load_resources = [
+        secrets["my-app/django-sensitive-settings"]["resource"]["ARN"],
+        parameters["/my-app/django-settings"]["resource"]["ARN"],
+    ]
+
     return {
-        "secrets": secrets,
-        "parameters": parameters,
+        # Test environment
+        "env": env,
+        "load_resources": load_resources,
+        # Resources
+        "secrets": {k: v["resource"]["ARN"] for k, v in secrets.items()},
+        "parameters": {k: v["resource"]["ARN"] for k, v in parameters.items()},
     }
 
 
 printenv_py = str(Path(__file__).parent / "_helpers" / "scripts" / "printenv.py")
 
 
-def test_nothing() -> None:
+def test_nothing(snapshot: Snapshot) -> None:
     """If nothing is provided, the command should do nothing."""
     # Arrange
     # ...
@@ -87,10 +106,10 @@ def test_nothing() -> None:
 
     # Assert
     assert result.exit_code == 0
-    assert result.stdout == "⚠️ No command provided. Exiting...\n"
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
-def test_unsupported_resource() -> None:
+def test_unsupported_resource(snapshot: Snapshot) -> None:
     """If unsupported resource ARN provided, should exit with error."""
     # Arrange
     # ...
@@ -108,30 +127,18 @@ def test_unsupported_resource() -> None:
 
     # Assert
     assert result.exit_code == 1
-    assert (
-        normalize_console_output(result.stdout)
-        == """
-┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Index ┃ ARN                              ┃
-┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 0     │ arn:aws:s3:::my-bucket/my-object │
-└───────┴──────────────────────────────────┘
-🔍 Retrieving variables from AWS resources...
-❗ Unsupported resource: 'arn:aws:s3:::my-bucket/my-object'
-""".strip()
-    )
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
-def test_load_variables(moto_server: str, variables: _VariablesFixture) -> None:
+def test_load_variables(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test basic usage."""
     # Arrange
-    arns_to_load = [
-        variables["secrets"]["my-app/django-sensitive-settings"]["resource"]["ARN"],
-        variables["parameters"]["/my-app/django-settings"]["resource"]["ARN"],
-    ]
-    args = [
+    setup = setup_resources()
+
+    # Act
+    result = invoke_cli(
         "load-variables",
-        *repeat_options("--arns", arns_to_load),
+        *repeat_options("--arns", setup["load_resources"]),
         "--no-replace",
         "--",
         printenv_py,
@@ -139,64 +146,24 @@ def test_load_variables(moto_server: str, variables: _VariablesFixture) -> None:
         "DJANGO_SECRET_KEY",
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
-    ]
-    env = (
-        os.environ
-        | {
-            # Direct environment variables
-            "LOAD_AWS_CONFIG__900_override": variables["parameters"]["/my-app/override"]["resource"]["ARN"],
-            "DJANGO_SETTINGS_MODULE": "config.settings.development",
-        }
-        | {
-            # Test environment variables for subprocess
-            "AWS_ENDPOINT_URL": moto_server,
-        }
-    )
-
-    # Act
-    result = subprocess.run(  # noqa: S603
-        ["uv", "run", "aws-annoying", *args],  # noqa: S607
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+        env=setup["env"],
     )
 
     # Assert
     assert result.returncode == 0
-    assert (
-        normalize_console_output(result.stdout)
-        == f"""
-┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Index ┃ ARN                                                                  ┃
-┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 0     │ arn:aws:secretsmanager:us-east-1:123456789012:secret:my-app/django-… │
-│ 1     │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-settings  │
-└───────┴──────────────────────────────────────────────────────────────────────┘
-🔍 Retrieving variables from AWS resources...
-✅ Retrieved 1 secrets and 1 parameters.
-🚀 Running the command:
-{printenv_py}
-DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
-DJANGO_SETTINGS_MODULE=config.settings.development
-DJANGO_SECRET_KEY=my-secret-key
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=*
-""".strip()
-    )
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
 
 
-def test_load_variables_replace(moto_server: str, variables: _VariablesFixture) -> None:
+def test_load_variables_replace(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test the most common practical use-case."""
     # Arrange
-    arns_to_load = [
-        variables["secrets"]["my-app/django-sensitive-settings"]["resource"]["ARN"],
-        variables["parameters"]["/my-app/django-settings"]["resource"]["ARN"],
-    ]
-    args = [
+    setup = setup_resources()
+
+    # Act
+    result = invoke_cli(
         "load-variables",
-        *repeat_options("--arns", arns_to_load),
+        *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
         "--quiet",
@@ -207,50 +174,24 @@ def test_load_variables_replace(moto_server: str, variables: _VariablesFixture) 
         "DJANGO_SECRET_KEY",
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
-    ]
-    env = (
-        os.environ
-        | {
-            # Direct environment variables
-            "LOAD_AWS_CONFIG__900_override": variables["parameters"]["/my-app/override"]["resource"]["ARN"],
-            "DJANGO_SETTINGS_MODULE": "config.settings.development",
-        }
-        | {
-            # Test environment variables for subprocess
-            "AWS_ENDPOINT_URL": moto_server,
-        }
-    )
-
-    # Act
-    result = subprocess.run(  # noqa: S603
-        ["uv", "run", "aws-annoying", *args],  # noqa: S607
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+        env=setup["env"],
     )
 
     # Assert
     assert result.returncode == 0
-    assert json.loads(result.stdout) == {
-        "DJANGO_SETTINGS_MODULE": "config.settings.development",
-        "DJANGO_SECRET_KEY": "my-secret-key",
-        "DJANGO_DEBUG": "False",
-        "DJANGO_ALLOWED_HOSTS": "127.0.0.1,192.168.0.2",
-    }
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
 
 
-def test_load_variables_env_prefix(moto_server: str, variables: _VariablesFixture) -> None:
+def test_load_variables_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test prefixed environment variables support."""
     # Arrange
-    arns_to_load = [
-        variables["secrets"]["my-app/django-sensitive-settings"]["resource"]["ARN"],
-        variables["parameters"]["/my-app/django-settings"]["resource"]["ARN"],
-    ]
-    args = [
+    setup = setup_resources()
+
+    # Act
+    result = invoke_cli(
         "load-variables",
-        *repeat_options("--arns", arns_to_load),
+        *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
         "--no-replace",
@@ -260,67 +201,24 @@ def test_load_variables_env_prefix(moto_server: str, variables: _VariablesFixtur
         "DJANGO_SECRET_KEY",
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
-    ]
-    env = (
-        os.environ
-        | {
-            # Direct environment variables
-            "LOAD_AWS_CONFIG__900_override": variables["parameters"]["/my-app/override"]["resource"]["ARN"],
-            "DJANGO_SETTINGS_MODULE": "config.settings.development",
-        }
-        | {
-            # Test environment variables for subprocess
-            "AWS_ENDPOINT_URL": moto_server,
-        }
-    )
-
-    # Act
-    result = subprocess.run(  # noqa: S603
-        ["uv", "run", "aws-annoying", *args],  # noqa: S607
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+        env=setup["env"],
     )
 
     # Assert
     assert result.returncode == 0
-    assert (
-        normalize_console_output(result.stdout)
-        == f"""
-🔍 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
-🔍 Found 1 sources from environment variables.
-┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Index        ┃ ARN                                                           ┃
-┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 0            │ arn:aws:secretsmanager:us-east-1:123456789012:secret:my-app/… │
-│ 1            │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-s… │
-│ 900_override │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/override  │
-└──────────────┴───────────────────────────────────────────────────────────────┘
-🔍 Retrieving variables from AWS resources...
-✅ Retrieved 1 secrets and 2 parameters.
-🚀 Running the command:
-{printenv_py}
-DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
-DJANGO_SETTINGS_MODULE=config.settings.development
-DJANGO_SECRET_KEY=my-secret-key
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2
-""".strip()
-    )
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
 
 
-def test_load_variables_dry_run(moto_server: str, variables: _VariablesFixture) -> None:
+def test_load_variables_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """If dry-run mode enabled, it shouldn't load variables."""
     # Arrange
-    arns_to_load = [
-        variables["secrets"]["my-app/django-sensitive-settings"]["resource"]["ARN"],
-        variables["parameters"]["/my-app/django-settings"]["resource"]["ARN"],
-    ]
-    args = [
+    setup = setup_resources()
+
+    # Act
+    result = invoke_cli(
         "load-variables",
-        *repeat_options("--arns", arns_to_load),
+        *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
         "--no-replace",
@@ -331,68 +229,24 @@ def test_load_variables_dry_run(moto_server: str, variables: _VariablesFixture) 
         "DJANGO_SECRET_KEY",
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
-    ]
-    env = (
-        os.environ
-        | {
-            # Direct environment variables
-            "LOAD_AWS_CONFIG__900_override": variables["parameters"]["/my-app/override"]["resource"]["ARN"],
-            "DJANGO_SETTINGS_MODULE": "config.settings.development",
-        }
-        | {
-            # Test environment variables for subprocess
-            "AWS_ENDPOINT_URL": moto_server,
-        }
-    )
-
-    # Act
-    result = subprocess.run(  # noqa: S603
-        ["uv", "run", "aws-annoying", *args],  # noqa: S607
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+        env=setup["env"],
     )
 
     # Assert
     assert result.returncode == 0
-    assert (
-        normalize_console_output(result.stdout)
-        == f"""
-🔍 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
-🔍 Found 1 sources from environment variables.
-┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Index        ┃ ARN                                                           ┃
-┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 0            │ arn:aws:secretsmanager:us-east-1:123456789012:secret:my-app/… │
-│ 1            │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/django-s… │
-│ 900_override │ arn:aws:ssm:us-east-1:123456789012:parameter/my-app/override  │
-└──────────────┴───────────────────────────────────────────────────────────────┘
-🔍 Retrieving variables from AWS resources...
-⚠️ Dry run mode enabled. Variables won't be loaded from AWS.
-✅ Retrieved 1 secrets and 2 parameters.
-🚀 Running the command:
-{printenv_py}
-DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
-DJANGO_SETTINGS_MODULE=config.settings.development
-DJANGO_SECRET_KEY=
-DJANGO_DEBUG=
-DJANGO_ALLOWED_HOSTS=
-""".strip()
-    )
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
 
 
-def test_load_variables_overwrite_env(moto_server: str, variables: _VariablesFixture) -> None:
+def test_load_variables_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     """Test `--overwrite-env` flag. If provided, it should overwrite the existing environment variables."""
     # Arrange
-    arns_to_load = [
-        variables["secrets"]["my-app/django-sensitive-settings"]["resource"]["ARN"],
-        variables["parameters"]["/my-app/django-settings"]["resource"]["ARN"],
-    ]
-    args = [
+    setup = setup_resources()
+
+    # Act
+    result = invoke_cli(
         "load-variables",
-        *repeat_options("--arns", arns_to_load),
+        *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
         "--no-replace",
@@ -405,35 +259,10 @@ def test_load_variables_overwrite_env(moto_server: str, variables: _VariablesFix
         "DJANGO_SECRET_KEY",
         "DJANGO_DEBUG",
         "DJANGO_ALLOWED_HOSTS",
-    ]
-    env = (
-        os.environ
-        | {
-            # Direct environment variables
-            "LOAD_AWS_CONFIG__900_override": variables["parameters"]["/my-app/override"]["resource"]["ARN"],
-            "DJANGO_SETTINGS_MODULE": "config.settings.development",
-        }
-        | {
-            # Test environment variables for subprocess
-            "AWS_ENDPOINT_URL": moto_server,
-        }
-    )
-
-    # Act
-    result = subprocess.run(  # noqa: S603
-        ["uv", "run", "aws-annoying", *args],  # noqa: S607
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+        env=setup["env"],
     )
 
     # Assert
     assert result.returncode == 0
-    assert json.loads(result.stdout) == {
-        "DJANGO_SETTINGS_MODULE": "config.settings.local",
-        "DJANGO_SECRET_KEY": "my-secret-key",
-        "DJANGO_DEBUG": "False",
-        "DJANGO_ALLOWED_HOSTS": "127.0.0.1,192.168.0.2",
-    }
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
