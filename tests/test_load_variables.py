@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import boto3
+import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.main import app
@@ -242,5 +243,40 @@ def test_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
 
     # Assert
     assert result.returncode == 0
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert result.stderr == ""
+
+
+@pytest.mark.parametrize(
+    argnames="arn",
+    argvalues=[
+        # TODO(lasuillard): Moto Secrets Manager does not respond with error for non-existing resources
+        # "arn:aws:secretsmanager:us-east-1:123456789012:secret:unknown-secret", # noqa: ERA001;
+        "arn:aws:ssm:us-east-1:123456789012:parameter/unknown-parameter",
+    ],
+    ids=[
+        # "secretsmanager",
+        "ssm",
+    ],
+)
+def test_resource_not_found(snapshot: Snapshot, invoke_cli: Invoker, arn: str) -> None:
+    """Test with resource does not exists."""
+    # Arrange
+    setup = setup_resources()
+
+    # Act
+    result = invoke_cli(
+        "load-variables",
+        *repeat_options("--arns", setup["load_resources"]),
+        "--arns",
+        arn,
+        "--no-replace",
+        "--",
+        *printenv,
+        env=setup["env"],
+    )
+
+    # Assert
+    assert result.returncode == 1
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
