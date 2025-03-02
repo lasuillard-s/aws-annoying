@@ -107,7 +107,12 @@ def load_variables(  # noqa: PLR0913
     console.print(table)
 
     # Retrieve the variables
-    variables = _load_variables(map_arns_by_index, console=console, dry_run=dry_run)
+    loader = VariableLoader(dry_run=dry_run, console=console)
+    try:
+        variables = loader.load(map_arns_by_index)
+    except Exception as exc:  # noqa: BLE001
+        console.print(f"❌ Failed to load the variables: {exc!s}")
+        raise typer.Exit(1) from None
 
     # Prepare the environment variables
     env = os.environ.copy()
@@ -128,114 +133,122 @@ def load_variables(  # noqa: PLR0913
     raise typer.Exit(result.returncode)
 
 
-# TODO(lasuillard): Various context being shared across the functions, consider refactoring to a class
-# TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
-#                   ; consider adding it if needed
-def _load_variables(map_arns: dict[str, _ARN], *, console: Console, dry_run: bool) -> dict[str, Any]:
-    """Load the variables from the AWS Secrets Manager and SSM Parameter Store.
-
-    Each secret or parameter should be a valid dictionary, where the keys are the variable names
-    and the values are the variable values.
-
-    The items are merged in the order of the key of provided mapping, overwriting the variables with the same name
-    in the order of the keys.
-    """
-    console.print("🔍 Retrieving variables from AWS resources...")
-    if dry_run:
-        console.print("⚠️ Dry run mode enabled. Variables won't be loaded from AWS.")
-
-    # Split the ARNs by resource types
-    secrets_map, parameters_map = {}, {}
-    for idx, arn in map_arns.items():
-        if arn.startswith("arn:aws:secretsmanager:"):
-            secrets_map[idx] = arn
-        elif arn.startswith("arn:aws:ssm:"):
-            parameters_map[idx] = arn
-        else:
-            console.print(f"❗ Unsupported resource: {arn!r}")
-            raise typer.Exit(1)
-
-    # Retrieve variables from AWS resources
-    secrets: dict[str, _Variables]
-    parameters: dict[str, _Variables]
-    if dry_run:
-        secrets = {idx: {} for idx, _ in secrets_map.items()}
-        parameters = {idx: {} for idx, _ in parameters_map.items()}
-    else:
-        secrets = _retrieve_secrets(secrets_map, console=console)
-        parameters = _retrieve_parameters(parameters_map, console=console)
-
-    console.print(f"✅ Retrieved {len(secrets)} secrets and {len(parameters)} parameters.")
-
-    # Merge the variables in order
-    full_variables = secrets | parameters  # Keys MUST NOT conflict
-    merged_in_order = {}
-    for _, variables in sorted(full_variables.items()):
-        merged_in_order.update(variables)
-
-    return merged_in_order
-
-
 # Type aliases for readability
 _ARN = str
 _Variables = dict[str, Any]
 
 
-def _retrieve_secrets(secrets_map: dict[str, _ARN], *, console: Console) -> dict[str, _Variables]:
-    """Retrieve the secrets from AWS Secrets Manager."""
-    if not secrets_map:
-        return {}
+class VariableLoader:  # noqa: D101
+    def __init__(self, *, console: Console | None = None, dry_run: bool) -> None:
+        """Initialize the VariableLoader.
 
-    secretsmanager = boto3.client("secretsmanager")
+        Args:
+            dry_run: Whether to run in dry-run mode.
+            console: Rich console instance.
+        """
+        self.console = console or Console(quiet=True)
+        self.dry_run = dry_run
 
-    # Retrieve the secrets
-    arns = list(secrets_map.values())
-    response = secretsmanager.batch_get_secret_value(SecretIdList=arns)
-    if errors := response["Errors"]:
-        console.print(f"❗ Failed to retrieve secrets: {errors!r}")
-        raise typer.Exit(1)
+    # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
+    #                   ; consider adding it if needed
+    def load(self, map_arns: dict[str, _ARN]) -> dict[str, Any]:
+        """Load the variables from the AWS Secrets Manager and SSM Parameter Store.
 
-    # Parse the secrets
-    secrets = response["SecretValues"]
-    result = {}
-    for secret in secrets:
-        arn = secret["ARN"]
-        order_key = next(key for key, value in secrets_map.items() if value == arn)
-        data = json.loads(secret["SecretString"])
-        if not isinstance(data, dict):
-            msg = f"Secret data must be a valid dictionary, but got: {type(data)!r}"
-            raise TypeError(msg)
+        Each secret or parameter should be a valid dictionary, where the keys are the variable names
+        and the values are the variable values.
 
-        result[order_key] = data
+        The items are merged in the order of the key of provided mapping, overwriting the variables with the same name
+        in the order of the keys.
+        """
+        self.console.print("🔍 Retrieving variables from AWS resources...")
+        if self.dry_run:
+            self.console.print("⚠️ Dry run mode enabled. Variables won't be loaded from AWS.")
 
-    return result
+        # Split the ARNs by resource types
+        secrets_map, parameters_map = {}, {}
+        for idx, arn in map_arns.items():
+            if arn.startswith("arn:aws:secretsmanager:"):
+                secrets_map[idx] = arn
+            elif arn.startswith("arn:aws:ssm:"):
+                parameters_map[idx] = arn
+            else:
+                msg = f"Unsupported resource: {arn!r}"
+                raise ValueError(msg)
 
+        # Retrieve variables from AWS resources
+        secrets: dict[str, _Variables]
+        parameters: dict[str, _Variables]
+        if self.dry_run:
+            secrets = {idx: {} for idx, _ in secrets_map.items()}
+            parameters = {idx: {} for idx, _ in parameters_map.items()}
+        else:
+            secrets = self._retrieve_secrets(secrets_map)
+            parameters = self._retrieve_parameters(parameters_map)
 
-def _retrieve_parameters(parameters_map: dict[str, _ARN], *, console: Console) -> dict[str, _Variables]:
-    """Retrieve the parameters from AWS SSM Parameter Store."""
-    if not parameters_map:
-        return {}
+        self.console.print(f"✅ Retrieved {len(secrets)} secrets and {len(parameters)} parameters.")
 
-    ssm = boto3.client("ssm")
+        # Merge the variables in order
+        full_variables = secrets | parameters  # Keys MUST NOT conflict
+        merged_in_order = {}
+        for _, variables in sorted(full_variables.items()):
+            merged_in_order.update(variables)
 
-    # Retrieve the parameters
-    parameter_names = list(parameters_map.values())
-    response = ssm.get_parameters(Names=parameter_names, WithDecryption=True)
-    if errors := response["InvalidParameters"]:
-        console.print(f"❗ Failed to retrieve parameters: {errors!r}")
-        raise typer.Exit(1)
+        return merged_in_order
 
-    # Parse the parameters
-    parameters = response["Parameters"]
-    result = {}
-    for parameter in parameters:
-        arn = parameter["ARN"]
-        order_key = next(key for key, value in parameters_map.items() if value == arn)
-        data = json.loads(parameter["Value"])
-        if not isinstance(data, dict):
-            msg = f"Parameter data must be a valid dictionary, but got: {type(data)!r}"
-            raise TypeError(msg)
+    def _retrieve_secrets(self, secrets_map: dict[str, _ARN]) -> dict[str, _Variables]:
+        """Retrieve the secrets from AWS Secrets Manager."""
+        if not secrets_map:
+            return {}
 
-        result[order_key] = data
+        secretsmanager = boto3.client("secretsmanager")
 
-    return result
+        # Retrieve the secrets
+        arns = list(secrets_map.values())
+        response = secretsmanager.batch_get_secret_value(SecretIdList=arns)
+        if errors := response["Errors"]:
+            msg = f"Failed to retrieve secrets: {errors!r}"
+            raise ValueError(msg)
+
+        # Parse the secrets
+        secrets = response["SecretValues"]
+        result = {}
+        for secret in secrets:
+            arn = secret["ARN"]
+            order_key = next(key for key, value in secrets_map.items() if value == arn)
+            data = json.loads(secret["SecretString"])
+            if not isinstance(data, dict):
+                msg = f"Secret data must be a valid dictionary, but got: {type(data)!r}"
+                raise TypeError(msg)
+
+            result[order_key] = data
+
+        return result
+
+    def _retrieve_parameters(self, parameters_map: dict[str, _ARN]) -> dict[str, _Variables]:
+        """Retrieve the parameters from AWS SSM Parameter Store."""
+        if not parameters_map:
+            return {}
+
+        ssm = boto3.client("ssm")
+
+        # Retrieve the parameters
+        parameter_names = list(parameters_map.values())
+        response = ssm.get_parameters(Names=parameter_names, WithDecryption=True)
+        if errors := response["InvalidParameters"]:
+            msg = f"Failed to retrieve parameters: {errors!r}"
+            raise ValueError(msg)
+
+        # Parse the parameters
+        parameters = response["Parameters"]
+        result = {}
+        for parameter in parameters:
+            arn = parameter["ARN"]
+            order_key = next(key for key, value in parameters_map.items() if value == arn)
+            data = json.loads(parameter["Value"])
+            if not isinstance(data, dict):
+                msg = f"Parameter data must be a valid dictionary, but got: {type(data)!r}"
+                raise TypeError(msg)
+
+            result[order_key] = data
+
+        return result
