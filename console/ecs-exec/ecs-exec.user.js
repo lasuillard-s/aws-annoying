@@ -16,8 +16,9 @@
   // Get ARN from page
   function getARN() {
     const arnNeighbor = document.evaluate(`//div[text()="ARN"]`, document).iterateNext();
-    if (!arnNeighbor) return null;
-
+    if (!arnNeighbor) {
+      return null;
+    }
     const arn = arnNeighbor.parentNode.children[1].textContent;
     return arn;
   }
@@ -43,11 +44,11 @@
   // Find containers table and add hyperlink to SSM Session Manager (web console)
   function addLinkToSessionManager() {
     const arn = getARN();
-    if (!arn) return;
-
+    if (!arn) {
+      return;
+    }
     const [, , , region, accountId, taskPart] = arn.split(":");
     const [, clusterName, taskId] = taskPart.split("/");
-
     const tables = document.querySelectorAll("table");
     for (const table of tables) {
       if (!table.textContent.startsWith("Container")) continue;
@@ -80,8 +81,9 @@
     let previousPage = null;
     setInterval(() => {
       let currentPage = location.href;
-      if (previousPage == currentPage) return;
-
+      if (previousPage == currentPage) {
+        return;
+      }
       previousPage = currentPage;
       if (location.href.match(pattern)) {
         waitForTableAndRun();
