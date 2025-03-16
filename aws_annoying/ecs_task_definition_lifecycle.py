@@ -62,4 +62,4 @@ def ecs_task_definition_lifecycle(
 
     if delete:
         ecs.delete_task_definitions(taskDefinitions=expired_taskdef_arns)
-        print(f"✅ Deleted task definition [red]{arn!r}[/red]")
+        print(f"✅ Deleted {len(expired_taskdef_arns)} task definitions.")
