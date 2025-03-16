@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import boto3
+import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.main import app
@@ -14,8 +15,7 @@ if TYPE_CHECKING:
 
 runner = CliRunner()
 
-# ?: Moto (v5.1.1) `ecs.list_task_definitions` does not handle `status` filter properly
-# ?:               + sorting also does not work (current behavior is ASC)
+pytestmark = pytest.mark.usefixtures("use_moto")
 
 
 def test_basic(snapshot: Snapshot) -> None:
@@ -57,6 +57,9 @@ def test_basic(snapshot: Snapshot) -> None:
     # Assert
     assert result.exit_code == 0
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+
+    # ?: Moto (v5.1.1) `ecs.list_task_definitions` does not handle `status` filter properly
+    # ?:               + sorting also does not work (current behavior is ASC)
     assert [td["revision"] for td in task_definitions if td["status"] == "INACTIVE"] == list(
         range(1, num_task_defs - keep_latest + 1),  # 1..15
     )
@@ -105,5 +108,8 @@ def test_dry_run(snapshot: Snapshot) -> None:
     # Assert
     assert result.exit_code == 0
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+
+    # ?: Moto (v5.1.1) `ecs.list_task_definitions` does not handle `status` filter properly
+    # ?:               + sorting also does not work (current behavior is ASC)
     assert [td["revision"] for td in task_definitions if td["status"] == "INACTIVE"] == []
     assert len([td["revision"] for td in task_definitions if td["status"] == "ACTIVE"]) == num_task_defs
