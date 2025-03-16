@@ -7,7 +7,9 @@
     "editor.formatOnSave": true
   },
   "autoDocstring.docstringFormat": "google-notypes",
-  "cSpell.words": [],
+  "cSpell.words": [
+    "localstack"
+  ],
   "editor.formatOnSave": true,
   "files.eol": "\n",
   "files.exclude": {

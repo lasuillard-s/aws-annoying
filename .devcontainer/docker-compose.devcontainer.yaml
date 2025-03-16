@@ -1,0 +1,30 @@
+services:
+  workspace:
+    build:
+      context: .
+    volumes:
+      - ..:/workspaces/aws-annoying
+      - op:/home/vscode/.config/op
+      - aws:/home/vscode/.aws
+      - cache:/home/vscode/.cache:delegated
+    environment:
+      AWS_ENDPOINT_URL: http://localstack:4566
+    healthcheck:
+      disable: true
+
+  localstack:
+    image: localstack/localstack:4
+    profiles:
+      - localstack
+    ports:
+      - ${LOCALSTACK_GATEWAY_HOST:-127.0.0.1}:${LOCALSTACK_GATEWAY_PORT:-4566}:4566
+      - ${LOCALSTACK_EXTERNAL_SERVICES_HOST:-127.0.0.1}:${LOCALSTACK_EXTERNAL_SERVICES_PORT_RANGE:-4510-4559}:4510-4559
+    volumes:
+      - localstack:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  op:
+  aws:
+  cache:
+  localstack:

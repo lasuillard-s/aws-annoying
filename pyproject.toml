@@ -19,12 +19,14 @@ dev = [
 ]
 test = [
   "coverage~=7.6.0",
-  "moto[secretsmanager,server,ssm,ecs]",
+  "moto[secretsmanager,server,ssm,ecs]~=5.1.1",
   "pytest~=8.3.2",
   "pytest-cov~=6.0.0",
   "pytest-env~=1.1.1",
   "pytest-snapshot>=0.9.0",
   "pytest-sugar~=1.0.0",
+  "pytest-xdist>=3.6.1",
+  "testcontainers[localstack]>=4.9.2",
 ]
 
 [build-system]
@@ -33,10 +35,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["aws_annoying"]
-
-[tool.uv.sources]
-# Using forked version with minor bug fixes; if PR submitted & merged, switch back to upstream
-moto = { git = "https://git@github.com/lasuillard/moto", rev = "master" }
 
 [tool.ruff]
 target-version = "py39"
@@ -80,6 +78,7 @@ no_implicit_reexport = true
 
 [tool.pytest.ini_options]
 addopts = [
+  "--numprocesses=auto",
   "--strict-markers",
   "--doctest-modules",
   "--cov",
@@ -91,6 +90,10 @@ addopts = [
 ]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning::"]
+markers = [
+  "unit: mark test as unit test",
+  "integration: mark test as integration test",
+]
 
 [tool.coverage.run]
 include = ["aws_annoying/*"]
