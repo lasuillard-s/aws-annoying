@@ -14,6 +14,8 @@ services:
 
   localstack:
     image: localstack/localstack:4
+    profiles:
+      - localstack
     ports:
       - ${LOCALSTACK_GATEWAY_HOST:-127.0.0.1}:${LOCALSTACK_GATEWAY_PORT:-4566}:4566
       - ${LOCALSTACK_EXTERNAL_SERVICES_HOST:-127.0.0.1}:${LOCALSTACK_EXTERNAL_SERVICES_PORT_RANGE:-4510-4559}:4510-4559

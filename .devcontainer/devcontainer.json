@@ -3,15 +3,12 @@
   "dockerComposeFile": [
     "./docker-compose.devcontainer.yaml"
   ],
-  "runServices": [
-    "workspace",
-    "localstack"
-  ],
   "service": "workspace",
   "overrideCommand": true,
   "workspaceFolder": "/workspaces/aws-annoying",
   "features": {
     "ghcr.io/devcontainers-contrib/features/pre-commit:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/aws-cli:1": {},
     "ghcr.io/lasuillard/devcontainer-features/aws-ssm-session-manager-plugin:0.1": {}
   },
