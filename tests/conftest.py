@@ -61,6 +61,7 @@ def use_moto_server(monkeypatch: pytest.MonkeyPatch, moto_server: str) -> None:
 
 # LocalStack
 # ----------------------------------------------------------------------------
+# https://testcontainers.com/guides/getting-started-with-testcontainers-for-python/
 @pytest.fixture
 def localstack(request: pytest.FixtureRequest) -> str:
     """Run Localstack for AWS mocking."""
