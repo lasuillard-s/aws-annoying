@@ -15,7 +15,10 @@ if TYPE_CHECKING:
 
 runner = CliRunner()
 
-pytestmark = pytest.mark.usefixtures("use_moto")
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.usefixtures("use_moto"),
+]
 
 
 def test_basic(snapshot: Snapshot) -> None:

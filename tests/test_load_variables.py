@@ -23,7 +23,10 @@ if TYPE_CHECKING:
 # * But tests that does not reach the `os.execvpe` statement can use Typer CLI runner (or provide `--no-replace` flag).
 runner = CliRunner()
 
-pytestmark = pytest.mark.usefixtures("use_localstack")
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.usefixtures("use_localstack"),
+]
 
 
 def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]:
