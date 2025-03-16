@@ -19,7 +19,7 @@ dev = [
 ]
 test = [
   "coverage~=7.6.0",
-  "moto[secretsmanager,server,ssm,ecs]",
+  "moto[secretsmanager,server,ssm,ecs]~=5.1.1",
   "pytest~=8.3.2",
   "pytest-cov~=6.0.0",
   "pytest-env~=1.1.1",
@@ -34,10 +34,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["aws_annoying"]
-
-[tool.uv.sources]
-# Using forked version with minor bug fixes; if PR submitted & merged, switch back to upstream
-moto = { git = "https://git@github.com/lasuillard/moto", rev = "master" }
 
 [tool.ruff]
 target-version = "py39"

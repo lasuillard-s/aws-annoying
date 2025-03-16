@@ -64,7 +64,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.37.1" },
     { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm"], marker = "extra == 'dev'", specifier = ">=1.37.1" },
     { name = "coverage", marker = "extra == 'test'", specifier = "~=7.6.0" },
-    { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], marker = "extra == 'test'", git = "https://github.com/lasuillard/moto?rev=master" },
+    { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], marker = "extra == 'test'", specifier = "~=5.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "~=1.15.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = "~=8.3.2" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = "~=6.0.0" },
@@ -829,8 +829,8 @@ wheels = [
 
 [[package]]
 name = "moto"
-version = "5.1.1.dev0"
-source = { git = "https://github.com/lasuillard/moto?rev=master#5650c2f83c811f367cd7baf63c620e876178ede0" }
+version = "5.1.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
     { name = "botocore" },
@@ -841,6 +841,10 @@ dependencies = [
     { name = "responses" },
     { name = "werkzeug" },
     { name = "xmltodict" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ee/ee/88b514190cb4ece02b377ea61ff26b596fa967609c82aa2f2856bfae2f3e/moto-5.1.1.tar.gz", hash = "sha256:5b25dbc62cccd9f36ef062c870db49d976b241129024fab049e2d3d1296e2a57", size = 6647375 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e9/36/e3d70d25064a03dfa13555bf26ca934bb2167df221065938278e1e1961eb/moto-5.1.1-py3-none-any.whl", hash = "sha256:615904d6210431950a59a2bdec365d60e791eacbe3dd07a3a5d742c88ef847dd", size = 4788429 },
 ]
 
 [package.optional-dependencies]
