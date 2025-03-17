@@ -6,6 +6,7 @@ from typing import Optional
 
 import boto3
 import typer
+from pydantic import BaseModel, ConfigDict
 from rich import print  # noqa: A004
 from rich.prompt import Prompt
 
@@ -52,21 +53,23 @@ def configure(  # noqa: PLR0913
     aws_credentials = aws_credentials.expanduser()
     aws_config = aws_config.expanduser()
 
-    # Load configuration (alternative sources)
-    config_ini = configparser.ConfigParser()
-    config_ini.read(aws_config)
+    # Load configuration
+    mfa_config, exists = _MfaConfig.from_ini_file(aws_config, _CONFIG_INI_SECTION)
+    if exists:
+        print(f"⚙️ Loaded MFA configuration from AWS config ({aws_config}).")
 
-    mfa_serial_number = (
-        mfa_serial_number
-        or config_ini.get(_CONFIG_INI_SECTION, "mfa_serial_number", fallback=None)
-        or Prompt.ask("🔒 Enter MFA serial number")
+    mfa_config.mfa_serial_number = (
+        mfa_serial_number or mfa_config.mfa_serial_number or Prompt.ask("🔒 Enter MFA serial number")
     )
     mfa_token_code = mfa_token_code or Prompt.ask("🔑 Enter MFA token code")
 
     # Get credentials
     print("💬 Retrieving MFA credentials")
     sts = boto3.client("sts")
-    response = sts.get_session_token(SerialNumber=mfa_serial_number, TokenCode=mfa_token_code)
+    response = sts.get_session_token(
+        SerialNumber=mfa_config.mfa_serial_number,
+        TokenCode=mfa_token_code,
+    )
     credentials = response["Credentials"]
 
     # Update MFA profile in AWS credentials
@@ -88,9 +91,34 @@ def configure(  # noqa: PLR0913
             f"✅ Persisting MFA configuration in AWS config ({aws_config}),"
             f" in [bold]{_CONFIG_INI_SECTION}[/bold] section.",
         )
-        config_ini.setdefault(_CONFIG_INI_SECTION, {})
-        config_ini[_CONFIG_INI_SECTION]["mfa_serial_number"] = mfa_serial_number
-        with aws_config.open("w") as f:
-            config_ini.write(f)
+        mfa_config.save_ini_file(aws_config, _CONFIG_INI_SECTION)
     else:
         print("⚠️ MFA configuration not persisted.")
+
+
+class _MfaConfig(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    mfa_serial_number: Optional[str] = None
+
+    def save_ini_file(self, path: Path, section_key: str) -> None:
+        """Save configuration to an AWS config file."""
+        config_ini = configparser.ConfigParser()
+        config_ini.read(path)
+        config_ini.setdefault(section_key, {})
+        for k, v in self.model_dump().items():
+            config_ini[section_key][k] = v
+
+        with path.open("w") as f:
+            config_ini.write(f)
+
+    @classmethod
+    def from_ini_file(cls, path: Path, section_key: str) -> tuple[_MfaConfig, bool]:
+        """Load configuration from an AWS config file, with boolean indicating if the config already exists."""
+        config_ini = configparser.ConfigParser()
+        config_ini.read(path)
+        if config_ini.has_section(section_key):
+            section = dict(config_ini.items(section_key))
+            return cls.model_validate(section), True
+
+        return cls(), False
