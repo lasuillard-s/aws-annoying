@@ -71,7 +71,6 @@ def _install_windows() -> None:
     )
     with tempfile.TemporaryDirectory() as temp_dir:
         p = Path(temp_dir)
-        print("📥 Downloading file from URL:", download_url)
         _download_file(download_url, p / "SessionManagerPluginSetup.exe")
 
         confirm = Confirm.ask("⚠️ Will run installation command. Proceed?")
@@ -98,7 +97,6 @@ def _install_macos() -> None:
 
     with tempfile.TemporaryDirectory() as temp_dir:
         p = Path(temp_dir)
-        print("📥 Downloading file from URL:", download_url)
         _download_file(download_url, p / "session-manager-plugin.pkg")
 
         confirm = Confirm.ask("⚠️ Will run installation command. Proceed?")
@@ -142,16 +140,17 @@ def _install_linux() -> None:
             print(f"❌ Architecture {arch} not supported for distribution {distro}")
             raise typer.Exit(1)
 
-        print("📥 Downloading file from URL:", download_url)
-        _download_file(download_url, Path.cwd() / "session-manager-plugin.deb")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            p = Path(temp_dir)
+            _download_file(download_url, p / "session-manager-plugin.deb")
 
-        # Invoke installation command
-        command = "sudo dpkg -i session-manager-plugin.deb"
-        confirm = Confirm.ask(f"⚠️ Will run [bold red]{command}[/bold red]. Proceed?")
-        if not confirm:
-            raise typer.Abort
+            # Invoke installation command
+            command = "sudo dpkg -i session-manager-plugin.deb"
+            confirm = Confirm.ask(f"⚠️ Will run [bold red]{command}[/bold red]. Proceed?")
+            if not confirm:
+                raise typer.Abort
 
-        subprocess.call(command, shell=True)  # noqa: S602
+            subprocess.call(command, cwd=p, shell=True)  # noqa: S602
 
     # Amazon Linux / RHEL
     elif distro in ("amzn", "rhel"):
@@ -193,6 +192,7 @@ def _install_linux() -> None:
 def _download_file(url: str, path: Path) -> None:
     """Download file from URL to path."""
     # https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51
+    print(f"📥 Downloading file from URL ({url}) to {path}.")
     with requests.get(url, stream=True, timeout=10) as response:
         response.raise_for_status()
         total_size = int(response.headers.get("content-length", 0))
