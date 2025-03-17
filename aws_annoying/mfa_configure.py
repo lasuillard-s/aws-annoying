@@ -74,16 +74,13 @@ def configure(  # noqa: PLR0913
 
     # Update MFA profile in AWS credentials
     print(f"✅ Updating MFA profile ({mfa_profile}) to AWS credentials ({aws_credentials})")
-    credentials_ini = configparser.ConfigParser()
-    credentials_ini.read(aws_credentials)
-    section = mfa_profile
-
-    credentials_ini.setdefault(section, {})
-    credentials_ini[section]["aws_access_key_id"] = credentials["AccessKeyId"]
-    credentials_ini[section]["aws_secret_access_key"] = credentials["SecretAccessKey"]
-    credentials_ini[section]["aws_session_token"] = credentials["SessionToken"]
-    with aws_credentials.open("w") as f:
-        credentials_ini.write(f)
+    _update_credentials(
+        aws_credentials,
+        mfa_profile,
+        access_key=credentials["AccessKeyId"],
+        secret_key=credentials["SecretAccessKey"],
+        session_token=credentials["SessionToken"],
+    )
 
     # Persist MFA configuration
     if persist:
@@ -94,6 +91,17 @@ def configure(  # noqa: PLR0913
         mfa_config.save_ini_file(aws_config, _CONFIG_INI_SECTION)
     else:
         print("⚠️ MFA configuration not persisted.")
+
+
+def _update_credentials(path: Path, profile: str, *, access_key: str, secret_key: str, session_token: str) -> None:
+    credentials_ini = configparser.ConfigParser()
+    credentials_ini.read(path)
+    credentials_ini.setdefault(profile, {})
+    credentials_ini[profile]["aws_access_key_id"] = access_key
+    credentials_ini[profile]["aws_secret_access_key"] = secret_key
+    credentials_ini[profile]["aws_session_token"] = session_token
+    with path.open("w") as f:
+        credentials_ini.write(f)
 
 
 class _MfaConfig(BaseModel):
