@@ -13,9 +13,12 @@ from .app import app
 
 _CONFIG_INI_SECTION = "aws-annoying:mfa"
 
+mfa_app = typer.Typer(no_args_is_help=True)
+app.add_typer(mfa_app, name="mfa")
 
-@app.command()
-def configure_mfa(  # noqa: PLR0913
+
+@mfa_app.command()
+def configure(  # noqa: PLR0913
     *,
     mfa_profile: str = typer.Option(
         "mfa",
