@@ -77,7 +77,7 @@ def _install_windows() -> None:
         if not confirm:
             raise typer.Abort
 
-        subprocess.call(["SessionManagerPluginSetup.exe", "/quiet"], cwd=p)  # noqa: S603, S607
+        subprocess.call(["SessionManagerPluginSetup.exe", "/quiet"], cwd=p, shell=True)  # noqa: S602, S607
 
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html
@@ -103,9 +103,9 @@ def _install_macos() -> None:
         if not confirm:
             raise typer.Abort
 
-        subprocess.call(["sudo", "installer", "-pkg", "session-manager-plugin.pkg", "-target", "/"], cwd=p)  # noqa: S603, S607
+        subprocess.call(["sudo", "installer", "-pkg", "session-manager-plugin.pkg", "-target", "/"], cwd=p, shell=True)  # noqa: S602, S607
         Path("/usr/local/bin").mkdir(exist_ok=True)
-        subprocess.call(  # noqa: S603
+        subprocess.call(  # noqa: S602
             [  # noqa: S607
                 "sudo",
                 "ln",
@@ -113,6 +113,7 @@ def _install_macos() -> None:
                 "/usr/local/sessionmanagerplugin/bin/session-manager-plugin",
                 "/usr/local/bin/session-manager-plugin",
             ],
+            shell=True,
             cwd=p,
         )
 
