@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import aws_annoying.ecs_task_definition_lifecycle
 import aws_annoying.load_variables
-import aws_annoying.mfa_configure
+import aws_annoying.mfa
 from aws_annoying.utils.debugger import input_as_args
 
 # App with all commands registered

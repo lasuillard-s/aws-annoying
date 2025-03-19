@@ -10,13 +10,13 @@ from pydantic import BaseModel, ConfigDict
 from rich import print  # noqa: A004
 from rich.prompt import Prompt
 
-from .app import app
+from ._app import mfa_app
 
 _CONFIG_INI_SECTION = "aws-annoying:mfa"
 
 
-@app.command()
-def mfa_configure(  # noqa: PLR0913
+@mfa_app.command()
+def configure(  # noqa: PLR0913
     *,
     mfa_profile: Optional[str] = typer.Option(
         None,
