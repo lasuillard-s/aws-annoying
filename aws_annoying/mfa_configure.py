@@ -18,8 +18,8 @@ _CONFIG_INI_SECTION = "aws-annoying:mfa"
 @app.command()
 def mfa_configure(  # noqa: PLR0913
     *,
-    mfa_profile: str = typer.Option(
-        "mfa",
+    mfa_profile: Optional[str] = typer.Option(
+        None,
         help="The MFA profile to configure.",
     ),
     mfa_source_profile: Optional[str] = typer.Option(
@@ -63,12 +63,12 @@ def mfa_configure(  # noqa: PLR0913
         mfa_profile
         or mfa_config.mfa_profile
         # _
-        or Prompt.ask("👤 Enter name of MFA profile to configure")
+        or Prompt.ask("👤 Enter name of MFA profile to configure", default="mfa")
     )
     mfa_source_profile = (
         mfa_source_profile
         or mfa_config.mfa_source_profile
-        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials")
+        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials", default="default")
     )
     mfa_serial_number = (
         mfa_serial_number
@@ -96,7 +96,7 @@ def mfa_configure(  # noqa: PLR0913
     print(f"✅ Updating MFA profile ([bold]{mfa_profile}[/bold]) to AWS credentials ({aws_credentials})")
     _update_credentials(
         aws_credentials,
-        mfa_profile,
+        mfa_profile,  # type: ignore[arg-type]
         access_key=credentials["AccessKeyId"],
         secret_key=credentials["SecretAccessKey"],
         session_token=credentials["SessionToken"],
