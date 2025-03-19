@@ -110,7 +110,7 @@ def _install_macos() -> None:
 
         # Symlink
         command = "sudo ln -s /usr/local/sessionmanagerplugin/bin/session-manager-plugin /usr/local/bin/session-manager-plugin"  # noqa: E501
-        print(f"🔗 Creating symlink [bold yellow]{command}[/bold yellow]")
+        print(f"🔗 Running [bold yellow]{command}[/bold yellow] to create symlink")
         Path("/usr/local/bin").mkdir(exist_ok=True)
         subprocess.call(command, shell=True, cwd=p)  # noqa: S602
 
