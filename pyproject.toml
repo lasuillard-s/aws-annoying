@@ -93,12 +93,16 @@ addopts = [
   "--show-capture=no",
   "--junitxml=junit.xml",
   "--allow-snapshot-deletion",
+  "-m",
+  "not windows and not macos",
 ]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning::"]
 markers = [
-  "unit: mark test as unit test",
-  "integration: mark test as integration test",
+  "unit: Isolated unit tests",
+  "integration: Integration tests",
+  "macos: macOS specific test",
+  "windows: Windows specific test",
 ]
 
 [tool.coverage.run]
