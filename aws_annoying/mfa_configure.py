@@ -22,6 +22,10 @@ def mfa_configure(  # noqa: PLR0913
         "mfa",
         help="The MFA profile to configure.",
     ),
+    mfa_source_profile: Optional[str] = typer.Option(
+        None,
+        help="The AWS profile to use to retrieve MFA credentials.",
+    ),
     mfa_serial_number: Optional[str] = typer.Option(
         None,
         help="The MFA device serial number. It is required if not persisted in configuration.",
@@ -31,10 +35,6 @@ def mfa_configure(  # noqa: PLR0913
         None,
         help="The MFA token code.",
         show_default=False,
-    ),
-    mfa_source_profile: Optional[str] = typer.Option(
-        None,
-        help="The AWS profile used to retrieve the MFA credentials.",
     ),
     aws_credentials: Path = typer.Option(  # noqa: B008
         "~/.aws/credentials",
@@ -59,22 +59,35 @@ def mfa_configure(  # noqa: PLR0913
     if exists:
         print(f"⚙️ Loaded MFA configuration from AWS config ({aws_config}).")
 
-    mfa_config.mfa_serial_number = (
-        mfa_serial_number or mfa_config.mfa_serial_number or Prompt.ask("🔒 Enter MFA serial number")
+    mfa_profile = (
+        mfa_profile
+        or mfa_config.mfa_profile
+        # _
+        or Prompt.ask("👤 Enter name of MFA profile to configure")
     )
-    mfa_config.mfa_source_profile = (
+    mfa_source_profile = (
         mfa_source_profile
         or mfa_config.mfa_source_profile
-        or Prompt.ask("👤 Specify AWS profile to retrieve MFA credentials")
+        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials")
     )
-    mfa_token_code = mfa_token_code or Prompt.ask("🔑 Enter MFA token code")
+    mfa_serial_number = (
+        mfa_serial_number
+        or mfa_config.mfa_serial_number
+        # _
+        or Prompt.ask("🔒 Enter MFA serial number")
+    )
+    mfa_token_code = (
+        mfa_token_code
+        # _
+        or Prompt.ask("🔑 Enter MFA token code")
+    )
 
     # Get credentials
-    print(f"💬 Retrieving MFA credentials using profile [bold]{mfa_config.mfa_source_profile}[/bold]")
-    session = boto3.session.Session(profile_name=mfa_config.mfa_source_profile)
+    print(f"💬 Retrieving MFA credentials using profile [bold]{mfa_source_profile}[/bold]")
+    session = boto3.session.Session(profile_name=mfa_source_profile)
     sts = session.client("sts")
     response = sts.get_session_token(
-        SerialNumber=mfa_config.mfa_serial_number,
+        SerialNumber=mfa_serial_number,
         TokenCode=mfa_token_code,
     )
     credentials = response["Credentials"]
@@ -95,6 +108,9 @@ def mfa_configure(  # noqa: PLR0913
             f"✅ Persisting MFA configuration in AWS config ({aws_config}),"
             f" in [bold]{_CONFIG_INI_SECTION}[/bold] section.",
         )
+        mfa_config.mfa_profile = mfa_profile
+        mfa_config.mfa_source_profile = mfa_source_profile
+        mfa_config.mfa_serial_number = mfa_serial_number
         mfa_config.save_ini_file(aws_config, _CONFIG_INI_SECTION)
     else:
         print("⚠️ MFA configuration not persisted.")
@@ -103,8 +119,9 @@ def mfa_configure(  # noqa: PLR0913
 class _MfaConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    mfa_serial_number: Optional[str] = None
+    mfa_profile: Optional[str] = None
     mfa_source_profile: Optional[str] = None
+    mfa_serial_number: Optional[str] = None
 
     def save_ini_file(self, path: Path, section_key: str) -> None:
         """Save configuration to an AWS config file."""
