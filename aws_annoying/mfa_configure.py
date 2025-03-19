@@ -32,6 +32,10 @@ def mfa_configure(  # noqa: PLR0913
         help="The MFA token code.",
         show_default=False,
     ),
+    mfa_source_profile: Optional[str] = typer.Option(
+        None,
+        help="The AWS profile used to retrieve the MFA credentials.",
+    ),
     aws_credentials: Path = typer.Option(  # noqa: B008
         "~/.aws/credentials",
         help="The path to the AWS credentials file.",
@@ -58,11 +62,17 @@ def mfa_configure(  # noqa: PLR0913
     mfa_config.mfa_serial_number = (
         mfa_serial_number or mfa_config.mfa_serial_number or Prompt.ask("🔒 Enter MFA serial number")
     )
+    mfa_config.mfa_source_profile = (
+        mfa_source_profile
+        or mfa_config.mfa_source_profile
+        or Prompt.ask("👤 Specify AWS profile to retrieve MFA credentials")
+    )
     mfa_token_code = mfa_token_code or Prompt.ask("🔑 Enter MFA token code")
 
     # Get credentials
-    print("💬 Retrieving MFA credentials")
-    sts = boto3.client("sts")
+    print(f"💬 Retrieving MFA credentials using profile [bold]{mfa_config.mfa_source_profile}[/bold]")
+    session = boto3.session.Session(profile_name=mfa_config.mfa_source_profile)
+    sts = session.client("sts")
     response = sts.get_session_token(
         SerialNumber=mfa_config.mfa_serial_number,
         TokenCode=mfa_token_code,
@@ -70,7 +80,7 @@ def mfa_configure(  # noqa: PLR0913
     credentials = response["Credentials"]
 
     # Update MFA profile in AWS credentials
-    print(f"✅ Updating MFA profile ({mfa_profile}) to AWS credentials ({aws_credentials})")
+    print(f"✅ Updating MFA profile ([bold]{mfa_profile}[/bold]) to AWS credentials ({aws_credentials})")
     _update_credentials(
         aws_credentials,
         mfa_profile,
@@ -90,28 +100,18 @@ def mfa_configure(  # noqa: PLR0913
         print("⚠️ MFA configuration not persisted.")
 
 
-def _update_credentials(path: Path, profile: str, *, access_key: str, secret_key: str, session_token: str) -> None:
-    credentials_ini = configparser.ConfigParser()
-    credentials_ini.read(path)
-    credentials_ini.setdefault(profile, {})
-    credentials_ini[profile]["aws_access_key_id"] = access_key
-    credentials_ini[profile]["aws_secret_access_key"] = secret_key
-    credentials_ini[profile]["aws_session_token"] = session_token
-    with path.open("w") as f:
-        credentials_ini.write(f)
-
-
 class _MfaConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     mfa_serial_number: Optional[str] = None
+    mfa_source_profile: Optional[str] = None
 
     def save_ini_file(self, path: Path, section_key: str) -> None:
         """Save configuration to an AWS config file."""
         config_ini = configparser.ConfigParser()
         config_ini.read(path)
         config_ini.setdefault(section_key, {})
-        for k, v in self.model_dump().items():
+        for k, v in self.model_dump(exclude_none=True).items():
             config_ini[section_key][k] = v
 
         with path.open("w") as f:
@@ -127,3 +127,14 @@ class _MfaConfig(BaseModel):
             return cls.model_validate(section), True
 
         return cls(), False
+
+
+def _update_credentials(path: Path, profile: str, *, access_key: str, secret_key: str, session_token: str) -> None:
+    credentials_ini = configparser.ConfigParser()
+    credentials_ini.read(path)
+    credentials_ini.setdefault(profile, {})
+    credentials_ini[profile]["aws_access_key_id"] = access_key
+    credentials_ini[profile]["aws_secret_access_key"] = secret_key
+    credentials_ini[profile]["aws_session_token"] = session_token
+    with path.open("w") as f:
+        credentials_ini.write(f)
