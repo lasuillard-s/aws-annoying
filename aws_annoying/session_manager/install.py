@@ -73,11 +73,12 @@ def _install_windows() -> None:
         p = Path(temp_dir)
         _download_file(download_url, p / "SessionManagerPluginSetup.exe")
 
-        confirm = Confirm.ask("⚠️ Will run installation command. Proceed?")
+        command = "SessionManagerPluginSetup.exe /quiet"
+        confirm = Confirm.ask(f"⚠️ Will run [bold red]{command}[/bold red]. Proceed?")
         if not confirm:
             raise typer.Abort
 
-        subprocess.call(["SessionManagerPluginSetup.exe", "/quiet"], cwd=p, shell=True)  # noqa: S602, S607
+        subprocess.call(command, cwd=p, shell=True)  # noqa: S602
 
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html
@@ -99,23 +100,19 @@ def _install_macos() -> None:
         p = Path(temp_dir)
         _download_file(download_url, p / "session-manager-plugin.pkg")
 
-        confirm = Confirm.ask("⚠️ Will run installation command. Proceed?")
+        # Run installer
+        command = "sudo installer -pkg ./session-manager-plugin.pkg -target /"
+        confirm = Confirm.ask(f"⚠️ Will run [bold red]{command}[/bold red]. Proceed?")
         if not confirm:
             raise typer.Abort
 
-        subprocess.call(["sudo", "installer", "-pkg", "session-manager-plugin.pkg", "-target", "/"], cwd=p, shell=True)  # noqa: S602, S607
+        subprocess.call(command, cwd=p, shell=True)  # noqa: S602
+
+        # Symlink
+        command = "sudo ln -s /usr/local/sessionmanagerplugin/bin/session-manager-plugin /usr/local/bin/session-manager-plugin"  # noqa: E501
+        print(f"🔗 Creating symlink [bold yellow]{command}[/bold yellow]")
         Path("/usr/local/bin").mkdir(exist_ok=True)
-        subprocess.call(  # noqa: S602
-            [  # noqa: S607
-                "sudo",
-                "ln",
-                "-s",
-                "/usr/local/sessionmanagerplugin/bin/session-manager-plugin",
-                "/usr/local/bin/session-manager-plugin",
-            ],
-            shell=True,
-            cwd=p,
-        )
+        subprocess.call(command, shell=True, cwd=p)  # noqa: S602
 
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-linux-overview.html
