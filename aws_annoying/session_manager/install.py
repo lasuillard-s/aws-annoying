@@ -43,7 +43,9 @@ def install(
 
     # Verify installation
     binary_path, version, is_installed = _verify_installation()
-    if not is_installed:
+    if is_installed:
+        print(f"✅ Session Manager plugin successfully installed at {binary_path} (version: {version})")
+    else:
         print("❌ Installation failed. Session Manager plugin not found.")
         raise typer.Exit(1)
 
