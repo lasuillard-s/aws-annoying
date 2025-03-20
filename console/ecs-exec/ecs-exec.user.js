@@ -7,7 +7,7 @@
 // @source       https://raw.githubusercontent.com/lasuillard/aws-annoying/refs/heads/main/console/ecs-exec/ecs-exec.user.js
 // @match        https://*.console.aws.amazon.com/ecs/v2/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
-// @grant        none
+// @grant        GM_log
 // ==/UserScript==
 
 (function () {
@@ -50,17 +50,21 @@
 
   // Add click listener to the container name to open new page for Session Manager web
   function addListenerToTable(table, taskInfo) {
+    GM_log("Adding listener to table...");
     if (!table) {
+      GM_log("Table is empty, skipping...");
       return null;
     }
     for (const row of table.rows) {
       const targetElement = row["Container name"].children[0];
+      GM_log(`Adding click event listener to container: ${targetElement.textContent}`);
 
       // Style it like a link
       targetElement.style.textDecoration = "underline";
       targetElement.style.cursor = "pointer";
 
       // Attach on-click event listener to open the SSM Session Manager in new page
+      // NOTE: This event listener works OK for list pages because the container table is updated in-place
       targetElement.onclick = function () {
         const taskInfo = getTaskInfo();
         const containerRuntimeId = row["Container runtime ID"].textContent;
@@ -69,24 +73,15 @@
         //       We can check the container's status to be sure, but leaving it to future improvement
         //       to not make the script too complex, at least for now.
         if (!containerRuntimeId) {
+          GM_log("Container runtime ID is empty, skipping...");
           return;
         }
         const ssmInstanceId = `ecs:${taskInfo.clusterName}_${taskInfo.taskId}_${containerRuntimeId}`;
         const ssmLink = `https://${taskInfo.region}.console.aws.amazon.com/systems-manager/session-manager/${ssmInstanceId}`;
+        GM_log(`Opening SSM Session Manager link: ${ssmLink}`);
         window.open(ssmLink, "_blank");
       }
     }
-  }
-
-  // Table may not be available immediately; wait for it appear and run the handler
-  function waitForTableAndRun(handler) {
-    const waitForTable = setInterval(() => {
-      const tables = document.querySelectorAll("table");
-      if (tables.length > 0) {
-        clearInterval(waitForTable);
-        handler();
-      }
-    }, 1_000);
   }
 
   // Task context
@@ -94,13 +89,19 @@
   // Get task info based on the current page
   function getTaskInfo() {
     const currentPage = new URL(location.href);
+    let taskInfo = null;
     if (currentPage.pathname.match(/\/ecs\/v2\/clusters\/.*\/tasks\/.*\/configuration.*/)) {
-      return getTaskInfoForDetailPage();
+      GM_log("Getting task info from detail page");
+      taskInfo = getTaskInfoForDetailPage();
+    } else if (currentPage.pathname.match(/\/ecs\/v2\/clusters\/.*\/tasks(?!.*(configuration)).*/)) {
+      GM_log("Getting task info from list page");
+      taskInfo = getTaskInfoForListPage();
+    } else {
+      GM_log(`There is no task info available for this page: ${currentPage.href}`);
+      taskInfo = null;
     }
-    if (currentPage.pathname.match(/\/ecs\/v2\/clusters\/.*\/tasks(?!.*(configuration)).*/)) {
-      return getTaskInfoForListPage();
-    }
-    return null;
+    GM_log(`Task info retrieved from page: ${JSON.stringify(taskInfo)}`);
+    return taskInfo;
   }
 
   // Get task info from the detail page
@@ -142,14 +143,32 @@
     addListenerToTable(table, taskInfo);
   }
 
+  // Table may not be available immediately; wait for it appear and run the handler
+  function waitForTableAndRun(handler) {
+    GM_log("Waiting for table to appear...");
+    const waitForTable = setInterval(() => {
+      GM_log("Checking for table...");
+      const tables = document.querySelectorAll("table");
+      if (tables.length > 0) {
+        GM_log("Table found! Running handler...");
+        clearInterval(waitForTable);
+        handler();
+      }
+    }, 1_000);
+  }
+
   window.addEventListener("load", function () {
+    GM_log("Page loaded");
+
     // Periodically check current URL; the site's internal navigation doesn't trigger script when needed
     let previousPage = null;
 
     // TODO(lasuillard): Could use `setTimeout` instead of `setInterval` for fine-tuned behavior
     //                   such as retry backoff, maximum retries, ...
     // See also: https://stackoverflow.com/questions/1280263/changing-the-interval-of-setinterval-while-its-running
+    GM_log("Start checking for page changes...");
     setInterval(() => {
+      GM_log("Checking for page change...");
       const currentPage = new URL(location.href);
 
       // If the page is the same as the previous one, do nothing
@@ -158,6 +177,7 @@
       }
 
       // If the page changed...
+      GM_log(`Page changed: ${previousPage?.href} => ${currentPage.href}`);
       previousPage = currentPage;
       waitForTableAndRun(handlePage);
     }, 1_000);
