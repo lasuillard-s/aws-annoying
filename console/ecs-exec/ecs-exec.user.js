@@ -64,6 +64,13 @@
       targetElement.onclick = function () {
         const taskInfo = getTaskInfo();
         const containerRuntimeId = row["Container runtime ID"].textContent;
+        // Task in pending state could include containers not started yet
+        // NOTE: The container could have exited even the runtime ID is not empty.
+        //       We can check the container's status to be sure, but leaving it to future improvement
+        //       to not make the script too complex, at least for now.
+        if (!containerRuntimeId) {
+          return;
+        }
         const ssmInstanceId = `ecs:${taskInfo.clusterName}_${taskInfo.taskId}_${containerRuntimeId}`;
         const ssmLink = `https://${taskInfo.region}.console.aws.amazon.com/systems-manager/session-manager/${ssmInstanceId}`;
         window.open(ssmLink, "_blank");
