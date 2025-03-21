@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWS ECS Exec
 // @namespace    mailto:lasuillard@gmail.com
-// @version      2025.03.20
+// @version      2025.03.21
 // @description  Add link to AWS SSM Session Manager for ECS container
 // @author       lasuillard
 // @source       https://raw.githubusercontent.com/lasuillard/aws-annoying/refs/heads/main/console/ecs-exec/ecs-exec.user.js
@@ -26,7 +26,7 @@
       const item = {};
       for (const [idx, column] of columns.entries()) {
         let colName = headerNames[idx];
-        item[colName] = column;  // Keep the HTML element for later use
+        item[colName] = column; // Keep the HTML element for later use
       }
       result.push(item);
     }
