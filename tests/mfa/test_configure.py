@@ -70,7 +70,7 @@ def test_basic(snapshot: Snapshot, tmp_path: Path, skip_persist: bool) -> None: 
     if skip_persist:
         assert not aws_config.exists()
     else:
-        snapshot.assert_match(aws_config.read_text(), "aws_config.txt")
+        snapshot.assert_match(aws_config.read_text(), "aws_config.ini")
 
 
 def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
@@ -113,4 +113,4 @@ def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
         "aws_session_token": mock.ANY,
     }
 
-    snapshot.assert_match(aws_config.read_text(), "aws_config.txt")
+    snapshot.assert_match(aws_config.read_text(), "aws_config.ini")
