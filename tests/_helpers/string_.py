@@ -7,6 +7,6 @@ def normalize_console_output(output: str) -> str:
     output = output.strip()
 
     # Remove trailing spaces for each line
-    output = re.sub(r"[ ]*\n", "\n", output)
+    output = re.sub(r"[ ]+\n", " ", output)
 
     return output  # noqa: RET504
