@@ -74,7 +74,7 @@ def test_basic(snapshot: Snapshot, tmp_path: Path, skip_persist: bool) -> None: 
 
 
 def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
-    """The command should deregister the oldest task definitions."""
+    """The command should load existing config if arguments not given."""
     # Arrange
     mfa_profile = "mfa"
     aws_credentials = tmp_path / "credentials"
