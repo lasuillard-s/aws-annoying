@@ -16,6 +16,18 @@ if TYPE_CHECKING:
 runner = CliRunner()
 
 
+@pytest.fixture
+def set_terminal_width() -> int:
+    """Set console width."""
+    return 200
+
+
+@pytest.fixture(autouse=True)
+def patch_terminal_width(monkeypatch: pytest.MonkeyPatch, set_terminal_width: int) -> None:
+    """Patch the console width."""
+    monkeypatch.setenv("COLUMNS", str(set_terminal_width))
+
+
 @pytest.fixture(autouse=True)
 def aws_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     """Mock AWS Credentials for Moto."""

@@ -29,6 +29,12 @@ pytestmark = [
 ]
 
 
+@pytest.fixture
+def set_terminal_width() -> int:
+    """Use small terminal to simplify test assertions (due to  secret random suffix)."""
+    return 80
+
+
 def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]:
     """Set up AWS resources."""
     _variables: dict[Literal["secrets", "parameters"], dict[str, Any]] = {
