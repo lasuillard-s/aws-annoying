@@ -1,7 +1,7 @@
 [project]
 name = "aws-annoying"
 description = "Utils to handle some annoying AWS tasks."
-version = "0.1.0"
+version = "0.2.0"
 authors = [{ name = "Yuchan Lee", email = "lasuillard@gmail.com" }]
 readme = "README.md"
 license = "MIT"
@@ -11,6 +11,7 @@ dependencies = [
   "requests>=2.32.3",
   "tqdm>=4.67.1",
   "typer>=0.15.1",
+  "pydantic>=2.10.6",
 ]
 
 [project.scripts]
@@ -18,7 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "boto3-stubs[ecs,secretsmanager,ssm]>=1.37.1",
+  "boto3-stubs[ecs,secretsmanager,ssm,sts]>=1.37.1",
   "mypy~=1.15.0",
   "ruff~=0.9.9",
   "types-requests>=2.31.0.6",
