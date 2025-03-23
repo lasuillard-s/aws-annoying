@@ -40,12 +40,14 @@ source = { editable = "." }
 dependencies = [
     { name = "boto3" },
     { name = "pydantic" },
+    { name = "requests" },
+    { name = "tqdm" },
     { name = "typer" },
 ]
 
 [package.optional-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["ecs", "secretsmanager", "ssm", "sts"] },
+    { name = "boto3-stubs", extra = ["ec2", "ecs", "secretsmanager", "ssm", "sts"] },
     { name = "mypy" },
     { name = "ruff" },
     { name = "types-requests", version = "2.31.0.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -66,7 +68,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.37.1" },
-    { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts"], marker = "extra == 'dev'", specifier = ">=1.37.1" },
+    { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts", "ec2"], marker = "extra == 'dev'", specifier = ">=1.37.1" },
     { name = "coverage", marker = "extra == 'test'", specifier = "~=7.6.0" },
     { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], marker = "extra == 'test'", specifier = "~=5.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "~=1.15.0" },
@@ -152,6 +154,9 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+ec2 = [
+    { name = "mypy-boto3-ec2" },
+]
 ecs = [
     { name = "mypy-boto3-ecs" },
 ]
@@ -940,6 +945,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c1/72/965bd9ee89540c79a25778cc080c7e6ef40aa1eeac4d52cec7eae6eb5228/mypy-1.15.0-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:1fbb8da62dc352133d7d7ca90ed2fb0e9d42bb1a32724c287d3c76c58cbaa9c2", size = 12541924 },
     { url = "https://files.pythonhosted.org/packages/46/d0/f41645c2eb263e6c77ada7d76f894c580c9ddb20d77f0c24d34273a4dab2/mypy-1.15.0-cp39-cp39-win_amd64.whl", hash = "sha256:d10d994b41fb3497719bbf866f227b3489048ea4bbbb5015357db306249f7980", size = 9271176 },
     { url = "https://files.pythonhosted.org/packages/09/4e/a7d65c7322c510de2c409ff3828b03354a7c43f5a8ed458a7a131b41c7b9/mypy-1.15.0-py3-none-any.whl", hash = "sha256:5469affef548bd1895d86d3bf10ce2b44e33d86923c29e4d675b3e323437ea3e", size = 2221777 },
+]
+
+[[package]]
+name = "mypy-boto3-ec2"
+version = "1.37.16"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3c/b9/0bfe7a24849d9cf94f550da73ebc5997c91f665b3b0360bc5abb7fdd3a87/mypy_boto3_ec2-1.37.16.tar.gz", hash = "sha256:d38bf0cd34cad20137c96bce55b5d45c55e28dfe24ebfa1265747ab6ac5f3775", size = 387790 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f7/da/d89cc7100c2b71708669d4fb6f51861058befcd23dc7a6e809adb35e316e/mypy_boto3_ec2-1.37.16-py3-none-any.whl", hash = "sha256:5b291c480c106286c508ff9712d19fe8ec0e8ff88517c63e489e44a6b16fc0f2", size = 377561 },
 ]
 
 [[package]]
