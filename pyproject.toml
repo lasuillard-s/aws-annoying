@@ -29,6 +29,11 @@ test = [
   "testcontainers[localstack]>=4.9.2",
 ]
 
+[project.urls]
+Homepage = "https://github.com/lasuillard/aws-annoying"
+Repository = "https://github.com/lasuillard/aws-annoying.git"
+Issues = "https://github.com/lasuillard/aws-annoying/issues"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
