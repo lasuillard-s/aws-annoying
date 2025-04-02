@@ -262,7 +262,7 @@ def test_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     argnames="arn",
     argvalues=[
         # TODO(lasuillard): Moto Secrets Manager does not respond with error for non-existing resources
-        # "arn:aws:secretsmanager:us-east-1:123456789012:secret:unknown-secret", # noqa: ERA001;
+        # "arn:aws:secretsmanager:us-east-1:123456789012:secret:unknown-secret", # noqa: ERA001
         "arn:aws:ssm:us-east-1:123456789012:parameter/unknown-parameter",
     ],
     ids=[
