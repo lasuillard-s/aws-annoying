@@ -63,12 +63,12 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "boto3", specifier = "==1.37.4" },
+    { name = "boto3", specifier = ">=1.37.1" },
     { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts"], marker = "extra == 'dev'", specifier = ">=1.37.1" },
     { name = "coverage", marker = "extra == 'test'", specifier = ">=7.6,<7.9" },
     { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], marker = "extra == 'test'", specifier = "~=5.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "~=1.15.0" },
-    { name = "pydantic", specifier = "==2.10.6" },
+    { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pytest", marker = "extra == 'test'", specifier = "~=8.3.2" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = "~=6.0.0" },
     { name = "pytest-env", marker = "extra == 'test'", specifier = "~=1.1.1" },
@@ -77,7 +77,7 @@ requires-dist = [
     { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=3.6.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.9,<0.12.0" },
     { name = "testcontainers", extras = ["localstack"], marker = "extra == 'test'", specifier = ">=4.9.2" },
-    { name = "typer", specifier = "==0.15.2" },
+    { name = "typer", specifier = ">=0.15.1" },
 ]
 provides-extras = ["dev", "test"]
 
