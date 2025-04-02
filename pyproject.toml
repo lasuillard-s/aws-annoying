@@ -18,7 +18,7 @@ dev = [
   "ruff~=0.9.9",
 ]
 test = [
-  "coverage~=7.6.0",
+  "coverage>=7.6,<7.9",
   "moto[secretsmanager,server,ssm,ecs]~=5.1.1",
   "pytest~=8.3.2",
   "pytest-cov~=6.0.0",
