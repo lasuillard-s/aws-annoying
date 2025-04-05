@@ -67,7 +67,7 @@ def ecs_task_definition_lifecycle(
         _, family_revision = arn.split(":task-definition/")
         print(f"✅ Deregistered task definition [yellow]{family_revision!r}[/yellow]")
 
-    if delete:
+    if delete and expired_taskdef_arns:
         # Delete the expired task definitions in chunks due to API limitation
         print(f"✅ Deleting {len(expired_taskdef_arns)} task definitions in chunks of size {_DELETE_CHUNK_SIZE}.")
         for idx, chunk in enumerate(_chunker(expired_taskdef_arns, _DELETE_CHUNK_SIZE)):
