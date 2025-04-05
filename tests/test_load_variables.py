@@ -29,6 +29,12 @@ pytestmark = [
 ]
 
 
+@pytest.fixture
+def set_terminal_width() -> int:
+    """Use small terminal to simplify test assertions (due to secret random suffix)."""
+    return 80
+
+
 def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]:
     """Set up AWS resources."""
     _variables: dict[Literal["secrets", "parameters"], dict[str, Any]] = {
@@ -256,7 +262,7 @@ def test_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     argnames="arn",
     argvalues=[
         # TODO(lasuillard): Moto Secrets Manager does not respond with error for non-existing resources
-        # "arn:aws:secretsmanager:us-east-1:123456789012:secret:unknown-secret", # noqa: ERA001;
+        # "arn:aws:secretsmanager:us-east-1:123456789012:secret:unknown-secret", # noqa: ERA001
         "arn:aws:ssm:us-east-1:123456789012:parameter/unknown-parameter",
     ],
     ids=[

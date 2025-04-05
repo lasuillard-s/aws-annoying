@@ -9,7 +9,8 @@
   "autoDocstring.docstringFormat": "google-notypes",
   "cSpell.words": [
     "Deregistering",
-    "localstack"
+    "localstack",
+    "Tampermonkey"
   ],
   "editor.formatOnSave": true,
   "files.eol": "\n",

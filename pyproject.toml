@@ -1,24 +1,24 @@
 [project]
 name = "aws-annoying"
 description = "Utils to handle some annoying AWS tasks."
-version = "0.1.0"
+version = "0.2.1"
 authors = [{ name = "Yuchan Lee", email = "lasuillard@gmail.com" }]
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9, <4.0"
-dependencies = ["boto3>=1.37.1", "typer>=0.15.1"]
+dependencies = ["boto3>=1.37.1", "pydantic>=2.10.6", "typer>=0.15.1"]
 
 [project.scripts]
 "aws-annoying" = "aws_annoying.main:entrypoint"
 
 [project.optional-dependencies]
 dev = [
-  "boto3-stubs[ecs,secretsmanager,ssm]>=1.37.1",
+  "boto3-stubs[ecs,secretsmanager,ssm,sts]>=1.37.1",
   "mypy~=1.15.0",
-  "ruff~=0.9.9",
+  "ruff>=0.9.9,<0.12.0",
 ]
 test = [
-  "coverage~=7.6.0",
+  "coverage>=7.6,<7.9",
   "moto[secretsmanager,server,ssm,ecs]~=5.1.1",
   "pytest~=8.3.2",
   "pytest-cov~=6.0.0",
@@ -28,6 +28,11 @@ test = [
   "pytest-xdist>=3.6.1",
   "testcontainers[localstack]>=4.9.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/lasuillard/aws-annoying"
+Repository = "https://github.com/lasuillard/aws-annoying.git"
+Issues = "https://github.com/lasuillard/aws-annoying/issues"
 
 [build-system]
 requires = ["hatchling"]

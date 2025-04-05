@@ -6,5 +6,4 @@
 │ 2     │ arn:aws:ssm:us-east-1:123456789012:parameter/unknown-parameter       │
 └───────┴──────────────────────────────────────────────────────────────────────┘
 🔍 Retrieving variables from AWS resources...
-❌ Failed to load the variables: Failed to retrieve parameters:
-['unknown-parameter']
+❌ Failed to load the variables: Failed to retrieve parameters: ['unknown-parameter']
