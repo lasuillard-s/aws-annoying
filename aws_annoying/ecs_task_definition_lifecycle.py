@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import boto3
 import typer
 from rich import print  # noqa: A004
 
 from .app import app
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+_DELETE_CHUNK_SIZE = 10
 
 
 @app.command()
@@ -61,5 +68,14 @@ def ecs_task_definition_lifecycle(
         print(f"✅ Deregistered task definition [yellow]{family_revision!r}[/yellow]")
 
     if delete:
-        ecs.delete_task_definitions(taskDefinitions=expired_taskdef_arns)
-        print(f"✅ Deleted {len(expired_taskdef_arns)} task definitions.")
+        # Delete the expired task definitions in chunks due to API limitation
+        print(f"✅ Deleting {len(expired_taskdef_arns)} task definitions in chunks of size {_DELETE_CHUNK_SIZE}.")
+        for idx, chunk in enumerate(_chunker(expired_taskdef_arns, _DELETE_CHUNK_SIZE)):
+            ecs.delete_task_definitions(taskDefinitions=chunk)
+            print(f"✅ Deleted {len(chunk)} task definitions in {idx}-th batch.")
+
+
+def _chunker(sequence: list, size: int) -> Iterator[list]:
+    """Yield successive chunks of a given size from the sequence."""
+    for i in range(0, len(sequence), size):
+        yield sequence[i : i + size]
