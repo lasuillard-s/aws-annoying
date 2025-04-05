@@ -72,7 +72,9 @@ def ecs_task_definition_lifecycle(
         # Delete the expired task definitions in chunks due to API limitation
         print(f"⚠️ Deleting {len(expired_taskdef_arns)} task definitions in chunks of size {_DELETE_CHUNK_SIZE}...")
         for idx, chunk in enumerate(_chunker(expired_taskdef_arns, _DELETE_CHUNK_SIZE)):
-            ecs.delete_task_definitions(taskDefinitions=chunk)
+            if not dry_run:
+                ecs.delete_task_definitions(taskDefinitions=chunk)
+
             print(f"✅ Deleted {len(chunk)} task definitions in {idx}-th batch.")
 
 
