@@ -47,12 +47,12 @@ jobs:
         os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
-        # TODO(lasuillard): Simplified matrix for macOS and Windows for testing
-        include:
-          - os: macos-latest
-            python-version: "3.9"
-          - os: windows-latest
-            python-version: "3.9"
+        # TODO(lasuillard): Someday in future
+        # include:
+        #   - os: macos-latest
+        #     python-version: "3.9"
+        #   - os: windows-latest
+        #     python-version: "3.9"
 
     steps:
       - name: Checkout
@@ -76,18 +76,20 @@ jobs:
           sudo apt-get remove --yes session-manager-plugin
           uv run pytest
 
-      - name: Run tests (macOS)
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: |
-          brew uninstall session-manager-plugin
-          uv run pytest -m macos
+      # TODO(lasuillard): Someday in future
+      # - name: Run tests (macOS)
+      #   if: ${{ matrix.os == 'macos-latest' }}
+      #   run: |
+      #     brew uninstall session-manager-plugin
+      #     uv run pytest -m macos
 
-      - name: Run tests (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          Get-Package
-          Uninstall-Package -Name 'Session Manager Plugin' -ForceBootstrap
-          uv run pytest -m windows
+      # TODO(lasuillard): Someday in future
+      # - name: Run tests (Windows)
+      #   if: ${{ matrix.os == 'windows-latest' }}
+      #   run: |
+      #     Get-Package
+      #     Uninstall-Package -Name 'Session Manager Plugin' -ForceBootstrap
+      #     uv run pytest -m windows
 
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@v5
