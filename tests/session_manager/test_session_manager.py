@@ -15,30 +15,26 @@ sentinel = object()
 @pytest.mark.macos
 def test_macos_session_manager_install() -> None:
     # Arrange
-    # ...
+    session_manager = SessionManager(downloader=DummyDownloader())
+    assert session_manager.verify_installation() == (False, None, None)
 
     # Act
     runner.invoke(app, ["session-manager", "install"])
 
     # Assert
-    session_manager = SessionManager(downloader=DummyDownloader())
     is_installed, binary_path, version = session_manager.verify_installation()
-    assert is_installed is sentinel, (is_installed, binary_path, version)
-    assert binary_path is sentinel
-    assert version is sentinel
+    assert session_manager.verify_installation() == (False, None, None)
 
 
 @pytest.mark.windows
 def test_windows_session_manager_install() -> None:
     # Arrange
-    # ...
+    session_manager = SessionManager(downloader=DummyDownloader())
+    assert session_manager.verify_installation() == (False, None, None)
 
     # Act
     runner.invoke(app, ["session-manager", "install"])
 
     # Assert
-    session_manager = SessionManager(downloader=DummyDownloader())
     is_installed, binary_path, version = session_manager.verify_installation()
-    assert is_installed is sentinel, (is_installed, binary_path, version)
-    assert binary_path is sentinel
-    assert version is sentinel
+    assert session_manager.verify_installation() == (False, None, None)
