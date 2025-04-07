@@ -79,7 +79,6 @@ class SessionManager:
             root: Whether to run the installation as root. If `None`, will check if the current user is root.
         """
         os = os or platform.system()
-        linux_distribution = linux_distribution or _detect_linux_distribution()
         arch = arch or platform.machine()
         root = root or is_root()
 
@@ -88,6 +87,7 @@ class SessionManager:
         elif os == "Darwin":
             self._install_macos(arch=arch, root=root)
         elif os == "Linux":
+            linux_distribution = linux_distribution or _detect_linux_distribution()
             self._install_linux(linux_distribution=linux_distribution, arch=arch, root=root)
         else:
             msg = f"Unsupported operating system: {os}"
