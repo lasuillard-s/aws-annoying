@@ -85,6 +85,7 @@ jobs:
       - name: Run tests (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
+          Get-Package
           Uninstall-Package -Name 'Session Manager Plugin' -ForceBootstrap
           uv run pytest -m windows
 
