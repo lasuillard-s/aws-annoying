@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 
 def command_as_root(command: list[str], *, root: bool | None = None) -> list[str]:
@@ -15,3 +16,12 @@ def command_as_root(command: list[str], *, root: bool | None = None) -> list[str
 def is_root() -> bool:
     """Check if the current user is root."""
     return os.geteuid() == 0
+
+
+def os_release() -> dict[str, str]:
+    """Parse `/etc/os-release` file into a dictionary."""
+    content = Path("/etc/os-release").read_text()
+    return {
+        key.strip('"'): value.strip('"')
+        for key, value in (line.split("=", 1) for line in content.splitlines() if "=" in line)
+    }

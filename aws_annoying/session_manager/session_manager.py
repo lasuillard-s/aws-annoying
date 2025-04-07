@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from aws_annoying.utils.platform import command_as_root, is_root
+from aws_annoying.utils.platform import command_as_root, is_root, os_release
 
 from .errors import UnsupportedPlatformError
 
@@ -219,16 +219,7 @@ class _LinuxDistribution(NamedTuple):
 
 def _detect_linux_distribution() -> _LinuxDistribution:
     """Autodetect current Linux distribution."""
-    os_release = _os_release()
-    name = os_release.get("ID", "").lower()
-    version = os_release.get("VERSION", "")
+    osr = os_release()
+    name = osr.get("ID", "").lower()
+    version = osr.get("VERSION", "")
     return _LinuxDistribution(name=name, version=version)
-
-
-def _os_release() -> dict[str, str]:
-    """Parse `/etc/os-release` file into a dictionary."""
-    content = Path("/etc/os-release").read_text()
-    return {
-        key.strip('"'): value.strip('"')
-        for key, value in (line.split("=", 1) for line in content.splitlines() if "=" in line)
-    }
