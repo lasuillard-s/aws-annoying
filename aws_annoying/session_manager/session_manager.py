@@ -80,15 +80,14 @@ class SessionManager:
         """
         os = os or platform.system()
         arch = arch or platform.machine()
-        root = root or is_root()
 
         if os == "Windows":
             self._install_windows()
         elif os == "Darwin":
-            self._install_macos(arch=arch, root=root)
+            self._install_macos(arch=arch, root=root or is_root())
         elif os == "Linux":
             linux_distribution = linux_distribution or _detect_linux_distribution()
-            self._install_linux(linux_distribution=linux_distribution, arch=arch, root=root)
+            self._install_linux(linux_distribution=linux_distribution, arch=arch, root=root or is_root())
         else:
             msg = f"Unsupported operating system: {os}"
             raise UnsupportedPlatformError(msg)
