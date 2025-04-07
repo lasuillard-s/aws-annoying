@@ -7,20 +7,28 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import NamedTuple
-
-import requests
-from tqdm import tqdm
+from typing import TYPE_CHECKING, NamedTuple
 
 from aws_annoying.utils.platform import command_as_root, is_root
 
 from .errors import UnsupportedPlatformError
+
+if TYPE_CHECKING:
+    from aws_annoying.utils.downloader import AbstractDownloader
 
 logger = logging.getLogger(__name__)
 
 
 class SessionManager:
     """AWS Session Manager plugin manager."""
+
+    def __init__(self, *, downloader: AbstractDownloader) -> None:
+        """Initialize SessionManager.
+
+        Args:
+            downloader: File downloader to use for downloading the plugin.
+        """
+        self.downloader = downloader
 
     def verify_installation(self) -> tuple[bool, Path | None, str | None]:
         """Verify installation of AWS Session Manager plugin.
@@ -88,7 +96,7 @@ class SessionManager:
         )
         with tempfile.TemporaryDirectory() as temp_dir:
             p = Path(temp_dir)
-            exe_installer = _download_file(download_url, p / "SessionManagerPluginSetup.exe")
+            exe_installer = self.downloader.download(download_url, to=p / "SessionManagerPluginSetup.exe")
             command = [str(exe_installer), "/quiet"]
             self.before_install(command)
             subprocess.call(command, cwd=p)  # noqa: S603
@@ -111,11 +119,11 @@ class SessionManager:
 
         with tempfile.TemporaryDirectory() as temp_dir:
             p = Path(temp_dir)
-            _download_file(download_url, p / "session-manager-plugin.pkg")
+            pkg_installer = self.downloader.download(download_url, to=p / "session-manager-plugin.pkg")
 
             # Run installer
             command = command_as_root(
-                ["installer", "-pkg", "./session-manager-plugin.pkg", "-target", "/"],
+                ["installer", "-pkg", str(pkg_installer), "-target", "/"],
                 root=root,
             )
             self.before_install(command)
@@ -163,10 +171,10 @@ class SessionManager:
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 p = Path(temp_dir)
-                _download_file(download_url, p / "session-manager-plugin.deb")
+                deb_installer = self.downloader.download(download_url, to=p / "session-manager-plugin.deb")
 
                 # Invoke installation command
-                command = command_as_root(["dpkg", "--install", "session-manager-plugin.deb"], root=root)
+                command = command_as_root(["dpkg", "--install", str(deb_installer)], root=root)
                 self.before_install(command)
                 subprocess.call(command, cwd=p)  # noqa: S603
 
@@ -224,29 +232,3 @@ def _os_release() -> dict[str, str]:
         key.strip('"'): value.strip('"')
         for key, value in (line.split("=", 1) for line in content.splitlines() if "=" in line)
     }
-
-
-# TODO(lasuillard): Move to utils, abstract it into file downloader for switchable downloaders
-def _download_file(url: str, path: Path) -> Path:
-    """Download file from URL to path."""
-    # https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51
-    logger.info("Downloading file from URL (%s) to %s.", url, path)
-    with requests.get(url, stream=True, timeout=10) as response:
-        response.raise_for_status()
-        total_size = int(response.headers.get("content-length", 0))
-        with (
-            path.open("wb") as f,
-            tqdm(
-                # Make the URL less verbose in the progress bar
-                desc=url.replace("https://s3.amazonaws.com/session-manager-downloads/plugin", "..."),
-                total=total_size,
-                unit="iB",
-                unit_scale=True,
-                unit_divisor=1_024,
-            ) as pbar,
-        ):
-            for chunk in response.iter_content(chunk_size=8_192):
-                size = f.write(chunk)
-                pbar.update(size)
-
-    return path.absolute()

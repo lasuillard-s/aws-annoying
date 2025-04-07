@@ -4,6 +4,8 @@ import typer
 from rich import print  # noqa: A004
 from rich.prompt import Confirm
 
+from aws_annoying.utils.downloader import TQDMDownloader
+
 from ._app import session_manager_app
 from .session_manager import SessionManager
 
@@ -14,7 +16,7 @@ def install(
     # TODO(lasuillard): Will add options: --os, --arch, --skip-verify, --dry-run
 ) -> None:
     """Install AWS Session Manager plugin."""
-    session_manager = _SessionManager()
+    session_manager = _SessionManager(downloader=TQDMDownloader())
 
     # Check session-manager-plugin already installed
     is_installed, binary_path, version = session_manager.verify_installation()
