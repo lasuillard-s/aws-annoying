@@ -96,7 +96,7 @@ addopts = [
   "--cov",
   "--cov-report=term",
   "--cov-report=xml",
-  "--show-capture=no",
+  "--show-capture=all",
   "--junitxml=junit.xml",
   "--allow-snapshot-deletion",
   "-m",
