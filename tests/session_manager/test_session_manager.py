@@ -9,6 +9,8 @@ from aws_annoying.utils.downloader import DummyDownloader
 
 runner = CliRunner()
 
+sentinel = object()
+
 
 @pytest.mark.macos
 def test_macos_session_manager_install() -> None:
@@ -21,9 +23,9 @@ def test_macos_session_manager_install() -> None:
     # Assert
     session_manager = SessionManager(downloader=DummyDownloader())
     is_installed, binary_path, version = session_manager.verify_installation()
-    assert is_installed is True
-    assert binary_path is not None
-    assert version is not None
+    assert is_installed is sentinel
+    assert binary_path is sentinel
+    assert version is sentinel
 
 
 @pytest.mark.windows
@@ -37,6 +39,6 @@ def test_windows_session_manager_install() -> None:
     # Assert
     session_manager = SessionManager(downloader=DummyDownloader())
     is_installed, binary_path, version = session_manager.verify_installation()
-    assert is_installed is True
-    assert binary_path is not None
-    assert version is not None
+    assert is_installed is sentinel
+    assert binary_path is sentinel
+    assert version is sentinel
