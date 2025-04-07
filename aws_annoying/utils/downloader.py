@@ -21,6 +21,15 @@ class AbstractDownloader(ABC):
         """Download file from URL to path."""
 
 
+class DummyDownloader(AbstractDownloader):
+    """Dummy downloader that does nothing (mainly for testing purposes)."""
+
+    def download(self, url: str, *, to: Path) -> Path:
+        """Download file from URL to path."""
+        logger.debug("Dummy downloader called for URL (%s) to %s.", url, to)
+        return to.absolute()
+
+
 class TQDMDownloader(AbstractDownloader):
     """Downloader with TQDM progress bar."""
 
