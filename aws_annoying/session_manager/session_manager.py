@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import platform
 import re
 import shutil
@@ -12,6 +11,8 @@ from typing import NamedTuple
 
 import requests
 from tqdm import tqdm
+
+from aws_annoying.utils.platform import command_as_root, is_root
 
 from .errors import UnsupportedPlatformError
 
@@ -50,7 +51,7 @@ class SessionManager:
         os: str | None = None,
         linux_distribution: _LinuxDistribution | None = None,
         arch: str | None = None,
-        is_root: bool | None = None,
+        root: bool | None = None,
     ) -> None:
         """Install AWS Session Manager plugin.
 
@@ -59,19 +60,19 @@ class SessionManager:
             linux_distribution: The Linux distribution to install the plugin on.
                 If `None` and current `os` is `"Linux"`, will try to detect the distribution from current system.
             arch: The architecture to install the plugin on. If `None`, will use the current architecture.
-            is_root: Whether to run the installation as root. If `None`, will check if the current user is root.
+            root: Whether to run the installation as root. If `None`, will check if the current user is root.
         """
         os = os or platform.system()
         linux_distribution = linux_distribution or _detect_linux_distribution()
         arch = arch or platform.machine()
-        is_root = is_root or _is_root()
+        root = root or is_root()
 
         if os == "Windows":
             self._install_windows()
         elif os == "Darwin":
-            self._install_macos(arch=arch, is_root=is_root)
+            self._install_macos(arch=arch, root=root)
         elif os == "Linux":
-            self._install_linux(linux_distribution=linux_distribution, arch=arch, is_root=is_root)
+            self._install_linux(linux_distribution=linux_distribution, arch=arch, root=root)
         else:
             msg = f"Unsupported operating system: {os}"
             raise UnsupportedPlatformError(msg)
@@ -93,7 +94,7 @@ class SessionManager:
             subprocess.call(command, cwd=p)  # noqa: S603
 
     # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html
-    def _install_macos(self, *, arch: str, is_root: bool) -> None:
+    def _install_macos(self, *, arch: str, root: bool) -> None:
         """Install session-manager-plugin on macOS via signed installer."""
         # ! Intel chip will not be supported
         if arch == "x86_64":
@@ -113,9 +114,9 @@ class SessionManager:
             _download_file(download_url, p / "session-manager-plugin.pkg")
 
             # Run installer
-            command = _command_as_root(
+            command = command_as_root(
                 ["installer", "-pkg", "./session-manager-plugin.pkg", "-target", "/"],
-                is_root=is_root,
+                root=root,
             )
             self.before_install(command)
             subprocess.call(command, cwd=p)  # noqa: S603
@@ -127,7 +128,7 @@ class SessionManager:
                 "/usr/local/sessionmanagerplugin/bin/session-manager-plugin",
                 "/usr/local/bin/session-manager-plugin",
             ]
-            if not is_root:
+            if not root:
                 command = ["sudo", *command]
 
             logger.info("Running %s to create symlink", " ".join(command))
@@ -140,7 +141,7 @@ class SessionManager:
         *,
         linux_distribution: _LinuxDistribution,
         arch: str,
-        is_root: bool,
+        root: bool,
     ) -> None:
         name = linux_distribution.name
         version = linux_distribution.version
@@ -165,7 +166,7 @@ class SessionManager:
                 _download_file(download_url, p / "session-manager-plugin.deb")
 
                 # Invoke installation command
-                command = _command_as_root(["dpkg", "--install", "session-manager-plugin.deb"], is_root=is_root)
+                command = command_as_root(["dpkg", "--install", "session-manager-plugin.deb"], root=root)
                 self.before_install(command)
                 subprocess.call(command, cwd=p)  # noqa: S603
 
@@ -194,26 +195,13 @@ class SessionManager:
             package_manager = "yum" if use_yum else "dnf"
 
             # Invoke installation command
-            command = _command_as_root([package_manager, "install", "-y", package_url], is_root=is_root)
+            command = command_as_root([package_manager, "install", "-y", package_url], root=root)
             self.before_install(command)
             subprocess.call(command)  # noqa: S603
 
         else:
             msg = f"Unsupported distribution: {name}"
             raise UnsupportedPlatformError(msg)
-
-
-def _command_as_root(command: list[str], *, is_root: bool) -> list[str]:
-    """Run command as root."""
-    is_root = is_root or _is_root()
-    if not is_root:
-        command = ["sudo", *command]
-
-    return command
-
-
-def _is_root() -> bool:
-    return os.geteuid() == 0
 
 
 class _LinuxDistribution(NamedTuple):
