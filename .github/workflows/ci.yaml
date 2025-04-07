@@ -36,7 +36,7 @@ jobs:
         if: always()
 
   test:
-    name: Test (Python ${{ matrix.python-version }})
+    name: Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -44,7 +44,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+        # TODO(lasuillard): Simplified matrix for macOS and Windows for testing
+        include:
+          - os: macos-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.9"
 
     steps:
       - name: Checkout
@@ -62,8 +70,17 @@ jobs:
       - name: Install deps
         run: uv sync --all-extras
 
-      - name: Run tests
+      - name: Run tests (Ubuntu)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: uv run pytest
+
+      - name: Run tests (macOS)
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: uv run pytest -m macos
+
+      - name: Run tests (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: uv run pytest -m windows
 
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@v5
@@ -73,6 +90,7 @@ jobs:
           report_type: test_results
           files: junit.xml
           flags: >-
+            ${{ matrix.os }}
             python-${{ matrix.python-version }}
 
       - name: Upload coverage report
@@ -82,4 +100,5 @@ jobs:
           fail_ci_if_error: false
           files: coverage.xml
           flags: >-
+            ${{ matrix.os }}
             python-${{ matrix.python-version }}
