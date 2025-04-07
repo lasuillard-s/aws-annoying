@@ -1,24 +1,24 @@
 from __future__ import annotations
 
-import json
 import os
 import re
-import shutil
 import signal
-import subprocess
 from pathlib import Path  # noqa: TC003
 
 import boto3
 import typer
 from rich import print  # noqa: A004
 
+from aws_annoying.utils.downloader import TQDMDownloader
+
 from ._app import session_manager_app
+from ._common import SessionManager
 
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
-    # TODO(lasuillard): Add `--local-host` option (unsupported by AWS)
+    # TODO(lasuillard): Add `--local-host` option, redirect the traffic to non-localhost bind (unsupported by AWS)
     local_port: int = typer.Option(
         ...,
         show_default=False,
@@ -57,9 +57,7 @@ def port_forward(  # noqa: PLR0913
     ),
 ) -> None:
     """Start a port forwarding session using AWS Session Manager."""
-    session = boto3.session.Session()
-    ssm = session.client("ssm")
-    region = session.region_name
+    session_manager = SessionManager(downloader=TQDMDownloader())
 
     # Check if the PID file already exists
     if pid_file.exists():
@@ -96,47 +94,20 @@ def port_forward(  # noqa: PLR0913
         target = instance_id
 
     # Initiate the session
-    response = ssm.start_session(
-        Target=target,
-        DocumentName="AWS-StartPortForwardingSessionToRemoteHost",
-        Parameters={
+    proc = session_manager.start(
+        target=target,
+        document_name="AWS-StartPortForwardingSessionToRemoteHost",
+        parameters={
             "host": [remote_host],
             "portNumber": [str(remote_port)],
             "localPortNumber": [str(local_port)],
         },
-        # ? Reason is optional but it doesn't allow empty string or `None`
-        **({"Reason": reason} if reason else {}),
+        reason=reason,
     )
-
-    # Run the session manager plugin in a subprocess
-    # TODO(lasuillard): Encapsulate this as a class (SessionManager)
-    #                   Usage would be like: SessionManager(binary_path=...).start_session(...)
-    binary_path = shutil.which("session-manager-plugin")
-    if not binary_path:
-        print("❌ Session Manager Plugin not found. Please install it.")
-        raise typer.Exit(1)
-
-    command = [
-        binary_path,
-        json.dumps(response),
-        region,
-        "StartSession",
-        session.profile_name,
-        json.dumps({"Target": target}),
-        f"https://ssm.{region}.amazonaws.com",
-    ]
-    f = log_file.open(mode="at+", buffering=1)
-    p = subprocess.Popen(  # noqa: S603
-        command,
-        stdout=f,
-        stderr=subprocess.STDOUT,
-        text=True,
-        close_fds=False,  # FD inherited from parent process
-    )
-    print(f"✅ Session Manager Plugin started with PID {p.pid}. Outputs will be logged to {log_file.absolute()}.")
+    print(f"✅ Session Manager Plugin started with PID {proc.pid}. Outputs will be logged to {log_file.absolute()}.")
 
     # Write the PID to the file
-    pid_file.write_text(str(p.pid))
+    pid_file.write_text(str(proc.pid))
     print(f"💾 PID file written to {pid_file.absolute()}.")
 
 

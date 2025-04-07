@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import platform
 import re
@@ -7,11 +8,13 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
+
+import boto3
 
 from aws_annoying.utils.platform import command_as_root, is_root, os_release
 
-from .errors import UnsupportedPlatformError
+from .errors import PluginNotInstalledError, UnsupportedPlatformError
 
 if TYPE_CHECKING:
     from aws_annoying.utils.downloader import AbstractDownloader
@@ -22,14 +25,19 @@ logger = logging.getLogger(__name__)
 class SessionManager:
     """AWS Session Manager plugin manager."""
 
-    def __init__(self, *, downloader: AbstractDownloader) -> None:
+    def __init__(self, *, session: boto3.session.Session | None = None, downloader: AbstractDownloader) -> None:
         """Initialize SessionManager.
 
         Args:
+            session: Boto3 session to use for AWS operations.
             downloader: File downloader to use for downloading the plugin.
         """
+        self.session = session or boto3.session.Session()
         self.downloader = downloader
 
+    # ------------------------------------------------------------------------
+    # Installation
+    # ------------------------------------------------------------------------
     def verify_installation(self) -> tuple[bool, Path | None, str | None]:
         """Verify installation of AWS Session Manager plugin.
 
@@ -211,7 +219,71 @@ class SessionManager:
             msg = f"Unsupported distribution: {name}"
             raise UnsupportedPlatformError(msg)
 
+    # ------------------------------------------------------------------------
+    # Session
+    # ------------------------------------------------------------------------
+    def start(
+        self,
+        *,
+        target: str,
+        document_name: str,
+        parameters: dict[str, Any],
+        reason: str | None = None,
+        log_file: Path | None = None,
+    ) -> subprocess.Popen:
+        """Start new session.
 
+        Args:
+            target: The target instance ID or name.
+            document_name: The SSM document name to use for the session.
+            parameters: The parameters to pass to the SSM document.
+            reason: The reason for starting the session.
+            log_file: Optional file to log output to.
+
+        Returns:
+            Process ID of the session.
+        """
+        is_installed, binary_path, version = self.verify_installation()
+        if not is_installed:
+            msg = "Session Manager plugin is not installed."
+            raise PluginNotInstalledError(msg)
+
+        ssm = self.session.client("ssm")
+        response = ssm.start_session(
+            Target=target,
+            DocumentName=document_name,
+            Parameters=parameters,
+            # ? Reason is optional but it doesn't allow empty string or `None`
+            **({"Reason": reason} if reason else {}),
+        )
+
+        region = self.session.region_name
+        command = [
+            str(binary_path),
+            json.dumps(response),
+            region,
+            "StartSession",
+            self.session.profile_name,
+            json.dumps({"Target": target}),
+            f"https://ssm.{region}.amazonaws.com",
+        ]
+
+        stdout: subprocess._FILE
+        if log_file is not None:  # noqa: SIM108
+            stdout = log_file.open(mode="at+", buffering=1)
+        else:
+            stdout = subprocess.DEVNULL
+
+        return subprocess.Popen(  # noqa: S603
+            command,
+            stdout=stdout,
+            stderr=subprocess.STDOUT,
+            text=True,
+            close_fds=False,  # FD inherited from parent process
+        )
+
+
+# ? Could be moved to utils, but didn't because it's too specific to this module
 class _LinuxDistribution(NamedTuple):
     name: str
     version: str
