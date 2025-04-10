@@ -36,15 +36,23 @@ jobs:
         if: always()
 
   test:
-    name: Test (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    name: Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       id-token: write
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+        # TODO(lasuillard): Simplified matrix for macOS and Windows for testing
+        include:
+          - os: macos-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.9"
 
     steps:
       - name: Checkout
@@ -62,8 +70,27 @@ jobs:
       - name: Install deps
         run: uv sync --all-extras
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Run tests (Ubuntu)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get remove --yes session-manager-plugin
+          uv run pytest
+
+      - name: Run tests (macOS)
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          brew uninstall session-manager-plugin
+          uv run pytest -m macos
+
+      - name: Run tests (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/aws/session-manager-plugin/refs/heads/mainline/Tools/src/update/windows/uninstall.bat" `
+            -OutFile "uninstall.bat"
+
+          Start-Process "cmd.exe" -ArgumentList "/c uninstall.bat" -Wait
+          uv run pytest -m windows
 
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@v5
@@ -73,6 +100,7 @@ jobs:
           report_type: test_results
           files: junit.xml
           flags: >-
+            ${{ matrix.os }}
             python-${{ matrix.python-version }}
 
       - name: Upload coverage report
@@ -82,4 +110,5 @@ jobs:
           fail_ci_if_error: false
           files: coverage.xml
           flags: >-
+            ${{ matrix.os }}
             python-${{ matrix.python-version }}
