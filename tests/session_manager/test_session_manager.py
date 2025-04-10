@@ -19,11 +19,15 @@ def test_macos_session_manager_install() -> None:
     assert session_manager.verify_installation() == (False, None, None)
 
     # Act
-    runner.invoke(app, ["session-manager", "install"])
+    result = runner.invoke(app, ["session-manager", "install"])
 
     # Assert
+    assert result.exit_code == 0, result.stdout
     is_installed, binary_path, version = session_manager.verify_installation()
-    assert session_manager.verify_installation() == (False, None, None)
+    assert is_installed is True
+    assert binary_path
+    assert binary_path.is_file()
+    assert version is not None
 
 
 @pytest.mark.windows
@@ -33,8 +37,12 @@ def test_windows_session_manager_install() -> None:
     assert session_manager.verify_installation() == (False, None, None)
 
     # Act
-    runner.invoke(app, ["session-manager", "install"])
+    result = runner.invoke(app, ["session-manager", "install"])
 
     # Assert
+    assert result.exit_code == 0, result.stdout
     is_installed, binary_path, version = session_manager.verify_installation()
-    assert session_manager.verify_installation() == (False, None, None)
+    assert is_installed is True
+    assert binary_path
+    assert binary_path.is_file()
+    assert version is not None
