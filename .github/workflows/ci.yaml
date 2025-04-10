@@ -85,8 +85,11 @@ jobs:
       - name: Run tests (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          Get-Package
-          Uninstall-Package -Name 'Session Manager Plugin' -ForceBootstrap
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/aws/session-manager-plugin/refs/heads/mainline/Tools/src/update/windows/uninstall.bat" `
+            -OutFile "uninstall.bat"
+
+          Start-Process "cmd.exe" -ArgumentList "/c uninstall.bat" -Wait
           uv run pytest -m windows
 
       - name: Upload test results to Codecov
