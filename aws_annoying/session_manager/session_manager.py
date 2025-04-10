@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import platform
 import re
 import shutil
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
     from aws_annoying.utils.downloader import AbstractDownloader
 
 logger = logging.getLogger(__name__)
+
+# TODO(lasuillard): Platform checking is spread everywhere, should be moved to a single place
 
 
 class SessionManager:
@@ -45,11 +48,10 @@ class SessionManager:
             3-tuple of boolean flag indicating whether plugin installed, binary path and version string.
         """
         # Find plugin binary
-        if not (binary_path_str := shutil.which("session-manager-plugin")):
+        if not (binary_path := self._get_binary_path()):
             return False, None, None
 
         # Check version
-        binary_path = Path(binary_path_str).absolute()
         result_bytes = subprocess.run(  # noqa: S603
             [str(binary_path), "--version"],
             check=True,
@@ -60,6 +62,26 @@ class SessionManager:
             return False, binary_path, result
 
         return True, binary_path, result
+
+    def _get_binary_path(self) -> Path | None:
+        """Get the path to the session-manager-plugin binary."""
+        binary_path_str = shutil.which("session-manager-plugin")
+        if not binary_path_str:
+            if platform.system() == "Windows":
+                # Windows: use the default installation path
+                binary_path = (
+                    Path(os.environ["ProgramFiles"])  # noqa: SIM112
+                    / "Amazon"
+                    / "SessionManagerPlugin"
+                    / "bin"
+                    / "session-manager-plugin.exe"
+                )
+                if binary_path.is_file():
+                    return binary_path.absolute()
+
+            return None
+
+        return Path(binary_path_str).absolute()
 
     def install(
         self,
