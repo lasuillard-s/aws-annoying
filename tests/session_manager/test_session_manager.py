@@ -19,7 +19,7 @@ def test_macos_session_manager_install() -> None:
     assert session_manager.verify_installation() == (False, None, None)
 
     # Act
-    result = runner.invoke(app, ["session-manager", "install"])
+    result = runner.invoke(app, ["session-manager", "install", "--yes"])
 
     # Assert
     assert result.exit_code == 0, result.stdout
@@ -37,7 +37,7 @@ def test_windows_session_manager_install() -> None:
     assert session_manager.verify_installation() == (False, None, None)
 
     # Act
-    result = runner.invoke(app, ["session-manager", "install"])
+    result = runner.invoke(app, ["session-manager", "install", "--yes"])
 
     # Assert
     assert result.exit_code == 0, result.stdout

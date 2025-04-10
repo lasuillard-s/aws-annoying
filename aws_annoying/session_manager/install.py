@@ -12,10 +12,13 @@ from ._common import SessionManager
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def install(
-    # TODO(lasuillard): Will add options: --os, --arch, --skip-verify, --dry-run
+    yes: bool = typer.Option(  # noqa: FBT001
+        False,  # noqa: FBT003
+        help="Do not ask confirmation for installation.",
+    ),
 ) -> None:
     """Install AWS Session Manager plugin."""
-    session_manager = SessionManager(downloader=TQDMDownloader())
+    session_manager = SessionManager(downloader=TQDMDownloader(), confirm=yes)
 
     # Check session-manager-plugin already installed
     is_installed, binary_path, version = session_manager.verify_installation()
