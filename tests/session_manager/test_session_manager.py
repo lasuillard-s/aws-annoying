@@ -4,7 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
-from aws_annoying.cli.session_manager.session_manager import SessionManager
+from aws_annoying.session_manager import SessionManager
 from aws_annoying.utils.downloader import DummyDownloader
 
 runner = CliRunner()
