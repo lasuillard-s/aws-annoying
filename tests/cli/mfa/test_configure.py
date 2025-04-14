@@ -8,7 +8,8 @@ import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
-from aws_annoying.cli.mfa.configure import _CONFIG_INI_SECTION, _MfaConfig
+from aws_annoying.cli.mfa.configure import _CONFIG_INI_SECTION
+from aws_annoying.mfa import MfaConfig
 from tests.cli._helpers import normalize_console_output
 
 if TYPE_CHECKING:
@@ -79,7 +80,7 @@ def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
     mfa_profile = "mfa"
     aws_credentials = tmp_path / "credentials"
     aws_config = tmp_path / "config"
-    _MfaConfig(
+    MfaConfig(
         mfa_profile=mfa_profile,
         mfa_source_profile="default",
         mfa_serial_number="1234567890",
