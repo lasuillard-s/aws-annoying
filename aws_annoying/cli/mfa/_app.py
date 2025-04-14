@@ -1,6 +1,6 @@
 import typer
 
-from aws_annoying.app import app
+from aws_annoying.cli.app import app
 
 mfa_app = typer.Typer(
     no_args_is_help=True,

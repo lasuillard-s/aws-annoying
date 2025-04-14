@@ -7,9 +7,9 @@ from unittest import mock
 import pytest
 from typer.testing import CliRunner
 
-from aws_annoying.main import app
-from aws_annoying.mfa.configure import _CONFIG_INI_SECTION, _MfaConfig
-from tests._helpers import normalize_console_output
+from aws_annoying.cli.main import app
+from aws_annoying.cli.mfa.configure import _CONFIG_INI_SECTION, _MfaConfig
+from tests.cli._helpers import normalize_console_output
 
 if TYPE_CHECKING:
     from pathlib import Path

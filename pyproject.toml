@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-"aws-annoying" = "aws_annoying.main:entrypoint"
+"aws-annoying" = "aws_annoying.cli.main:entrypoint"
 
 [project.optional-dependencies]
 dev = [

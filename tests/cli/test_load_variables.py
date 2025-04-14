@@ -9,14 +9,12 @@ import boto3
 import pytest
 from typer.testing import CliRunner
 
-from aws_annoying.main import app
+from aws_annoying.cli.main import app
 
-from ._helpers import PRINTENV_PY, normalize_console_output, repeat_options
+from ._helpers import PRINTENV_PY, invoke_cli, normalize_console_output, repeat_options
 
 if TYPE_CHECKING:
     from pytest_snapshot.plugin import Snapshot
-
-    from tests.conftest import Invoker
 
 # * Command `load-variables` cannot use Typer CLI runner because it uses `os.execvpe` internally,
 # * which replaces the current process with the new one, breaking pytest runtime.
@@ -143,7 +141,7 @@ def test_unsupported_resource(snapshot: Snapshot) -> None:
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
-def test_basic(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_basic(snapshot: Snapshot) -> None:
     """Test basic usage."""
     # Arrange
     setup = setup_resources()
@@ -164,7 +162,7 @@ def test_basic(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     assert result.stderr == ""
 
 
-def test_replace_quiet(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_replace_quiet(snapshot: Snapshot) -> None:
     """Test the most common practical use-case."""
     # Arrange
     setup = setup_resources()
@@ -187,7 +185,7 @@ def test_replace_quiet(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     assert result.stderr == ""
 
 
-def test_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_env_prefix(snapshot: Snapshot) -> None:
     """Test prefixed environment variables support."""
     # Arrange
     setup = setup_resources()
@@ -210,7 +208,7 @@ def test_env_prefix(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     assert result.stderr == ""
 
 
-def test_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_dry_run(snapshot: Snapshot) -> None:
     """If dry-run mode enabled, it shouldn't load variables."""
     # Arrange
     setup = setup_resources()
@@ -234,7 +232,7 @@ def test_dry_run(snapshot: Snapshot, invoke_cli: Invoker) -> None:
     assert result.stderr == ""
 
 
-def test_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
+def test_overwrite_env(snapshot: Snapshot) -> None:
     """Test `--overwrite-env` flag. If provided, it should overwrite the existing environment variables."""
     # Arrange
     setup = setup_resources()
@@ -270,7 +268,7 @@ def test_overwrite_env(snapshot: Snapshot, invoke_cli: Invoker) -> None:
         "ssm",
     ],
 )
-def test_resource_not_found(snapshot: Snapshot, invoke_cli: Invoker, arn: str) -> None:
+def test_resource_not_found(snapshot: Snapshot, arn: str) -> None:
     """Test with resource does not exists."""
     # Arrange
     setup = setup_resources()
