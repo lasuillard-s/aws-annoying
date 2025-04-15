@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import os
-import subprocess
 from configparser import ConfigParser
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 import pytest
 from moto import mock_aws
@@ -102,25 +100,3 @@ def localstack(request: pytest.FixtureRequest) -> str:
 def use_localstack(monkeypatch: pytest.MonkeyPatch, localstack: str) -> None:
     """Use Localstack for AWS mocking."""
     monkeypatch.setenv("AWS_ENDPOINT_URL", localstack)
-
-
-# CLI helper
-# ----------------------------------------------------------------------------
-class Invoker(Protocol):
-    def __call__(self, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]: ...
-
-
-@pytest.fixture(scope="module")
-def invoke_cli() -> Invoker:
-    """Returns callable to invoke CLI as subprocess."""
-
-    def func(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(  # noqa: S603
-            ["uv", "run", "aws-annoying", *args],  # noqa: S607
-            check=False,
-            capture_output=True,
-            text=True,
-            env=(env or os.environ),  # * `AWS_ENDPOINT_URL` should be inherited appropriately to use Moto or LocalStack
-        )
-
-    return func

@@ -8,10 +8,9 @@
 │ 900_override │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/override  │
 └──────────────┴───────────────────────────────────────────────────────────────┘
 🔍 Retrieving variables from AWS resources...
-⚠️ Dry run mode enabled. Variables won't be loaded from AWS.
 ✅ Retrieved 1 secrets and 2 parameters.
-🚀 Running the command: tests/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+🚀 Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
 DJANGO_SETTINGS_MODULE=config.settings.development
-DJANGO_SECRET_KEY=
-DJANGO_DEBUG=
-DJANGO_ALLOWED_HOSTS=
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2

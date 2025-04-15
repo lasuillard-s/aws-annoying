@@ -6,7 +6,7 @@ import boto3
 import pytest
 from typer.testing import CliRunner
 
-from aws_annoying.main import app
+from aws_annoying.cli.main import app
 
 from ._helpers import normalize_console_output
 

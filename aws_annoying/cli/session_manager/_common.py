@@ -6,7 +6,7 @@ from typing import Any
 import typer
 from rich.prompt import Confirm
 
-from .session_manager import SessionManager as _SessionManager
+from aws_annoying.session_manager import SessionManager as _SessionManager
 
 
 # Custom session manager with console interactivity

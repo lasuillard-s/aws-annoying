@@ -19,8 +19,6 @@ repos:
           - --extend-exclude
           - utils/debugger.py
           - --extend-exclude
-          - main.py
-          - --extend-exclude
           - "**/_*.py"
       - id: test-matching-source
         args:
@@ -29,7 +27,7 @@ repos:
           - --extend-exclude
           - "**/conftest.py"
           - --extend-exclude
-          - _*/**/*.py
+          - "**/_*/**/*.py"
       - id: preferred-suffix
         args: [--rename]
 

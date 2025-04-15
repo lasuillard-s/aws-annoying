@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import configparser
 from pathlib import Path  # noqa: TC003
 from typing import Optional
 
 import boto3
 import typer
-from pydantic import BaseModel, ConfigDict
 from rich import print  # noqa: A004
 from rich.prompt import Prompt
+
+from aws_annoying.mfa import MfaConfig, update_credentials
 
 from ._app import mfa_app
 
@@ -55,7 +55,7 @@ def configure(  # noqa: PLR0913
     aws_config = aws_config.expanduser()
 
     # Load configuration
-    mfa_config, exists = _MfaConfig.from_ini_file(aws_config, _CONFIG_INI_SECTION)
+    mfa_config, exists = MfaConfig.from_ini_file(aws_config, _CONFIG_INI_SECTION)
     if exists:
         print(f"⚙️ Loaded MFA configuration from AWS config ({aws_config}).")
 
@@ -94,7 +94,7 @@ def configure(  # noqa: PLR0913
 
     # Update MFA profile in AWS credentials
     print(f"✅ Updating MFA profile ([bold]{mfa_profile}[/bold]) to AWS credentials ({aws_credentials})")
-    _update_credentials(
+    update_credentials(
         aws_credentials,
         mfa_profile,  # type: ignore[arg-type]
         access_key=credentials["AccessKeyId"],
@@ -114,44 +114,3 @@ def configure(  # noqa: PLR0913
         mfa_config.save_ini_file(aws_config, _CONFIG_INI_SECTION)
     else:
         print("⚠️ MFA configuration not persisted.")
-
-
-class _MfaConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    mfa_profile: Optional[str] = None
-    mfa_source_profile: Optional[str] = None
-    mfa_serial_number: Optional[str] = None
-
-    def save_ini_file(self, path: Path, section_key: str) -> None:
-        """Save configuration to an AWS config file."""
-        config_ini = configparser.ConfigParser()
-        config_ini.read(path)
-        config_ini.setdefault(section_key, {})
-        for k, v in self.model_dump(exclude_none=True).items():
-            config_ini[section_key][k] = v
-
-        with path.open("w") as f:
-            config_ini.write(f)
-
-    @classmethod
-    def from_ini_file(cls, path: Path, section_key: str) -> tuple[_MfaConfig, bool]:
-        """Load configuration from an AWS config file, with boolean indicating if the config already exists."""
-        config_ini = configparser.ConfigParser()
-        config_ini.read(path)
-        if config_ini.has_section(section_key):
-            section = dict(config_ini.items(section_key))
-            return cls.model_validate(section), True
-
-        return cls(), False
-
-
-def _update_credentials(path: Path, profile: str, *, access_key: str, secret_key: str, session_token: str) -> None:
-    credentials_ini = configparser.ConfigParser()
-    credentials_ini.read(path)
-    credentials_ini.setdefault(profile, {})
-    credentials_ini[profile]["aws_access_key_id"] = access_key
-    credentials_ini[profile]["aws_secret_access_key"] = secret_key
-    credentials_ini[profile]["aws_session_token"] = session_token
-    with path.open("w") as f:
-        credentials_ini.write(f)
