@@ -44,15 +44,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-
-        # TODO(lasuillard): Simplified matrix for macOS and Windows for testing
-        include:
-          - os: macos-latest
-            python-version: "3.9"
-          - os: windows-latest
-            python-version: "3.9"
 
     steps:
       - name: Checkout
