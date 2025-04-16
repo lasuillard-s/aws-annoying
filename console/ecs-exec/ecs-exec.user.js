@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWS ECS Exec
 // @namespace    mailto:lasuillard@gmail.com
-// @version      2025.03.21
+// @version      2025.04.16
 // @description  Add link to AWS SSM Session Manager for ECS container
 // @author       lasuillard
 // @source       https://raw.githubusercontent.com/lasuillard/aws-annoying/refs/heads/main/console/ecs-exec/ecs-exec.user.js
