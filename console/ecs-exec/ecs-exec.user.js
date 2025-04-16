@@ -106,11 +106,11 @@
 
   // Get task info from the detail page
   function getTaskInfoForDetailPage() {
-    const arnNeighbor = document.evaluate(`//div[text()="ARN"]`, document).iterateNext();
+    const arnNeighbor = document.evaluate(`//*[text()="ARN"]`, document).iterateNext();
     if (!arnNeighbor) {
       return null;
     }
-    const arn = arnNeighbor.parentNode.children[1].textContent;
+    const arn = arnNeighbor.parentNode.parentNode.children[1].textContent;
     const [, , , region, , taskPart] = arn.split(":");
     const [, clusterName, taskId] = taskPart.split("/");
 
