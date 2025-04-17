@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWS ECS Exec
 // @namespace    mailto:lasuillard@gmail.com
-// @version      2025.03.21
+// @version      2025.04.16
 // @description  Add link to AWS SSM Session Manager for ECS container
 // @author       lasuillard
 // @source       https://raw.githubusercontent.com/lasuillard/aws-annoying/refs/heads/main/console/ecs-exec/ecs-exec.user.js
@@ -106,11 +106,11 @@
 
   // Get task info from the detail page
   function getTaskInfoForDetailPage() {
-    const arnNeighbor = document.evaluate(`//div[text()="ARN"]`, document).iterateNext();
+    const arnNeighbor = document.evaluate(`//*[text()="ARN"]`, document).iterateNext();
     if (!arnNeighbor) {
       return null;
     }
-    const arn = arnNeighbor.parentNode.children[1].textContent;
+    const arn = arnNeighbor.parentNode.parentNode.children[1].textContent;
     const [, , , region, , taskPart] = arn.split(":");
     const [, clusterName, taskId] = taskPart.split("/");
 
