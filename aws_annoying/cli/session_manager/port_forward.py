@@ -95,6 +95,7 @@ def port_forward(  # noqa: PLR0913
             "localPortNumber": [str(local_port)],
         },
         reason=reason,
+        log_file=log_file,
     )
     print(f"✅ Session Manager Plugin started with PID {proc.pid}. Outputs will be logged to {log_file.absolute()}.")
 
