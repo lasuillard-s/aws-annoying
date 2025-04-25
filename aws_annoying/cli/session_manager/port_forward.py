@@ -8,8 +8,6 @@ from pathlib import Path  # noqa: TC003
 import typer
 from rich import print  # noqa: A004
 
-from aws_annoying.utils.downloader import TQDMDownloader
-
 from ._app import session_manager_app
 from ._common import SessionManager, get_instance_id_by_name
 
@@ -56,7 +54,7 @@ def port_forward(  # noqa: PLR0913
     ),
 ) -> None:
     """Start a port forwarding session using AWS Session Manager."""
-    session_manager = SessionManager(downloader=TQDMDownloader())
+    session_manager = SessionManager()
 
     # Check if the PID file already exists
     if pid_file.exists():

@@ -5,8 +5,6 @@ import os
 import typer
 from rich import print  # noqa: A004
 
-from aws_annoying.utils.downloader import TQDMDownloader
-
 from ._app import session_manager_app
 from ._common import SessionManager, get_instance_id_by_name
 
@@ -27,7 +25,7 @@ def start(
     ),
 ) -> None:
     """Start new session."""
-    session_manager = SessionManager(downloader=TQDMDownloader())
+    session_manager = SessionManager()
 
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(target)

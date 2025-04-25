@@ -5,7 +5,6 @@ from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
 from aws_annoying.session_manager import SessionManager
-from aws_annoying.utils.downloader import DummyDownloader
 
 runner = CliRunner()
 
@@ -15,7 +14,7 @@ sentinel = object()
 @pytest.mark.macos
 def test_macos_session_manager_install() -> None:
     # Arrange
-    session_manager = SessionManager(downloader=DummyDownloader())
+    session_manager = SessionManager()
     assert session_manager.verify_installation() == (False, None, None)
 
     # Act
@@ -36,7 +35,7 @@ def test_macos_session_manager_install() -> None:
 @pytest.mark.windows
 def test_windows_session_manager_install() -> None:
     # Arrange
-    session_manager = SessionManager(downloader=DummyDownloader())
+    session_manager = SessionManager()
     assert session_manager.verify_installation() == (False, None, None)
 
     # Act

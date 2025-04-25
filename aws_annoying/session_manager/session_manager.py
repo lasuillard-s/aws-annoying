@@ -28,15 +28,13 @@ logger = logging.getLogger(__name__)
 class SessionManager:
     """AWS Session Manager plugin manager."""
 
-    def __init__(self, *, session: boto3.session.Session | None = None, downloader: AbstractDownloader) -> None:
+    def __init__(self, *, session: boto3.session.Session | None = None) -> None:
         """Initialize SessionManager.
 
         Args:
             session: Boto3 session to use for AWS operations.
-            downloader: File downloader to use for downloading the plugin.
         """
         self.session = session or boto3.session.Session()
-        self.downloader = downloader
 
     # ------------------------------------------------------------------------
     # Installation
@@ -90,6 +88,7 @@ class SessionManager:
         linux_distribution: _LinuxDistribution | None = None,
         arch: str | None = None,
         root: bool | None = None,
+        downloader: AbstractDownloader,
     ) -> None:
         """Install AWS Session Manager plugin.
 
@@ -99,17 +98,23 @@ class SessionManager:
                 If `None` and current `os` is `"Linux"`, will try to detect the distribution from current system.
             arch: The architecture to install the plugin on. If `None`, will use the current architecture.
             root: Whether to run the installation as root. If `None`, will check if the current user is root.
+            downloader: File downloader to use for downloading the plugin.
         """
         os = os or platform.system()
         arch = arch or platform.machine()
 
         if os == "Windows":
-            self._install_windows()
+            self._install_windows(downloader=downloader)
         elif os == "Darwin":
-            self._install_macos(arch=arch, root=root or is_root())
+            self._install_macos(arch=arch, root=root or is_root(), downloader=downloader)
         elif os == "Linux":
             linux_distribution = linux_distribution or _detect_linux_distribution()
-            self._install_linux(linux_distribution=linux_distribution, arch=arch, root=root or is_root())
+            self._install_linux(
+                linux_distribution=linux_distribution,
+                arch=arch,
+                root=root or is_root(),
+                downloader=downloader,
+            )
         else:
             msg = f"Unsupported operating system: {os}"
             raise UnsupportedPlatformError(msg)
@@ -118,20 +123,20 @@ class SessionManager:
         """Hook to run before invoking plugin installation command."""
 
     # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-windows.html
-    def _install_windows(self) -> None:
+    def _install_windows(self, *, downloader: AbstractDownloader) -> None:
         """Install session-manager-plugin on Windows via EXE installer."""
         download_url = (
             "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe"
         )
         with tempfile.TemporaryDirectory() as temp_dir:
             p = Path(temp_dir)
-            exe_installer = self.downloader.download(download_url, to=p / "SessionManagerPluginSetup.exe")
+            exe_installer = downloader.download(download_url, to=p / "SessionManagerPluginSetup.exe")
             command = [str(exe_installer), "/quiet"]
             self.before_install(command)
             subprocess.call(command, cwd=p)  # noqa: S603
 
     # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html
-    def _install_macos(self, *, arch: str, root: bool) -> None:
+    def _install_macos(self, *, arch: str, root: bool, downloader: AbstractDownloader) -> None:
         """Install session-manager-plugin on macOS via signed installer."""
         # ! Intel chip will not be supported
         if arch == "x86_64":
@@ -148,7 +153,7 @@ class SessionManager:
 
         with tempfile.TemporaryDirectory() as temp_dir:
             p = Path(temp_dir)
-            pkg_installer = self.downloader.download(download_url, to=p / "session-manager-plugin.pkg")
+            pkg_installer = downloader.download(download_url, to=p / "session-manager-plugin.pkg")
 
             # Run installer
             command = command_as_root(
@@ -179,6 +184,7 @@ class SessionManager:
         linux_distribution: _LinuxDistribution,
         arch: str,
         root: bool,
+        downloader: AbstractDownloader,
     ) -> None:
         name = linux_distribution.name
         version = linux_distribution.version
@@ -200,7 +206,7 @@ class SessionManager:
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 p = Path(temp_dir)
-                deb_installer = self.downloader.download(download_url, to=p / "session-manager-plugin.deb")
+                deb_installer = downloader.download(download_url, to=p / "session-manager-plugin.deb")
 
                 # Invoke installation command
                 command = command_as_root(["dpkg", "--install", str(deb_installer)], root=root)
