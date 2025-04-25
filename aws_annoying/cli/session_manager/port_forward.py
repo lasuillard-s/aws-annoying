@@ -79,9 +79,10 @@ def port_forward(  # noqa: PLR0913
             print(f"⚠️ Tried to terminate process with PID {existing_pid} but does not exist.")
 
     # Resolve the instance name or ID
-    target = get_instance_id_by_name(through)
-    if target:
-        print(f"❗ Instance ID resolved: [bold]{target}[/bold]")
+    instance_id = get_instance_id_by_name(through)
+    if instance_id:
+        print(f"❗ Instance ID resolved: [bold]{instance_id}[/bold]")
+        target = instance_id
     else:
         print(f"🚫 Instance with name '{through}' not found.")
         raise typer.Exit(1)
