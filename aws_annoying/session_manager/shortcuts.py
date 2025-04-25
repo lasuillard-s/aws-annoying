@@ -61,6 +61,7 @@ def port_forward(
 
         # Wait for the session to start
         # ? Not sure this is trustworthy health check
+        # TODO(lasuillard): Need timeout to avoid hanging forever
         for line in proc.stdout:
             if "Waiting for connections..." in line:
                 logger.info("Session started successfully.")
