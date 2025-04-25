@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 import os
-import re
 import signal
 from pathlib import Path  # noqa: TC003
 
-import boto3
 import typer
 from rich import print  # noqa: A004
 
 from aws_annoying.utils.downloader import TQDMDownloader
 
 from ._app import session_manager_app
-from ._common import SessionManager
+from ._common import SessionManager, get_instance_id_by_name
 
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
@@ -80,18 +78,12 @@ def port_forward(  # noqa: PLR0913
             print(f"⚠️ Tried to terminate process with PID {existing_pid} but does not exist.")
 
     # Resolve the instance name or ID
-    if re.match(r"m?i-.+", through):
-        target = through
+    target = get_instance_id_by_name(through)
+    if target:
+        print(f"❗ Instance ID resolved: [bold]{target}[/bold]")
     else:
-        # If the instance name is provided, get the instance ID
-        instance_id = _get_instance_id_by_name(through)
-        if instance_id:
-            print(f"❗ Instance ID resolved: [bold]{instance_id}[/bold]")
-        else:
-            print(f"🚫 Instance with name '{through}' not found.")
-            raise typer.Exit(1)
-
-        target = instance_id
+        print(f"🚫 Instance with name '{through}' not found.")
+        raise typer.Exit(1)
 
     # Initiate the session
     proc = session_manager.start(
@@ -109,18 +101,3 @@ def port_forward(  # noqa: PLR0913
     # Write the PID to the file
     pid_file.write_text(str(proc.pid))
     print(f"💾 PID file written to {pid_file.absolute()}.")
-
-
-def _get_instance_id_by_name(name: str) -> str | None:
-    """Get the EC2 instance ID by name."""
-    ec2 = boto3.client("ec2")
-    response = ec2.describe_instances(Filters=[{"Name": "tag:Name", "Values": [name]}])
-    reservations = response["Reservations"]
-    if not reservations:
-        return None
-
-    instances = reservations[0]["Instances"]
-    if not instances:
-        return None
-
-    return str(instances[0]["InstanceId"])
