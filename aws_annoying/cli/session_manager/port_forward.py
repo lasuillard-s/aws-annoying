@@ -104,6 +104,9 @@ def port_forward(  # noqa: PLR0913
     else:
         stdout = subprocess.DEVNULL
 
+    print(
+        f"🚀 Starting port forwarding session through [bold]{through}[/bold] with reason: [italic]{reason!r}[/italic].",
+    )
     proc = subprocess.Popen(  # noqa: S603
         command,
         stdout=stdout,

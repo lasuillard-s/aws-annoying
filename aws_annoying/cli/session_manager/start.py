@@ -39,6 +39,7 @@ def start(
         raise typer.Exit(1)
 
     # Start the session, replacing the current process
+    print(f"🚀 Starting session to target [bold]{target}[/bold] with reason: [italic]{reason!r}[/italic].")
     command = session_manager.command(
         target=target,
         document_name="SSM-SessionManagerRunShell",
