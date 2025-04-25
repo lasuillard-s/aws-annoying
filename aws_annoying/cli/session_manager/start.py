@@ -40,7 +40,7 @@ def start(
 
     # Start the session, replacing the current process
     print(f"🚀 Starting session to target [bold]{target}[/bold] with reason: [italic]{reason!r}[/italic].")
-    command = session_manager.command(
+    command = session_manager.build_command(
         target=target,
         document_name="SSM-SessionManagerRunShell",
         parameters={},

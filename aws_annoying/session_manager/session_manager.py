@@ -243,7 +243,7 @@ class SessionManager:
     # ------------------------------------------------------------------------
     # Command
     # ------------------------------------------------------------------------
-    def command(
+    def build_command(
         self,
         target: str,
         document_name: str,

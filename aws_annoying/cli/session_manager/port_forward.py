@@ -88,7 +88,7 @@ def port_forward(  # noqa: PLR0913
         raise typer.Exit(1)
 
     # Initiate the session
-    command = session_manager.command(
+    command = session_manager.build_command(
         target=target,
         document_name="AWS-StartPortForwardingSessionToRemoteHost",
         parameters={
