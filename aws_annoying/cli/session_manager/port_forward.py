@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import signal
+import subprocess
 from pathlib import Path  # noqa: TC003
 
 import typer
@@ -86,7 +87,7 @@ def port_forward(  # noqa: PLR0913
         raise typer.Exit(1)
 
     # Initiate the session
-    proc = session_manager.start(
+    command = session_manager.command(
         target=target,
         document_name="AWS-StartPortForwardingSessionToRemoteHost",
         parameters={
@@ -95,7 +96,19 @@ def port_forward(  # noqa: PLR0913
             "localPortNumber": [str(local_port)],
         },
         reason=reason,
-        log_file=log_file,
+    )
+    stdout: subprocess._FILE
+    if log_file is not None:  # noqa: SIM108
+        stdout = log_file.open(mode="at+", buffering=1)
+    else:
+        stdout = subprocess.DEVNULL
+
+    proc = subprocess.Popen(  # noqa: S603
+        command,
+        stdout=stdout,
+        stderr=subprocess.STDOUT,
+        text=True,
+        close_fds=False,  # FD inherited from parent process
     )
     print(f"✅ Session Manager Plugin started with PID {proc.pid}. Outputs will be logged to {log_file.absolute()}.")
 

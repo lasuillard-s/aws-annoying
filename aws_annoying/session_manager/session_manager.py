@@ -241,28 +241,25 @@ class SessionManager:
             raise UnsupportedPlatformError(msg)
 
     # ------------------------------------------------------------------------
-    # Session
+    # Command
     # ------------------------------------------------------------------------
-    def start(
+    def command(
         self,
-        *,
         target: str,
         document_name: str,
         parameters: dict[str, Any],
         reason: str | None = None,
-        log_file: Path | None = None,
-    ) -> subprocess.Popen:
-        """Start new session.
+    ) -> list[str]:
+        """Build command for starting a session.
 
         Args:
-            target: The target instance ID or name.
+            target: The target instance ID.
             document_name: The SSM document name to use for the session.
             parameters: The parameters to pass to the SSM document.
             reason: The reason for starting the session.
-            log_file: Optional file to log output to.
 
         Returns:
-            Process ID of the session.
+            The command to start the session.
         """
         is_installed, binary_path, version = self.verify_installation()
         if not is_installed:
@@ -279,7 +276,7 @@ class SessionManager:
         )
 
         region = self.session.region_name
-        command = [
+        return [
             str(binary_path),
             json.dumps(response),
             region,
@@ -288,20 +285,6 @@ class SessionManager:
             json.dumps({"Target": target}),
             f"https://ssm.{region}.amazonaws.com",
         ]
-
-        stdout: subprocess._FILE
-        if log_file is not None:  # noqa: SIM108
-            stdout = log_file.open(mode="at+", buffering=1)
-        else:
-            stdout = subprocess.DEVNULL
-
-        return subprocess.Popen(  # noqa: S603
-            command,
-            stdout=stdout,
-            stderr=subprocess.STDOUT,
-            text=True,
-            close_fds=False,  # FD inherited from parent process
-        )
 
 
 # ? Could be moved to utils, but didn't because it's too specific to this module
