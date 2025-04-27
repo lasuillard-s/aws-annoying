@@ -18,7 +18,7 @@ def install(
     ),
 ) -> None:
     """Install AWS Session Manager plugin."""
-    session_manager = SessionManager(downloader=TQDMDownloader())
+    session_manager = SessionManager()
 
     # Check session-manager-plugin already installed
     is_installed, binary_path, version = session_manager.verify_installation()
@@ -28,7 +28,7 @@ def install(
 
     # Install session-manager-plugin
     print("⬇️ Installing AWS Session Manager plugin. You could be prompted for admin privileges request.")
-    session_manager.install(confirm=yes)
+    session_manager.install(confirm=yes, downloader=TQDMDownloader())
 
     # Verify installation
     is_installed, binary_path, version = session_manager.verify_installation()
