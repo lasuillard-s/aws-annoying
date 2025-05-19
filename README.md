@@ -44,4 +44,6 @@ Available commands:
 
 Please refer to the CLI help for more information about the available commands and options.
 
+## 💖 Contributing
+
 Any feedback, suggestions or contributions are welcome! Feel free to open an issue or a pull request.
