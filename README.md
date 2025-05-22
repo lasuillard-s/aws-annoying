@@ -32,7 +32,8 @@ $ aws-annoying --help
 
 Available commands:
 
-- **ecs-task-definition-lifecycle** Help to manage ECS task definitions lifecycle.
+- **ecs** ECS utilities.
+  - **task-definition-lifecycle** Help to manage ECS task definitions lifecycle.
 - **load-variables** Wrapper command to run command with variables from AWS resources injected as environment variables.
 - **mfa** Commands to manage MFA authentication.
   - **configure** Configure AWS profile for MFA.

@@ -6,7 +6,7 @@ import boto3
 import typer
 from rich import print  # noqa: A004
 
-from .app import app
+from ._app import ecs_app
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 _DELETE_CHUNK_SIZE = 10
 
 
-@app.command()
-def ecs_task_definition_lifecycle(
+@ecs_app.command()
+def task_definition_lifecycle(
     *,
     family: str = typer.Option(
         ...,
