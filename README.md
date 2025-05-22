@@ -34,6 +34,7 @@ Available commands:
 
 - **ecs** ECS utilities.
   - **task-definition-lifecycle** Help to manage ECS task definitions lifecycle.
+  - **wait-for-deployment** Wait for ECS deployment to complete.
 - **load-variables** Wrapper command to run command with variables from AWS resources injected as environment variables.
 - **mfa** Commands to manage MFA authentication.
   - **configure** Configure AWS profile for MFA.
