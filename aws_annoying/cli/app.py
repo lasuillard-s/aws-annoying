@@ -44,6 +44,7 @@ def main(  # noqa: D103
                 "formatter": "rich",
                 "show_time": False,
                 "show_level": False,
+                "show_path": False,
                 "markup": True,
             },
         },
