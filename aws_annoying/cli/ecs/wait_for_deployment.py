@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 @ecs_app.command()
-def ecs_wait_for_deployment(
+def wait_for_deployment(
     *,
     cluster: str = typer.Option(
         ...,
@@ -30,10 +30,7 @@ def ecs_wait_for_deployment(
     ),
     task_definition: Optional[str] = typer.Option(
         None,
-        help=(
-            "The task definition for the service expected after deployment."
-            " If not provided, the latest task definition will be used."
-        ),
+        help="The task definition for the service expected after deployment. If not provided, it will not be checked.",
         show_default=False,
     ),
     polling_interval: int = typer.Option(
