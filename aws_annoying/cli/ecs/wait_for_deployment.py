@@ -40,7 +40,10 @@ def wait_for_deployment(  # noqa: PLR0913
     ),
     timeout_seconds: Optional[int] = typer.Option(
         None,
-        help="The maximum time to wait for the deployment to complete, in seconds.",
+        help=(
+            "The maximum time to wait for the deployment to complete, in seconds."
+            " If not provided, it will wait indefinitely."
+        ),
         min=1,
     ),
     wait_for_start: bool = typer.Option(
