@@ -95,12 +95,12 @@ def test_dry_run(snapshot: Snapshot) -> None:
     result = runner.invoke(
         app,
         [
+            "--dry-run",
             "ecs-task-definition-lifecycle",
             "--family",
             family,
             "--keep-latest",
             str(keep_latest),
-            "--dry-run",
         ],
     )
     task_definitions = [

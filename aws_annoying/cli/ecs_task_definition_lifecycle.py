@@ -6,6 +6,8 @@ import boto3
 import typer
 from rich import print  # noqa: A004
 
+from aws_annoying.cli.app import global_flags
+
 from .app import app
 
 if TYPE_CHECKING:
@@ -33,12 +35,9 @@ def ecs_task_definition_lifecycle(
         False,  # noqa: FBT003
         help="Delete the task definition after deregistering it.",
     ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Do not perform any changes, only show what would be done.",
-    ),
 ) -> None:
     """Execute ECS task definition lifecycle."""
+    dry_run = global_flags["dry_run"]
     if dry_run:
         print("⚠️ Dry run mode enabled. Will not perform any actual changes.")
 

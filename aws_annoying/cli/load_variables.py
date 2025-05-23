@@ -9,6 +9,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from aws_annoying.cli.app import global_flags
 from aws_annoying.variables import VariableLoader
 
 from .app import app
@@ -46,10 +47,6 @@ def load_variables(  # noqa: PLR0913
         False,  # noqa: FBT003
         help="Suppress all outputs from this command.",
     ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Print the progress only. Neither load variables nor run the command.",
-    ),
     replace: bool = typer.Option(
         True,  # noqa: FBT003
         help=(
@@ -82,6 +79,7 @@ def load_variables(  # noqa: PLR0913
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
+    dry_run = global_flags["dry_run"]
     console = Console(quiet=quiet, emoji=False)
 
     command = ctx.args
