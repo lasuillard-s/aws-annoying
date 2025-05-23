@@ -28,6 +28,8 @@ def patch_terminal_width(monkeypatch: pytest.MonkeyPatch, set_terminal_width: in
     monkeypatch.setenv("COLUMNS", str(set_terminal_width))
 
 
+# AWS
+# ----------------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def aws_credentials(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Mock AWS Credentials."""
