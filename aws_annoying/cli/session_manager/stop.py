@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import logging
 import os
 import signal
 from pathlib import Path  # noqa: TC003
 
 import typer
-from rich import print  # noqa: A004
 
 from ._app import session_manager_app
+
+logger = logging.getLogger(__name__)
 
 
 @session_manager_app.command()
@@ -24,7 +26,7 @@ def stop(
     """Stop running session for PID file."""
     # Check if PID file exists
     if not pid_file.is_file():
-        print(f"❌ PID file not found: {pid_file}")
+        logger.error("❌ PID file not found: %s", pid_file)
         raise typer.Exit(1)
 
     # Read PID from file
@@ -32,19 +34,19 @@ def stop(
     try:
         pid = int(pid_content)
     except ValueError:
-        print(f"🚫 PID file content is invalid; expected integer, but got: {type(pid_content)}")
+        logger.error("🚫 PID file content is invalid; expected integer, but got: %s", type(pid_content))  # noqa: TRY400
         raise typer.Exit(1) from None
 
     # Send SIGTERM to the process
     try:
-        print(f"⚠️ Terminating running process with PID {pid}.")
+        logger.warning("⚠️ Terminating running process with PID %d.", pid)
         os.kill(pid, signal.SIGTERM)
     except ProcessLookupError:
-        print(f"❗ Tried to terminate process with PID {pid} but does not exist.")
+        logger.warning("❗ Tried to terminate process with PID %d but does not exist.", pid)
 
     # Remove the PID file
     if remove:
-        print(f"✅ Removed the PID file {pid_file}.")
+        logger.info("✅ Removed the PID file %s.", pid_file)
         pid_file.unlink()
 
-    print("✅ Terminated the session successfully.")
+    logger.info("✅ Terminated the session successfully.")

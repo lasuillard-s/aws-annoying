@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import logging
 import os
 import signal
 import subprocess
 from pathlib import Path  # noqa: TC003
 
 import typer
-from rich import print  # noqa: A004
 
 from ._app import session_manager_app
 from ._common import SessionManager, get_instance_id_by_name
+
+logger = logging.getLogger(__name__)
 
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
@@ -59,30 +61,30 @@ def port_forward(  # noqa: PLR0913
     # Check if the PID file already exists
     if pid_file.exists():
         if not terminate_running_process:
-            print("🚫 PID file already exists.")
+            logger.error("🚫 PID file already exists.")
             raise typer.Exit(1)
 
         pid_content = pid_file.read_text()
         try:
             existing_pid = int(pid_content)
         except ValueError:
-            print(f"🚫 PID file content is invalid; expected integer, but got: {type(pid_content)}")
+            logger.error("🚫 PID file content is invalid; expected integer, but got: %r", type(pid_content))  # noqa: TRY400
             raise typer.Exit(1) from None
 
         try:
-            print(f"⚠️ Terminating running process with PID {existing_pid}.")
+            logger.warning("⚠️ Terminating running process with PID %d.", existing_pid)
             os.kill(existing_pid, signal.SIGTERM)
             pid_file.write_text("")  # Clear the PID file
         except ProcessLookupError:
-            print(f"⚠️ Tried to terminate process with PID {existing_pid} but does not exist.")
+            logger.warning("⚠️ Tried to terminate process with PID %d but does not exist.", existing_pid)
 
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(through)
     if instance_id:
-        print(f"❗ Instance ID resolved: [bold]{instance_id}[/bold]")
+        logger.info("❗ Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id
     else:
-        print(f"🚫 Instance with name '{through}' not found.")
+        logger.info("🚫 Instance with name '%s' not found.", through)
         raise typer.Exit(1)
 
     # Initiate the session
@@ -102,8 +104,10 @@ def port_forward(  # noqa: PLR0913
     else:
         stdout = subprocess.DEVNULL
 
-    print(
-        f"🚀 Starting port forwarding session through [bold]{through}[/bold] with reason: [italic]{reason!r}[/italic].",
+    logger.info(
+        "🚀 Starting port forwarding session through [bold]%s[/bold] with reason: [italic]%r[/italic].",
+        through,
+        reason,
     )
     proc = subprocess.Popen(  # noqa: S603
         command,
@@ -112,8 +116,12 @@ def port_forward(  # noqa: PLR0913
         text=True,
         close_fds=False,  # FD inherited from parent process
     )
-    print(f"✅ Session Manager Plugin started with PID {proc.pid}. Outputs will be logged to {log_file.absolute()}.")
+    logger.info(
+        "✅ Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
+        proc.pid,
+        log_file.absolute(),
+    )
 
     # Write the PID to the file
     pid_file.write_text(str(proc.pid))
-    print(f"💾 PID file written to {pid_file.absolute()}.")
+    logger.info("💾 PID file written to %s.", pid_file.absolute())

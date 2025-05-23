@@ -169,11 +169,11 @@ def test_replace_quiet(snapshot: Snapshot) -> None:
 
     # Act
     result = invoke_cli(
+        "--quiet",
         "load-variables",
         *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
-        "--quiet",
         "--",
         *printenv,
         env=setup["env"],

@@ -4,6 +4,7 @@ import logging
 import logging.config
 
 import typer
+from rich.console import Console
 
 app = typer.Typer(
     pretty_exceptions_short=True,
@@ -26,6 +27,7 @@ def main(  # noqa: D103
     ),
 ) -> None:
     log_level = logging.DEBUG if verbose else logging.INFO
+    console = Console(soft_wrap=True, emoji=False)
     logging_config: logging.config._DictConfigArgs = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -40,12 +42,9 @@ def main(  # noqa: D103
                 "class": "logging.NullHandler",
             },
             "rich": {
-                "class": "rich.logging.RichHandler",
+                "class": "aws_annoying.cli.logging_handler.RichLogHandler",
                 "formatter": "rich",
-                "show_time": False,
-                "show_level": False,
-                "show_path": False,
-                "markup": True,
+                "console": console,
             },
         },
         "root": {
