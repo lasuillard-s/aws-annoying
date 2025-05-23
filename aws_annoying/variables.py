@@ -2,16 +2,19 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, TypedDict
 
 import boto3
+
+logger = logging.getLogger(__name__)
 
 # Type aliases for readability
 _ARN = str
 _Variables = dict[str, Any]
 
 # TODO(lasuillard): Need some refactoring (with #2, #3)
-# TODO(lasuillard): Put some logging
+# TODO(lasuillard): Dry run mode is unnecessary as this is read-only operation
 
 
 class _LoadStatsDict(TypedDict):
@@ -20,6 +23,7 @@ class _LoadStatsDict(TypedDict):
 
 
 class VariableLoader:  # noqa: D101
+    # TODO(lasuillard): Pass session instead of using `boto3.Session()` directly
     def __init__(self, *, dry_run: bool) -> None:
         """Initialize the VariableLoader.
 
