@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path  # noqa: TC003
 from typing import Optional
 
 import boto3
 import typer
-from rich import print  # noqa: A004
 from rich.prompt import Prompt
 
 from aws_annoying.mfa_config import MfaConfig, update_credentials
 
 from ._app import mfa_app
+
+logger = logging.getLogger(__name__)
 
 
 @mfa_app.command()
@@ -59,7 +61,7 @@ def configure(  # noqa: PLR0913
     # Load configuration
     mfa_config, exists = MfaConfig.from_ini_file(aws_config, aws_config_section)
     if exists:
-        print(f"⚙️ Loaded MFA configuration from AWS config ({aws_config}).")
+        logger.info("Loaded MFA configuration from AWS config (%s).", aws_config)
 
     mfa_profile = (
         mfa_profile
@@ -85,7 +87,7 @@ def configure(  # noqa: PLR0913
     )
 
     # Get credentials
-    print(f"💬 Retrieving MFA credentials using profile [bold]{mfa_source_profile}[/bold]")
+    logger.info("Retrieving MFA credentials using profile [bold]%s[/bold]", mfa_source_profile)
     session = boto3.session.Session(profile_name=mfa_source_profile)
     sts = session.client("sts")
     response = sts.get_session_token(
@@ -95,7 +97,11 @@ def configure(  # noqa: PLR0913
     credentials = response["Credentials"]
 
     # Update MFA profile in AWS credentials
-    print(f"✅ Updating MFA profile ([bold]{mfa_profile}[/bold]) to AWS credentials ({aws_credentials})")
+    logger.warning(
+        "Updating MFA profile ([bold]%s[/bold]) to AWS credentials ([bold]%s[/bold])",
+        mfa_profile,
+        aws_credentials,
+    )
     update_credentials(
         aws_credentials,
         mfa_profile,  # type: ignore[arg-type]
@@ -106,13 +112,14 @@ def configure(  # noqa: PLR0913
 
     # Persist MFA configuration
     if persist:
-        print(
-            f"✅ Persisting MFA configuration in AWS config ({aws_config}),"
-            f" in [bold]{aws_config_section}[/bold] section.",
+        logger.info(
+            "Persisting MFA configuration in AWS config (%s), in [bold]%s[/bold] section.",
+            aws_config,
+            aws_config_section,
         )
         mfa_config.mfa_profile = mfa_profile
         mfa_config.mfa_source_profile = mfa_source_profile
         mfa_config.mfa_serial_number = mfa_serial_number
         mfa_config.save_ini_file(aws_config, aws_config_section)
     else:
-        print("⚠️ MFA configuration not persisted.")
+        logger.warning("MFA configuration not persisted.")

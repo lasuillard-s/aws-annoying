@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, TypedDict
 
 import boto3
+
+logger = logging.getLogger(__name__)
 
 # Type aliases for readability
 _ARN = str
