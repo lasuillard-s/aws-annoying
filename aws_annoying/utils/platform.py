@@ -28,6 +28,11 @@ def os_release() -> dict[str, str]:
     }
 
 
+def is_macos() -> bool:
+    """Check if the current OS is macOS."""
+    return platform.system() == "Darwin"
+
+
 def is_windows() -> bool:
     """Check if the current OS is Windows."""
     return platform.system() == "Windows"

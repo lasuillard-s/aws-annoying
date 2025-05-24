@@ -5,6 +5,7 @@ from time import sleep
 import pytest
 
 from aws_annoying.utils.timeout import OperationTimeoutError, Timeout
+from tests._helpers import run_if_windows
 
 
 class Test_Timeout:
@@ -23,7 +24,7 @@ class Test_Timeout:
         with Timeout(1), pytest.raises(OperationTimeoutError):
             sleep(3)
 
-    @pytest.mark.windows
+    @run_if_windows
     def test_decorator_windows(self) -> None:
         # Arrange
         @Timeout(1)
@@ -33,7 +34,7 @@ class Test_Timeout:
         # Act & Assert
         do_something()  # Won't raise an exception
 
-    @pytest.mark.windows
+    @run_if_windows
     def test_context_manager_windows(self) -> None:
         # Arrange & Act & Assert
         with Timeout(1):
