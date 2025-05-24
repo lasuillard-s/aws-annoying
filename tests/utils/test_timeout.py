@@ -5,10 +5,11 @@ from time import sleep
 import pytest
 
 from aws_annoying.utils.timeout import OperationTimeoutError, Timeout
-from tests._helpers import run_if_windows
+from tests._helpers import run_if_windows, skip_if_windows
 
 
 class Test_Timeout:
+    @skip_if_windows
     def test_decorator_non_windows(self) -> None:
         # Arrange
         @Timeout(1)
@@ -19,6 +20,7 @@ class Test_Timeout:
         with pytest.raises(OperationTimeoutError):
             do_something()
 
+    @skip_if_windows
     def test_context_manager_non_windows(self) -> None:
         # Arrange & Act & Assert
         with Timeout(1), pytest.raises(OperationTimeoutError):
