@@ -17,8 +17,13 @@ class _LoadStatsDict(TypedDict):
 
 
 class VariableLoader:  # noqa: D101
-    def __init__(self) -> None:  # noqa: D107
-        pass
+    def __init__(self, *, session: boto3.session.Session | None = None) -> None:
+        """Initialize variable loader.
+
+        Args:
+            session: Boto3 session to use for AWS operations.
+        """
+        self.session = session or boto3.session.Session()
 
     # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
     #                   ; consider adding it if needed
@@ -66,7 +71,7 @@ class VariableLoader:  # noqa: D101
         if not secrets_map:
             return {}
 
-        secretsmanager = boto3.client("secretsmanager")
+        secretsmanager = self.session.client("secretsmanager")
 
         # Retrieve the secrets
         arns = list(secrets_map.values())
@@ -95,7 +100,7 @@ class VariableLoader:  # noqa: D101
         if not parameters_map:
             return {}
 
-        ssm = boto3.client("ssm")
+        ssm = self.session.client("ssm")
 
         # Retrieve the parameters
         parameter_names = list(parameters_map.values())
