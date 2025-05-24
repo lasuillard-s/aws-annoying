@@ -102,7 +102,7 @@ def load_variables(  # noqa: PLR0913
     for idx, arn in sorted(map_arns_by_index.items()):
         table.add_row(idx, arn)
 
-    # ? Workaround for logger does not properly handle the table
+    # Workaround: The logger cannot directly handle the rich table output.
     with StringIO() as file:
         Console(file=file, emoji=False).print(table)
         table_str = file.getvalue().rstrip()

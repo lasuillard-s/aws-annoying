@@ -59,6 +59,6 @@ def main(  # noqa: D103
         },
     }
     if quiet:
-        del logging_config["loggers"]["aws_annoying"]
+        logging_config["loggers"]["aws_annoying"]["level"] = logging.CRITICAL
 
     logging.config.dictConfig(logging_config)
