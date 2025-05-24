@@ -5,8 +5,10 @@ import os
 import typer
 from rich import print  # noqa: A004
 
+from aws_annoying.utils.ec2 import get_instance_id_by_name
+
 from ._app import session_manager_app
-from ._common import SessionManager, get_instance_id_by_name
+from ._common import SessionManager
 
 # TODO(lasuillard): ECS support (#24)
 # TODO(lasuillard): Interactive instance selection
