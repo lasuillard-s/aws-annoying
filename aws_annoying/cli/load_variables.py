@@ -22,8 +22,8 @@ from .app import app
     },
 )
 def load_variables(  # noqa: PLR0913
-    *,
     ctx: typer.Context,
+    *,
     arns: list[str] = typer.Option(
         [],
         metavar="ARN",
@@ -45,10 +45,6 @@ def load_variables(  # noqa: PLR0913
     quiet: bool = typer.Option(
         False,  # noqa: FBT003
         help="Suppress all outputs from this command.",
-    ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Print the progress only. Neither load variables nor run the command.",
     ),
     replace: bool = typer.Option(
         True,  # noqa: FBT003
@@ -82,6 +78,7 @@ def load_variables(  # noqa: PLR0913
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
+    dry_run = ctx.meta["dry_run"]
     console = Console(quiet=quiet, emoji=False)
 
     command = ctx.args
