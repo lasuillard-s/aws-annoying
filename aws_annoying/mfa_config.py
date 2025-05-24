@@ -6,7 +6,6 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-# TODO(lasuillard): Need some refactoring (configurator class)
 # TODO(lasuillard): Put some logging
 
 

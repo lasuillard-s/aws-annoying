@@ -9,7 +9,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from aws_annoying.variables import VariableLoader
+from aws_annoying.variable_loader import VariableLoader
 
 from .app import app
 
@@ -104,7 +104,7 @@ def load_variables(  # noqa: PLR0913
     console.print(table)
 
     # Retrieve the variables
-    loader = VariableLoader(dry_run=dry_run)
+    loader = VariableLoader()
     console.print("🔍 Retrieving variables from AWS resources...")
     if dry_run:
         console.print("⚠️ Dry run mode enabled. Variables won't be loaded from AWS.")
