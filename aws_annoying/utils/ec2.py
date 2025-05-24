@@ -19,7 +19,7 @@ def get_instance_id_by_name(name_or_id: str, *, session: boto3.session.Session |
     Returns:
         The instance ID if found, otherwise `None`.
     """
-    if re.match(r"m?i-.+", name_or_id):
+    if re.match(r"^m?i-[0-9a-f]+$", name_or_id):
         return name_or_id
 
     session = session or boto3.session.Session()
