@@ -106,6 +106,7 @@ markers = [
   "unit: Isolated unit tests",
   "integration: Integration tests",
   # _
+  "docker: Tests that require Docker to run",
 ]
 
 [tool.coverage.run]

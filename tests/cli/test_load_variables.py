@@ -24,6 +24,7 @@ runner = CliRunner()
 pytestmark = [
     pytest.mark.integration,
     pytest.mark.usefixtures("use_localstack"),
+    pytest.mark.docker,
 ]
 
 

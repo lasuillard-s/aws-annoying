@@ -73,7 +73,7 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
           brew uninstall session-manager-plugin
-          uv run pytest
+          uv run pytest -m 'not docker'
 
       - name: Run tests (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
@@ -83,7 +83,7 @@ jobs:
             -OutFile "uninstall.bat"
 
           Start-Process "cmd.exe" -ArgumentList "/c uninstall.bat" -Wait
-          uv run pytest
+          uv run pytest -m 'not docker'
 
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@v5
