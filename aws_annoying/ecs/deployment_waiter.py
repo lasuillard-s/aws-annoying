@@ -19,7 +19,6 @@ class DeploymentFailedError(Exception):
     """Deployment failed."""
 
 
-# TODO(lasuillard): Replace print with logging
 class ECSDeploymentWaiter:
     """ECS service deployment waiter."""
 
