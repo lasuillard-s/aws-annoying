@@ -9,7 +9,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from aws_annoying.variables import VariableLoader
+from aws_annoying.variable_loader import VariableLoader
 
 from .app import app
 
