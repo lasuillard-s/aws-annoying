@@ -1,7 +1,7 @@
-┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+ℹ️ ┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Index ┃ ARN                              ┃
 ┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ 0     │ arn:aws:s3:::my-bucket/my-object │
 └───────┴──────────────────────────────────┘
-🔍 Retrieving variables from AWS resources...
-❌ Failed to load the variables: Unsupported resource: 'arn:aws:s3:::my-bucket/my-object'
+ℹ️ Retrieving variables from AWS resources...
+❗ Failed to load the variables: Unsupported resource: 'arn:aws:s3:::my-bucket/my-object'

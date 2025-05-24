@@ -44,7 +44,7 @@ def ecs_task_definition_lifecycle(
 ) -> None:
     """Execute ECS task definition lifecycle."""
     if dry_run:
-        logger.info("⚠️ Dry run mode enabled. Will not perform any actual changes.")
+        logger.info("Dry run mode enabled. Will not perform any actual changes.")
 
     ecs = boto3.client("ecs")
 
@@ -63,19 +63,19 @@ def ecs_task_definition_lifecycle(
 
     # Keep the latest N task definitions
     expired_taskdef_arns = task_definition_arns[:-keep_latest]
-    logger.warning("⚠️ Deregistering %d task definitions...", len(expired_taskdef_arns))
+    logger.warning("Deregistering %d task definitions...", len(expired_taskdef_arns))
     for arn in expired_taskdef_arns:
         if not dry_run:
             ecs.deregister_task_definition(taskDefinition=arn)
 
         # ARN like: "arn:aws:ecs:<region>:<account-id>:task-definition/<family>:<revision>"
         _, family_revision = arn.split(":task-definition/")
-        logger.warning("✅ Deregistered task definition [yellow]%r[/yellow]", family_revision)
+        logger.warning("Deregistered task definition [yellow]%r[/yellow]", family_revision)
 
     if delete and expired_taskdef_arns:
         # Delete the expired task definitions in chunks due to API limitation
         logger.warning(
-            "⚠️ Deleting %d task definitions in chunks of size %d...",
+            "Deleting %d task definitions in chunks of size %d...",
             len(expired_taskdef_arns),
             _DELETE_CHUNK_SIZE,
         )
@@ -83,7 +83,7 @@ def ecs_task_definition_lifecycle(
             if not dry_run:
                 ecs.delete_task_definitions(taskDefinitions=chunk)
 
-            logger.warning("✅ Deleted %d task definitions in %d-th batch.", len(chunk), idx)
+            logger.warning("Deleted %d task definitions in %d-th batch.", len(chunk), idx)
 
 
 def _chunker(sequence: list, size: int) -> Iterator[list]:

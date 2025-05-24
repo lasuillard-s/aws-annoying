@@ -1,16 +1,16 @@
-🔍 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
-🔍 Found 1 sources from environment variables.
-┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+ℹ️ Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
+ℹ️ Found 1 sources from environment variables.
+ℹ️ ┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Index        ┃ ARN                                                           ┃
 ┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ 0            │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/… │
 │ 1            │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-s… │
 │ 900_override │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/override  │
 └──────────────┴───────────────────────────────────────────────────────────────┘
-🔍 Retrieving variables from AWS resources...
+ℹ️ Retrieving variables from AWS resources...
 ⚠️ Dry run mode enabled. Variables won't be loaded from AWS.
-✅ Retrieved 1 secrets and 2 parameters.
-🚀 Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+ℹ️ Retrieved 1 secrets and 2 parameters.
+ℹ️ Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
 DJANGO_SETTINGS_MODULE=config.settings.development
 DJANGO_SECRET_KEY=
 DJANGO_DEBUG=

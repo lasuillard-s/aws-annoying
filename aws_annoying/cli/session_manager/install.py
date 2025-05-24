@@ -26,17 +26,17 @@ def install(
     # Check session-manager-plugin already installed
     is_installed, binary_path, version = session_manager.verify_installation()
     if is_installed:
-        logger.info("✅ Session Manager plugin is already installed at %s (version: %s)", binary_path, version)
+        logger.info("Session Manager plugin is already installed at %s (version: %s)", binary_path, version)
         return
 
     # Install session-manager-plugin
-    logger.warning("⬇️ Installing AWS Session Manager plugin. You could be prompted for admin privileges request.")
+    logger.warning("Installing AWS Session Manager plugin. You could be prompted for admin privileges request.")
     session_manager.install(confirm=yes, downloader=TQDMDownloader())
 
     # Verify installation
     is_installed, binary_path, version = session_manager.verify_installation()
     if not is_installed:
-        logger.error("❌ Installation failed. Session Manager plugin not found.")
+        logger.error("Installation failed. Session Manager plugin not found.")
         raise typer.Exit(1)
 
-    logger.info("✅ Session Manager plugin successfully installed at %s (version: %s)", binary_path, version)
+    logger.info("Session Manager plugin successfully installed at %s (version: %s)", binary_path, version)

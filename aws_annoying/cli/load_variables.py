@@ -84,17 +84,17 @@ def load_variables(  # noqa: PLR0913
     """  # noqa: E501
     command = ctx.args
     if not command:
-        logger.warning("⚠️ No command provided. Exiting...")
+        logger.warning("No command provided. Exiting...")
         raise typer.Exit(0)
 
     # Mapping of the ARNs by index (index used for ordering)
     map_arns_by_index = {str(idx): arn for idx, arn in enumerate(arns)}
     if env_prefix:
-        logger.info("🔍 Loading ARNs from environment variables with prefix: %r", env_prefix)
+        logger.info("Loading ARNs from environment variables with prefix: %r", env_prefix)
         arns_env = {
             key.removeprefix(env_prefix): value for key, value in os.environ.items() if key.startswith(env_prefix)
         }
-        logger.info("🔍 Found %d sources from environment variables.", len(arns_env))
+        logger.info("Found %d sources from environment variables.", len(arns_env))
         map_arns_by_index = arns_env | map_arns_by_index
 
     # Briefly show the ARNs
@@ -110,17 +110,17 @@ def load_variables(  # noqa: PLR0913
 
     # Retrieve the variables
     loader = VariableLoader(dry_run=dry_run)
-    logger.info("🔍 Retrieving variables from AWS resources...")
+    logger.info("Retrieving variables from AWS resources...")
     if dry_run:
-        logger.warning("⚠️ Dry run mode enabled. Variables won't be loaded from AWS.")
+        logger.warning("Dry run mode enabled. Variables won't be loaded from AWS.")
 
     try:
         variables, load_stats = loader.load(map_arns_by_index)
     except Exception as exc:  # noqa: BLE001
-        logger.error("❌ Failed to load the variables: %s", exc)  # noqa: TRY400
+        logger.error("Failed to load the variables: %s", exc)  # noqa: TRY400
         raise typer.Exit(1) from None
 
-    logger.info("✅ Retrieved %d secrets and %d parameters.", load_stats["secrets"], load_stats["parameters"])
+    logger.info("Retrieved %d secrets and %d parameters.", load_stats["secrets"], load_stats["parameters"])
 
     # Prepare the environment variables
     env = os.environ.copy()
@@ -132,7 +132,7 @@ def load_variables(  # noqa: PLR0913
             env.setdefault(key, str(value))
 
     # Run the command with the variables injected as environment variables, replacing current process
-    logger.info("🚀 Running the command: [bold orchid]%s[/bold orchid]", " ".join(command))
+    logger.info("Running the command: [bold orchid]%s[/bold orchid]", " ".join(command))
     if replace:  # pragma: no cover (not coverable)
         os.execvpe(command[0], command, env=env)  # noqa: S606
         # The above line should never return

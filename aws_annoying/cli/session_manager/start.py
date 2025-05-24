@@ -32,15 +32,15 @@ def start(
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(target)
     if instance_id:
-        logger.info("❗ Instance ID resolved: [bold]%s[/bold]", instance_id)
+        logger.info("Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id
     else:
-        logger.info("🚫 Instance with name '%s' not found.", target)
+        logger.info("Instance with name '%s' not found.", target)
         raise typer.Exit(1)
 
     # Start the session, replacing the current process
     logger.info(
-        "🚀 Starting session to target [bold]%s[/bold] with reason: [italic]%r[/italic].",
+        "Starting session to target [bold]%s[/bold] with reason: [italic]%r[/italic].",
         target,
         reason,
     )

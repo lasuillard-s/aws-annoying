@@ -61,30 +61,30 @@ def port_forward(  # noqa: PLR0913
     # Check if the PID file already exists
     if pid_file.exists():
         if not terminate_running_process:
-            logger.error("🚫 PID file already exists.")
+            logger.error("PID file already exists.")
             raise typer.Exit(1)
 
         pid_content = pid_file.read_text()
         try:
             existing_pid = int(pid_content)
         except ValueError:
-            logger.error("🚫 PID file content is invalid; expected integer, but got: %r", type(pid_content))  # noqa: TRY400
+            logger.error("PID file content is invalid; expected integer, but got: %r", type(pid_content))  # noqa: TRY400
             raise typer.Exit(1) from None
 
         try:
-            logger.warning("⚠️ Terminating running process with PID %d.", existing_pid)
+            logger.warning("Terminating running process with PID %d.", existing_pid)
             os.kill(existing_pid, signal.SIGTERM)
             pid_file.write_text("")  # Clear the PID file
         except ProcessLookupError:
-            logger.warning("⚠️ Tried to terminate process with PID %d but does not exist.", existing_pid)
+            logger.warning("Tried to terminate process with PID %d but does not exist.", existing_pid)
 
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(through)
     if instance_id:
-        logger.info("❗ Instance ID resolved: [bold]%s[/bold]", instance_id)
+        logger.info("Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id
     else:
-        logger.info("🚫 Instance with name '%s' not found.", through)
+        logger.info("Instance with name '%s' not found.", through)
         raise typer.Exit(1)
 
     # Initiate the session
@@ -105,7 +105,7 @@ def port_forward(  # noqa: PLR0913
         stdout = subprocess.DEVNULL
 
     logger.info(
-        "🚀 Starting port forwarding session through [bold]%s[/bold] with reason: [italic]%r[/italic].",
+        "Starting port forwarding session through [bold]%s[/bold] with reason: [italic]%r[/italic].",
         through,
         reason,
     )
@@ -117,11 +117,11 @@ def port_forward(  # noqa: PLR0913
         close_fds=False,  # FD inherited from parent process
     )
     logger.info(
-        "✅ Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
+        "Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
         proc.pid,
         log_file.absolute(),
     )
 
     # Write the PID to the file
     pid_file.write_text(str(proc.pid))
-    logger.info("💾 PID file written to %s.", pid_file.absolute())
+    logger.info("PID file written to %s.", pid_file.absolute())

@@ -17,7 +17,7 @@ class SessionManager(_SessionManager):
         if self._confirm:
             return
 
-        confirm = Confirm.ask(f"⚠️ Will run the following command: [bold red]{' '.join(command)}[/bold red]. Proceed?")
+        confirm = Confirm.ask(f"Will run the following command: [bold red]{' '.join(command)}[/bold red]. Proceed?")
         if not confirm:
             raise typer.Abort
 

@@ -60,7 +60,7 @@ def configure(  # noqa: PLR0913
     # Load configuration
     mfa_config, exists = MfaConfig.from_ini_file(aws_config, _CONFIG_INI_SECTION)
     if exists:
-        logger.info("⚙️ Loaded MFA configuration from AWS config (%s).", aws_config)
+        logger.info("Loaded MFA configuration from AWS config (%s).", aws_config)
 
     mfa_profile = (
         mfa_profile
@@ -86,7 +86,7 @@ def configure(  # noqa: PLR0913
     )
 
     # Get credentials
-    logger.info("💬 Retrieving MFA credentials using profile [bold]%s[/bold]", mfa_source_profile)
+    logger.info("Retrieving MFA credentials using profile [bold]%s[/bold]", mfa_source_profile)
     session = boto3.session.Session(profile_name=mfa_source_profile)
     sts = session.client("sts")
     response = sts.get_session_token(
@@ -97,7 +97,7 @@ def configure(  # noqa: PLR0913
 
     # Update MFA profile in AWS credentials
     logger.warning(
-        "✅ Updating MFA profile ([bold]%s[/bold]) to AWS credentials ([bold]%s[/bold])",
+        "Updating MFA profile ([bold]%s[/bold]) to AWS credentials ([bold]%s[/bold])",
         mfa_profile,
         aws_credentials,
     )
@@ -112,7 +112,7 @@ def configure(  # noqa: PLR0913
     # Persist MFA configuration
     if persist:
         logger.info(
-            "✅ Persisting MFA configuration in AWS config (%s), in [bold]%s[/bold] section.",
+            "Persisting MFA configuration in AWS config (%s), in [bold]%s[/bold] section.",
             aws_config,
             _CONFIG_INI_SECTION,
         )
@@ -121,4 +121,4 @@ def configure(  # noqa: PLR0913
         mfa_config.mfa_serial_number = mfa_serial_number
         mfa_config.save_ini_file(aws_config, _CONFIG_INI_SECTION)
     else:
-        logger.warning("⚠️ MFA configuration not persisted.")
+        logger.warning("MFA configuration not persisted.")
