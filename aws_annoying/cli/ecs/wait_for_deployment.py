@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Optional
 
 import typer
-from rich import print  # noqa: A004
 
 from aws_annoying.ecs import DeploymentFailedError, ECSDeploymentWaiter, ECSServiceRef
 from aws_annoying.utils.timeout import OperationTimeoutError, Timeout
 
 from ._app import ecs_app
+
+logger = logging.getLogger(__name__)
 
 
 @ecs_app.command()
@@ -71,14 +73,22 @@ def wait_for_deployment(  # noqa: PLR0913
                 expected_task_definition=expected_task_definition,
             )
     except OperationTimeoutError:
-        print(
-            f"❗ Timeout reached after {timeout_seconds} seconds. The deployment may not have finished.",
+        logger.error(  # noqa: TRY400
+            "Timeout reached after %s seconds. The deployment may not have finished.",
+            timeout_seconds,
         )
         raise typer.Exit(1) from None
     except DeploymentFailedError as err:
         elapsed = datetime.now(tz=timezone.utc) - start
-        print(f"❌ Deployment failed in [bold]{elapsed.total_seconds()}[/bold] seconds with error: {err}")
+        logger.error(  # noqa: TRY400
+            "Deployment failed in [bold]%s[/bold] seconds with error: %s",
+            elapsed.total_seconds(),
+            err,
+        )
         raise typer.Exit(1) from None
 
     elapsed = datetime.now(tz=timezone.utc) - start
-    print(f"✅ Deployment succeeded in [bold]{elapsed.total_seconds()}[/bold] seconds.")
+    logger.info(
+        "Deployment succeeded in [bold]%s[/bold] seconds.",
+        elapsed.total_seconds(),
+    )

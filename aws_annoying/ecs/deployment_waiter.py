@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from time import sleep
 from typing import TYPE_CHECKING, Optional
 
@@ -7,10 +8,11 @@ import boto3
 import botocore.exceptions
 import typer
 from pydantic import PositiveInt, validate_call
-from rich import print  # noqa: A004
 
 if TYPE_CHECKING:
     from .common import ECSServiceRef
+
+logger = logging.getLogger(__name__)
 
 
 class DeploymentFailedError(Exception):
@@ -50,36 +52,52 @@ class ECSDeploymentWaiter:
             expected_task_definition: The service's task definition expected after deployment.
         """
         # Find current deployment for the service
-        print(f"🕓 Looking up running deployment for service [bold]{self.service_ref.service}[/bold]")
+        logger.info(
+            "Looking up running deployment for service [bold]%s[/bold]",
+            self.service_ref.service,
+        )
         latest_deployment_arn = self.get_latest_deployment_arn(
             wait_for_start=wait_for_start,
             polling_interval=polling_interval,
         )
 
         # Polling for the deployment to finish (successfully or unsuccessfully)
-        print(f"🕓 Start waiting for deployment [bold]{latest_deployment_arn}[/bold] to finish.")
+        logger.info(
+            "Start waiting for deployment [bold]%s[/bold] to finish.",
+            latest_deployment_arn,
+        )
         ok, status = self.wait_for_deployment_complete(latest_deployment_arn, polling_interval=polling_interval)
         if ok:
-            print(f"✅ Deployment succeeded with status [bold green]{status}[/bold green]")
+            logger.info(
+                "Deployment succeeded with status [bold green]%s[/bold green]",
+                status,
+            )
         else:
             msg = f"Deployment failed with status: {status}"
             raise DeploymentFailedError(msg)
 
         # Wait for the service to be stable
         if wait_for_stability:
-            print(f"🕓 Waiting for service [bold]{self.service_ref.service}[/bold] to be stable.")
+            logger.debug(
+                "Waiting for service [bold]%s[/bold] to be stable.",
+                self.service_ref.service,
+            )
             self.wait_for_service_stability(polling_interval=polling_interval)
 
         # Check if the service task definition matches the expected one
         if expected_task_definition:
-            print(
-                f"💬 Checking if the service task definition is the expected one: [bold]{expected_task_definition}[/bold]",  # noqa: E501
+            logger.info(
+                "Checking if the service task definition is the expected one: [bold]%s[/bold]",
+                expected_task_definition,
             )
             ok, actual = self.assert_service_task_definition_is(expect=expected_task_definition)
             if ok:
-                print("✅ The service task definition matches the expected one.")
+                logger.info("The service task definition matches the expected one.")
             else:
-                print(f"❗ The service task definition is not the expected one; got: [bold red]{actual}[/bold red]")
+                logger.error(
+                    "The service task definition is not the expected one; got: [bold red]%s[/bold red]",
+                    actual,
+                )
                 raise typer.Exit(1)
 
     @validate_call
@@ -113,12 +131,16 @@ class ECSDeploymentWaiter:
                 break
 
             if wait_for_start:
-                print(
-                    f"🕓 ({attempts + 1}-th attempt) No running deployments found for service [bold]{self.service_ref.service}[/bold]."  # noqa: E501
-                    " Waiting for a new deployment.",
+                logger.info(
+                    "(%d-th attempt) No running deployments found for service [bold]%s[/bold]. Waiting for a new deployment.",  # noqa: E501
+                    attempts + 1,
+                    self.service_ref.service,
                 )
             else:
-                print(f"❗ No running deployments found for service [bold]{self.service_ref.service}[/bold]. Exiting.")
+                logger.error(
+                    "No running deployments found for service [bold]%s[/bold]. Exiting.",
+                    self.service_ref.service,
+                )
                 raise typer.Exit(0)
 
             sleep(polling_interval)
@@ -156,7 +178,11 @@ class ECSDeploymentWaiter:
                 return (True, status)
 
             if status in ("PENDING", "IN_PROGRESS"):
-                print(f"🕓 ({attempts + 1}-th attempt) Deployment in progress... [bold grey53]{status}[/bold grey53]")
+                logger.debug(
+                    "(%d-th attempt) Deployment in progress... [bold grey53]%s[/bold grey53]",
+                    attempts + 1,
+                    status,
+                )
             else:
                 break
 
@@ -188,8 +214,10 @@ class ECSDeploymentWaiter:
 
         attempts = 0
         while (max_attempts is None) or (attempts <= max_attempts):
-            print(
-                f"🕓 ({attempts + 1}-th attempt) Waiting for service [bold]{self.service_ref.service}[/bold] to be stable...",  # noqa: E501
+            logger.debug(
+                "(%d-th attempt) Waiting for service [bold]%s[/bold] to be stable...",
+                attempts + 1,
+                self.service_ref.service,
             )
             try:
                 stability_waiter.wait(
@@ -217,8 +245,9 @@ class ECSDeploymentWaiter:
         """
         ecs = self.session.client("ecs")
 
-        print(
-            f"💬 Checking if the service task definition is the expected one: [bold]{expect}[/bold]",
+        logger.info(
+            "Checking if the service task definition is the expected one: [bold]%s[/bold]",
+            expect,
         )
         service_detail = ecs.describe_services(cluster=self.service_ref.cluster, services=[self.service_ref.service])[
             "services"
