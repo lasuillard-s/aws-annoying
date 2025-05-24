@@ -105,7 +105,7 @@ filterwarnings = ["ignore::DeprecationWarning::"]
 markers = [
   "unit: Isolated unit tests",
   "integration: Integration tests",
-  # _
+  # Testcontainers require Docker to run but it's too complex for CI environments (macOS / Windows)
   "docker: Tests that require Docker to run",
 ]
 
