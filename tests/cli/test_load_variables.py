@@ -215,12 +215,12 @@ def test_dry_run(snapshot: Snapshot) -> None:
 
     # Act
     result = invoke_cli(
+        "--dry-run",
         "load-variables",
         *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
         "--no-replace",
-        "--dry-run",
         "--",
         *printenv,
         env=setup["env"],
