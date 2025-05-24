@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 _ARN = str
 _Variables = dict[str, Any]
 
-# TODO(lasuillard): Need some refactoring (with #2, #3)
-# TODO(lasuillard): Dry run mode is unnecessary as this is read-only operation
-
 
 class _LoadStatsDict(TypedDict):
     secrets: int
@@ -23,15 +20,13 @@ class _LoadStatsDict(TypedDict):
 
 
 class VariableLoader:  # noqa: D101
-    # TODO(lasuillard): Pass session instead of using `boto3.Session()` directly
-    def __init__(self, *, dry_run: bool) -> None:
-        """Initialize the VariableLoader.
+    def __init__(self, *, session: boto3.session.Session | None = None) -> None:
+        """Initialize variable loader.
 
         Args:
-            dry_run: Whether to run in dry-run mode.
-            console: Rich console instance.
+            session: Boto3 session to use for AWS operations.
         """
-        self.dry_run = dry_run
+        self.session = session or boto3.session.Session()
 
     # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
     #                   ; consider adding it if needed
@@ -58,12 +53,8 @@ class VariableLoader:  # noqa: D101
         # Retrieve variables from AWS resources
         secrets: dict[str, _Variables]
         parameters: dict[str, _Variables]
-        if self.dry_run:
-            secrets = {idx: {} for idx, _ in secrets_map.items()}
-            parameters = {idx: {} for idx, _ in parameters_map.items()}
-        else:
-            secrets = self._retrieve_secrets(secrets_map)
-            parameters = self._retrieve_parameters(parameters_map)
+        secrets = self._retrieve_secrets(secrets_map)
+        parameters = self._retrieve_parameters(parameters_map)
 
         load_stats: _LoadStatsDict = {
             "secrets": len(secrets),
@@ -83,7 +74,7 @@ class VariableLoader:  # noqa: D101
         if not secrets_map:
             return {}
 
-        secretsmanager = boto3.client("secretsmanager")
+        secretsmanager = self.session.client("secretsmanager")
 
         # Retrieve the secrets
         arns = list(secrets_map.values())
@@ -112,7 +103,7 @@ class VariableLoader:  # noqa: D101
         if not parameters_map:
             return {}
 
-        ssm = boto3.client("ssm")
+        ssm = self.session.client("ssm")
 
         # Retrieve the parameters
         parameter_names = list(parameters_map.values())

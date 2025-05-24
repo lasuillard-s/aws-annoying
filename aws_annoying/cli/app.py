@@ -16,6 +16,7 @@ app = typer.Typer(
 
 @app.callback()
 def main(  # noqa: D103
+    ctx: typer.Context,
     *,
     quiet: bool = typer.Option(
         False,  # noqa: FBT003
@@ -24,6 +25,10 @@ def main(  # noqa: D103
     verbose: bool = typer.Option(
         False,  # noqa: FBT003
         help="Enable verbose outputs.",
+    ),
+    dry_run: bool = typer.Option(
+        False,  # noqa: FBT003
+        help="Enable dry-run mode. If enabled, certain commands will avoid making changes.",
     ),
 ) -> None:
     log_level = logging.DEBUG if verbose else logging.INFO
@@ -62,3 +67,6 @@ def main(  # noqa: D103
         logging_config["loggers"]["aws_annoying"]["level"] = logging.CRITICAL
 
     logging.config.dictConfig(logging_config)
+
+    # Global flags
+    ctx.meta["dry_run"] = dry_run

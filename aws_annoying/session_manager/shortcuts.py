@@ -5,6 +5,8 @@ import subprocess
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
+from aws_annoying.utils.timeout import Timeout
+
 from .session_manager import SessionManager
 
 if TYPE_CHECKING:
@@ -15,13 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def port_forward(
+def port_forward(  # noqa: PLR0913
     *,
     through: str,
     local_port: int,
     remote_host: str,
     remote_port: int,
     reason: str | None = None,
+    start_timeout: int | None = None,
 ) -> Iterator[subprocess.Popen[str]]:
     """Context manager for port forwarding sessions.
 
@@ -31,6 +34,7 @@ def port_forward(
         remote_host: The remote host to connect to.
         remote_port: The remote port to connect to.
         reason: The reason for starting the session.
+        start_timeout: The timeout in seconds to wait for the session to start.
 
     Returns:
         The command to start the session.
@@ -61,11 +65,11 @@ def port_forward(
 
         # Wait for the session to start
         # ? Not sure this is trustworthy health check
-        # TODO(lasuillard): Need timeout to avoid hanging forever
-        for line in proc.stdout:
-            if "Waiting for connections..." in line:
-                logger.info("Session started successfully.")
-                break
+        with Timeout(start_timeout):
+            for line in proc.stdout:
+                if "Waiting for connections..." in line:
+                    logger.info("Session started successfully.")
+                    break
 
         yield proc
     finally:

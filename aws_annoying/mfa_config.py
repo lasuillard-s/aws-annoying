@@ -45,7 +45,6 @@ class MfaConfig(BaseModel):
         return cls(), False
 
 
-# TODO(lasuillard): Define configurator class (`MfaConfigurator`) to handle the configuration
 def update_credentials(path: Path, profile: str, *, access_key: str, secret_key: str, session_token: str) -> None:
     """Update AWS credentials file with the provided profile and credentials."""
     credentials_ini = configparser.ConfigParser()

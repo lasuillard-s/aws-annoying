@@ -8,8 +8,10 @@ from pathlib import Path  # noqa: TC003
 
 import typer
 
+from aws_annoying.utils.ec2 import get_instance_id_by_name
+
 from ._app import session_manager_app
-from ._common import SessionManager, get_instance_id_by_name
+from ._common import SessionManager
 
 logger = logging.getLogger(__name__)
 

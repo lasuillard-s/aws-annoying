@@ -11,7 +11,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from aws_annoying.variables import VariableLoader
+from aws_annoying.variable_loader import VariableLoader
 
 from .app import app
 
@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
         "ignore_unknown_options": True,
     },
 )
-def load_variables(  # noqa: PLR0913
-    *,
+def load_variables(
     ctx: typer.Context,
+    *,
     arns: list[str] = typer.Option(
         [],
         metavar="ARN",
@@ -45,10 +45,6 @@ def load_variables(  # noqa: PLR0913
     overwrite_env: bool = typer.Option(
         False,  # noqa: FBT003
         help="Overwrite the existing environment variables with the same name.",
-    ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Print the progress only. Neither load variables nor run the command.",
     ),
     replace: bool = typer.Option(
         True,  # noqa: FBT003
@@ -82,6 +78,8 @@ def load_variables(  # noqa: PLR0913
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
+    dry_run = ctx.meta["dry_run"]
+
     command = ctx.args
     if not command:
         logger.warning("No command provided. Exiting...")
@@ -109,7 +107,7 @@ def load_variables(  # noqa: PLR0913
         logger.info(table_str)
 
     # Retrieve the variables
-    loader = VariableLoader(dry_run=dry_run)
+    loader = VariableLoader()
     logger.info("Retrieving variables from AWS resources...")
     if dry_run:
         logger.warning("Dry run mode enabled. Variables won't be loaded from AWS.")

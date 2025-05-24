@@ -20,6 +20,7 @@ _DELETE_CHUNK_SIZE = 10
 
 @app.command()
 def ecs_task_definition_lifecycle(
+    ctx: typer.Context,
     *,
     family: str = typer.Option(
         ...,
@@ -37,12 +38,9 @@ def ecs_task_definition_lifecycle(
         False,  # noqa: FBT003
         help="Delete the task definition after deregistering it.",
     ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Do not perform any changes, only show what would be done.",
-    ),
 ) -> None:
     """Execute ECS task definition lifecycle."""
+    dry_run = ctx.meta["dry_run"]
     if dry_run:
         logger.info("Dry run mode enabled. Will not perform any actual changes.")
 
