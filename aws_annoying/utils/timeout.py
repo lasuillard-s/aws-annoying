@@ -60,7 +60,7 @@ class Timeout:
         signal.alarm(0)
         self._signal_handler_registered = False
 
-    def __call__(self) -> Callable[[_F], _F]:
+    def __call__(self, func: _F) -> _F:
         """Decorator to set a timeout for a function.
 
         Please note, using this decorator in nested functions may not work properly as
@@ -70,18 +70,15 @@ class Timeout:
             OperationTimeoutError: When timeout is reached.
         """
 
-        def decorator(func: _F) -> _F:
-            @wraps(func)
-            def wrapper(*args: Any, **kwargs: Any) -> Any:
-                self._set_signal_handler()
-                try:
-                    return func(*args, **kwargs)
-                finally:
-                    self._reset_signal_handler()
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            self._set_signal_handler()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                self._reset_signal_handler()
 
-            return cast("_F", wrapper)
-
-        return decorator
+        return cast("_F", wrapper)
 
     def __enter__(self) -> None:
         self._set_signal_handler()

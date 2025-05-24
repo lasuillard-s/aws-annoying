@@ -1,4 +1,3 @@
-# TODO(lasuillard): Using this file until split CLI from library codebase
 from __future__ import annotations
 
 import re
