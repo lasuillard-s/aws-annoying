@@ -8,7 +8,7 @@ import typer
 from rich import print  # noqa: A004
 from rich.prompt import Prompt
 
-from aws_annoying.mfa import MfaConfig, update_credentials
+from aws_annoying.mfa_config import MfaConfig, update_credentials
 
 from ._app import mfa_app
 

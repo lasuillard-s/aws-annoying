@@ -8,7 +8,7 @@ import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
-from aws_annoying.mfa import MfaConfig
+from aws_annoying.mfa_config import MfaConfig
 from tests.cli._helpers import normalize_console_output
 
 if TYPE_CHECKING:
