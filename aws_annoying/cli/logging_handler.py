@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from rich.console import Console
 
 
-# TODO(lasuillard): Add emoji formatting support
 class RichLogHandler(logging.Handler):
     """Custom logging handler to use Rich Console."""
 
