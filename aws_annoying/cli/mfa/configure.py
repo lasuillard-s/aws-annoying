@@ -12,8 +12,6 @@ from aws_annoying.mfa import MfaConfig, update_credentials
 
 from ._app import mfa_app
 
-_CONFIG_INI_SECTION = "aws-annoying:mfa"
-
 
 @mfa_app.command()
 def configure(  # noqa: PLR0913
@@ -44,6 +42,10 @@ def configure(  # noqa: PLR0913
         "~/.aws/config",
         help="The path to the AWS config file. Used to persist the MFA configuration.",
     ),
+    aws_config_section: str = typer.Option(
+        "aws-annoying:mfa",
+        help="The section in the AWS config file to persist the MFA configuration.",
+    ),
     persist: bool = typer.Option(
         True,  # noqa: FBT003
         help="Persist the MFA configuration.",
@@ -55,7 +57,7 @@ def configure(  # noqa: PLR0913
     aws_config = aws_config.expanduser()
 
     # Load configuration
-    mfa_config, exists = MfaConfig.from_ini_file(aws_config, _CONFIG_INI_SECTION)
+    mfa_config, exists = MfaConfig.from_ini_file(aws_config, aws_config_section)
     if exists:
         print(f"⚙️ Loaded MFA configuration from AWS config ({aws_config}).")
 
@@ -106,11 +108,11 @@ def configure(  # noqa: PLR0913
     if persist:
         print(
             f"✅ Persisting MFA configuration in AWS config ({aws_config}),"
-            f" in [bold]{_CONFIG_INI_SECTION}[/bold] section.",
+            f" in [bold]{aws_config_section}[/bold] section.",
         )
         mfa_config.mfa_profile = mfa_profile
         mfa_config.mfa_source_profile = mfa_source_profile
         mfa_config.mfa_serial_number = mfa_serial_number
-        mfa_config.save_ini_file(aws_config, _CONFIG_INI_SECTION)
+        mfa_config.save_ini_file(aws_config, aws_config_section)
     else:
         print("⚠️ MFA configuration not persisted.")

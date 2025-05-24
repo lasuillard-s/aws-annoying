@@ -8,7 +8,6 @@ import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
-from aws_annoying.cli.mfa.configure import _CONFIG_INI_SECTION
 from aws_annoying.mfa import MfaConfig
 from tests.cli._helpers import normalize_console_output
 
@@ -84,7 +83,7 @@ def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
         mfa_profile=mfa_profile,
         mfa_source_profile="default",
         mfa_serial_number="1234567890",
-    ).save_ini_file(aws_config, _CONFIG_INI_SECTION)
+    ).save_ini_file(aws_config, "aws-annoying:mfa")
 
     # Act
     result = runner.invoke(
