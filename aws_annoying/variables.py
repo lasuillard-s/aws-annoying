@@ -10,9 +10,6 @@ import boto3
 _ARN = str
 _Variables = dict[str, Any]
 
-# TODO(lasuillard): Need some refactoring (with #2, #3)
-# TODO(lasuillard): Put some logging
-
 
 class _LoadStatsDict(TypedDict):
     secrets: int
@@ -20,14 +17,8 @@ class _LoadStatsDict(TypedDict):
 
 
 class VariableLoader:  # noqa: D101
-    def __init__(self, *, dry_run: bool) -> None:
-        """Initialize the VariableLoader.
-
-        Args:
-            dry_run: Whether to run in dry-run mode.
-            console: Rich console instance.
-        """
-        self.dry_run = dry_run
+    def __init__(self) -> None:  # noqa: D107
+        pass
 
     # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
     #                   ; consider adding it if needed
@@ -54,12 +45,8 @@ class VariableLoader:  # noqa: D101
         # Retrieve variables from AWS resources
         secrets: dict[str, _Variables]
         parameters: dict[str, _Variables]
-        if self.dry_run:
-            secrets = {idx: {} for idx, _ in secrets_map.items()}
-            parameters = {idx: {} for idx, _ in parameters_map.items()}
-        else:
-            secrets = self._retrieve_secrets(secrets_map)
-            parameters = self._retrieve_parameters(parameters_map)
+        secrets = self._retrieve_secrets(secrets_map)
+        parameters = self._retrieve_parameters(parameters_map)
 
         load_stats: _LoadStatsDict = {
             "secrets": len(secrets),
