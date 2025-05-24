@@ -107,7 +107,7 @@ def load_variables(  # noqa: PLR0913
     console.print(table)
 
     # Retrieve the variables
-    loader = VariableLoader(dry_run=dry_run)
+    loader = VariableLoader()
     console.print("🔍 Retrieving variables from AWS resources...")
     if dry_run:
         console.print("⚠️ Dry run mode enabled. Variables won't be loaded from AWS.")
