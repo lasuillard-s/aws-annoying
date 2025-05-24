@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Callable, Optional, TypeVar, cast
 
 from pydantic import PositiveInt, validate_call
 
+from aws_annoying.utils.platform import is_windows
+
 if TYPE_CHECKING:
     from types import FrameType
     from typing import Any
@@ -19,7 +21,11 @@ _F = TypeVar("_F", bound=Callable)
 
 
 class Timeout:
-    """Timeout handler utilizing signals."""
+    """Timeout handler utilizing signals.
+
+    This utility relies on Unix signals (`signal.SIGALRM`). The behavior will be dummied
+    to do nothing on Windows OS.
+    """
 
     @validate_call
     def __init__(self, seconds: Optional[PositiveInt]) -> None:
@@ -35,7 +41,7 @@ class Timeout:
         self._signal_handler_registered = False
 
     def _set_signal_handler(self) -> None:
-        if self.timeout_seconds is None:
+        if is_windows() or self.timeout_seconds is None:
             return
 
         signal.signal(signal.SIGALRM, self._handler)
@@ -47,7 +53,7 @@ class Timeout:
         raise OperationTimeoutError(msg)
 
     def _reset_signal_handler(self) -> None:
-        if not self._signal_handler_registered:
+        if is_windows() or not self._signal_handler_registered:
             return
 
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
