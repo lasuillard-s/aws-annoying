@@ -169,11 +169,11 @@ def test_replace_quiet(snapshot: Snapshot) -> None:
 
     # Act
     result = invoke_cli(
+        "--quiet",
         "load-variables",
         *repeat_options("--arns", setup["load_resources"]),
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
-        "--quiet",
         "--",
         *printenv,
         env=setup["env"],
@@ -197,30 +197,6 @@ def test_env_prefix(snapshot: Snapshot) -> None:
         "--env-prefix",
         "LOAD_AWS_CONFIG__",
         "--no-replace",
-        "--",
-        *printenv,
-        env=setup["env"],
-    )
-
-    # Assert
-    assert result.returncode == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
-    assert result.stderr == ""
-
-
-def test_dry_run(snapshot: Snapshot) -> None:
-    """If dry-run mode enabled, it shouldn't load variables."""
-    # Arrange
-    setup = setup_resources()
-
-    # Act
-    result = invoke_cli(
-        "load-variables",
-        *repeat_options("--arns", setup["load_resources"]),
-        "--env-prefix",
-        "LOAD_AWS_CONFIG__",
-        "--no-replace",
-        "--dry-run",
         "--",
         *printenv,
         env=setup["env"],

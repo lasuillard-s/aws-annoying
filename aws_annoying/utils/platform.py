@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 from pathlib import Path
 
 
@@ -25,3 +26,8 @@ def os_release() -> dict[str, str]:
         key.strip('"'): value.strip('"')
         for key, value in (line.split("=", 1) for line in content.splitlines() if "=" in line)
     }
+
+
+def is_windows() -> bool:
+    """Check if the current OS is Windows."""
+    return platform.system() == "Windows"

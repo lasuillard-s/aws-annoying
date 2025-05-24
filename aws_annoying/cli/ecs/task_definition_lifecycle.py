@@ -1,21 +1,26 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import boto3
 import typer
-from rich import print  # noqa: A004
 
 from ._app import ecs_app
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+
+logger = logging.getLogger(__name__)
+
+# TODO(lasuillard): Support it as an option (e.g. `--config-section`)
 _DELETE_CHUNK_SIZE = 10
 
 
 @ecs_app.command()
 def task_definition_lifecycle(
+    ctx: typer.Context,
     *,
     family: str = typer.Option(
         ...,
@@ -33,14 +38,11 @@ def task_definition_lifecycle(
         False,  # noqa: FBT003
         help="Delete the task definition after deregistering it.",
     ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Do not perform any changes, only show what would be done.",
-    ),
 ) -> None:
     """Execute ECS task definition lifecycle."""
+    dry_run = ctx.meta["dry_run"]
     if dry_run:
-        print("⚠️ Dry run mode enabled. Will not perform any actual changes.")
+        logger.info("Dry run mode enabled. Will not perform any actual changes.")
 
     ecs = boto3.client("ecs")
 
@@ -59,23 +61,27 @@ def task_definition_lifecycle(
 
     # Keep the latest N task definitions
     expired_taskdef_arns = task_definition_arns[:-keep_latest]
-    print(f"⚠️ Deregistering {len(expired_taskdef_arns)} task definitions...")
+    logger.warning("Deregistering %d task definitions...", len(expired_taskdef_arns))
     for arn in expired_taskdef_arns:
         if not dry_run:
             ecs.deregister_task_definition(taskDefinition=arn)
 
         # ARN like: "arn:aws:ecs:<region>:<account-id>:task-definition/<family>:<revision>"
         _, family_revision = arn.split(":task-definition/")
-        print(f"✅ Deregistered task definition [yellow]{family_revision!r}[/yellow]")
+        logger.warning("Deregistered task definition [yellow]%r[/yellow]", family_revision)
 
     if delete and expired_taskdef_arns:
         # Delete the expired task definitions in chunks due to API limitation
-        print(f"⚠️ Deleting {len(expired_taskdef_arns)} task definitions in chunks of size {_DELETE_CHUNK_SIZE}...")
+        logger.warning(
+            "Deleting %d task definitions in chunks of size %d...",
+            len(expired_taskdef_arns),
+            _DELETE_CHUNK_SIZE,
+        )
         for idx, chunk in enumerate(_chunker(expired_taskdef_arns, _DELETE_CHUNK_SIZE)):
             if not dry_run:
                 ecs.delete_task_definitions(taskDefinitions=chunk)
 
-            print(f"✅ Deleted {len(chunk)} task definitions in {idx}-th batch.")
+            logger.warning("Deleted %d task definitions in %d-th batch.", len(chunk), idx)
 
 
 def _chunker(sequence: list, size: int) -> Iterator[list]:

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import configparser
+import logging
 from pathlib import Path  # noqa: TC003
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-# TODO(lasuillard): Need some refactoring (configurator class)
-# TODO(lasuillard): Put some logging
+logger = logging.getLogger(__name__)
 
 
 class MfaConfig(BaseModel):
@@ -30,9 +30,12 @@ class MfaConfig(BaseModel):
         with path.open("w") as f:
             config_ini.write(f)
 
+        logger.debug("Saved config to %s with section %s", path, section_key)
+
     @classmethod
     def from_ini_file(cls, path: Path, section_key: str) -> tuple[MfaConfig, bool]:
         """Load configuration from an AWS config file, with boolean indicating if the config already exists."""
+        logger.debug("Loading config from %s with section %s", path, section_key)
         config_ini = configparser.ConfigParser()
         config_ini.read(path)
         if config_ini.has_section(section_key):
@@ -52,3 +55,5 @@ def update_credentials(path: Path, profile: str, *, access_key: str, secret_key:
     credentials_ini[profile]["aws_session_token"] = session_token
     with path.open("w") as f:
         credentials_ini.write(f)
+
+    logger.debug("Updated credentials file %s with profile %s", path, profile)

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 
 import boto3
 
-from aws_annoying.utils.platform import command_as_root, is_root, os_release
+from aws_annoying.utils.platform import command_as_root, is_root, is_windows, os_release
 
 from .errors import PluginNotInstalledError, UnsupportedPlatformError
 
@@ -65,7 +65,7 @@ class SessionManager:
         """Get the path to the session-manager-plugin binary."""
         binary_path_str = shutil.which("session-manager-plugin")
         if not binary_path_str:
-            if platform.system() == "Windows":
+            if is_windows():
                 # Windows: use the default installation path
                 binary_path = (
                     Path(os.environ["ProgramFiles"])  # noqa: SIM112
