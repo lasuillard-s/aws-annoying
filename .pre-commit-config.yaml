@@ -28,6 +28,8 @@ repos:
           - "**/conftest.py"
           - --extend-exclude
           - "**/_*/**/*.py"
+          - --extend-exclude
+          - "**/_*.py"
       - id: preferred-suffix
         args: [--rename]
 
