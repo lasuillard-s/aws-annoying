@@ -9,7 +9,6 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from aws_annoying.cli.app import global_flags
 from aws_annoying.variables import VariableLoader
 
 from .app import app
@@ -23,8 +22,8 @@ from .app import app
     },
 )
 def load_variables(  # noqa: PLR0913
-    *,
     ctx: typer.Context,
+    *,
     arns: list[str] = typer.Option(
         [],
         metavar="ARN",
@@ -79,7 +78,7 @@ def load_variables(  # noqa: PLR0913
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
-    dry_run = global_flags["dry_run"]
+    dry_run = ctx.meta["dry_run"]
     console = Console(quiet=quiet, emoji=False)
 
     command = ctx.args

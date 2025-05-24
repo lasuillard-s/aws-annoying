@@ -6,8 +6,6 @@ import boto3
 import typer
 from rich import print  # noqa: A004
 
-from aws_annoying.cli.app import global_flags
-
 from .app import app
 
 if TYPE_CHECKING:
@@ -18,6 +16,7 @@ _DELETE_CHUNK_SIZE = 10
 
 @app.command()
 def ecs_task_definition_lifecycle(
+    ctx: typer.Context,
     *,
     family: str = typer.Option(
         ...,
@@ -37,7 +36,7 @@ def ecs_task_definition_lifecycle(
     ),
 ) -> None:
     """Execute ECS task definition lifecycle."""
-    dry_run = global_flags["dry_run"]
+    dry_run = ctx.meta["dry_run"]
     if dry_run:
         print("⚠️ Dry run mode enabled. Will not perform any actual changes.")
 
