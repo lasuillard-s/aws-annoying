@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import importlib.metadata
 import logging
 import logging.config
+from typing import Optional
 
 import typer
+from rich import print  # noqa: A004
 from rich.console import Console
 
 app = typer.Typer(
@@ -14,10 +17,26 @@ app = typer.Typer(
 )
 
 
+def show_version(value: Optional[bool]) -> None:
+    """Show the version of the application."""
+    if not value:
+        return
+
+    print(importlib.metadata.version("aws-annoying"))
+    raise typer.Exit(0)
+
+
 @app.callback()
 def main(  # noqa: D103
     ctx: typer.Context,
     *,
+    version: Optional[bool] = typer.Option(  # noqa: ARG001
+        None,
+        "--version",
+        is_eager=True,
+        callback=show_version,
+        help="Show the version and exit.",
+    ),
     quiet: bool = typer.Option(
         False,  # noqa: FBT003
         help="Disable outputs.",
