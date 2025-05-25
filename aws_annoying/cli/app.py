@@ -22,7 +22,7 @@ def show_version(value: Optional[bool]) -> None:
     if not value:
         return
 
-    print(importlib.metadata.version(__package__.split(".")[0]))
+    print(importlib.metadata.version("aws-annoying"))
     raise typer.Exit(0)
 
 
