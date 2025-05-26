@@ -117,7 +117,7 @@ class ECSDeploymentWaiter:
         """
         ecs = self.session.client("ecs")
         if wait_for_start:
-            logger.warning("`wait_for_start`is set, will wait for a new deployment to start.")
+            logger.warning("`wait_for_start` is set, will wait for a new deployment to start.")
 
         attempts = 0
         while True:  # do-while
