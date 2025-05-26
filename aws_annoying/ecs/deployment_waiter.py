@@ -1,22 +1,22 @@
 from __future__ import annotations
 
 import logging
+from operator import itemgetter
 from time import sleep
 from typing import TYPE_CHECKING, Optional
 
 import boto3
 import botocore.exceptions
-import typer
 from pydantic import PositiveInt, validate_call
+
+from .errors import DeploymentFailedError, NoRunningDeploymentError, ServiceTaskDefinitionAssertionError
 
 if TYPE_CHECKING:
     from .common import ECSServiceRef
 
 logger = logging.getLogger(__name__)
 
-
-class DeploymentFailedError(Exception):
-    """Deployment failed."""
+# TODO(lasuillard): Apply `validate_call` decorators on demand (preferably, via CLI flag)
 
 
 class ECSDeploymentWaiter:
@@ -52,7 +52,7 @@ class ECSDeploymentWaiter:
         """
         # Find current deployment for the service
         logger.info(
-            "Looking up running deployment for service [bold]%s[/bold]",
+            "Looking up running deployment for service %s",
             self.service_ref.service,
         )
         latest_deployment_arn = self.get_latest_deployment_arn(
@@ -62,13 +62,13 @@ class ECSDeploymentWaiter:
 
         # Polling for the deployment to finish (successfully or unsuccessfully)
         logger.info(
-            "Start waiting for deployment [bold]%s[/bold] to finish.",
+            "Start waiting for deployment %s to finish.",
             latest_deployment_arn,
         )
         ok, status = self.wait_for_deployment_complete(latest_deployment_arn, polling_interval=polling_interval)
         if ok:
             logger.info(
-                "Deployment succeeded with status [bold green]%s[/bold green]",
+                "Deployment succeeded with status %s",
                 status,
             )
         else:
@@ -78,7 +78,7 @@ class ECSDeploymentWaiter:
         # Wait for the service to be stable
         if wait_for_stability:
             logger.debug(
-                "Waiting for service [bold]%s[/bold] to be stable.",
+                "Start waiting for service %s to be stable.",
                 self.service_ref.service,
             )
             self.wait_for_service_stability(polling_interval=polling_interval)
@@ -86,18 +86,15 @@ class ECSDeploymentWaiter:
         # Check if the service task definition matches the expected one
         if expected_task_definition:
             logger.info(
-                "Checking if the service task definition is the expected one: [bold]%s[/bold]",
+                "Checking if the service task definition is the expected one: %s",
                 expected_task_definition,
             )
-            ok, actual = self.assert_service_task_definition_is(expect=expected_task_definition)
-            if ok:
-                logger.info("The service task definition matches the expected one.")
-            else:
-                logger.error(
-                    "The service task definition is not the expected one; got: [bold red]%s[/bold red]",
-                    actual,
-                )
-                raise typer.Exit(1)
+            ok, actual = self.check_service_task_definition_is(expect=expected_task_definition)
+            if not ok:
+                msg = f"The service task definition is not the expected one; got: {actual!r}"
+                raise ServiceTaskDefinitionAssertionError(msg)
+
+            logger.info("The service task definition matches the expected one.")
 
     @validate_call
     def get_latest_deployment_arn(
@@ -107,45 +104,66 @@ class ECSDeploymentWaiter:
         polling_interval: PositiveInt,
         max_attempts: Optional[PositiveInt] = None,
     ) -> str:
-        """Get the latest deployment ARN for the service.
+        """Get the most recently started deployment ARN for the service.
 
         Args:
             wait_for_start: Whether to wait for the deployment to start.
             polling_interval: The interval between any polling attempts, in seconds.
             max_attempts: The maximum number of attempts to wait for the deployment to start.
 
+        Raises:
+            NoRunningDeploymentError: If no running deployments are found and `wait_for_start` is False.
+
         Returns:
             The ARN of the latest deployment for the service.
         """
         ecs = self.session.client("ecs")
+        if wait_for_start:
+            logger.warning("`wait_for_start`is set, will wait for a new deployment to start.")
 
         attempts = 0
-        while (max_attempts is None) or (attempts <= max_attempts):
+        while True:  # do-while
+            # Do
             running_deployments = ecs.list_service_deployments(
                 cluster=self.service_ref.cluster,
                 service=self.service_ref.service,
                 status=["PENDING", "IN_PROGRESS"],
             )["serviceDeployments"]
+
+            # While
             if running_deployments:
+                logger.debug("Found %d running deployments for service. Exiting loop.", len(running_deployments))
                 break
 
-            if wait_for_start:
-                logger.info(
-                    "(%d-th attempt) No running deployments found for service [bold]%s[/bold]. Waiting for a new deployment.",  # noqa: E501
-                    attempts + 1,
-                    self.service_ref.service,
-                )
-            else:
-                logger.error(
-                    "No running deployments found for service [bold]%s[/bold]. Exiting.",
-                    self.service_ref.service,
-                )
-                raise typer.Exit(0)
+            if not wait_for_start:
+                logger.debug("`wait_for_start` is off, no need to wait for a new deployment to start.")
+                break
+
+            if max_attempts and attempts >= max_attempts:
+                logger.debug("Max attempts exceeded while waiting for a new deployment to start.")
+                break
+
+            logger.debug(
+                "(%d-th attempt) No running deployments found for service. Start waiting for a new deployment.",
+                attempts + 1,
+            )
 
             sleep(polling_interval)
             attempts += 1
 
-        return running_deployments[0]["serviceDeploymentArn"]
+        if not running_deployments:
+            msg = "No running deployments found for service."
+            raise NoRunningDeploymentError(msg)
+
+        latest_deployment = sorted(running_deployments, key=itemgetter("startedAt"))[-1]
+        if len(running_deployments) > 1:
+            logger.warning(
+                "%d running deployments found for service. Using most recently started deployment: %s",
+                len(running_deployments),
+                latest_deployment["serviceDeploymentArn"],
+            )
+
+        return latest_deployment["serviceDeploymentArn"]
 
     @validate_call
     def wait_for_deployment_complete(
@@ -178,7 +196,7 @@ class ECSDeploymentWaiter:
 
             if status in ("PENDING", "IN_PROGRESS"):
                 logger.debug(
-                    "(%d-th attempt) Deployment in progress... [bold grey53]%s[/bold grey53]",
+                    "(%d-th attempt) Deployment in progress... (%s)",
                     attempts + 1,
                     status,
                 )
@@ -214,7 +232,7 @@ class ECSDeploymentWaiter:
         attempts = 0
         while (max_attempts is None) or (attempts <= max_attempts):
             logger.debug(
-                "(%d-th attempt) Waiting for service [bold]%s[/bold] to be stable...",
+                "(%d-th attempt) Waiting for service %s to be stable...",
                 attempts + 1,
                 self.service_ref.service,
             )
@@ -236,21 +254,23 @@ class ECSDeploymentWaiter:
         return False
 
     @validate_call
-    def assert_service_task_definition_is(self, *, expect: str) -> tuple[bool, str]:
-        """Assert the service task definition.
+    def check_service_task_definition_is(self, expect: str) -> tuple[bool, str]:
+        """Check the service's current task definition matches the expected one.
 
         Args:
             expect: The ARN of expected task definition.
+
+        Returns:
+            A tuple containing a boolean indicating whether the task definition matches the expected one
+            and the current task definition ARN.
         """
         ecs = self.session.client("ecs")
 
-        logger.info(
-            "Checking if the service task definition is the expected one: [bold]%s[/bold]",
-            expect,
-        )
         service_detail = ecs.describe_services(cluster=self.service_ref.cluster, services=[self.service_ref.service])[
             "services"
         ][0]
-        ok = service_detail["taskDefinition"] == expect
         current_task_definition_arn = service_detail["taskDefinition"]
-        return (ok, current_task_definition_arn)
+        if current_task_definition_arn != expect:
+            return (False, current_task_definition_arn)
+
+        return (True, current_task_definition_arn)

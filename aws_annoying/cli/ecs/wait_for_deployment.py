@@ -81,14 +81,14 @@ def wait_for_deployment(  # noqa: PLR0913
     except DeploymentFailedError as err:
         elapsed = datetime.now(tz=timezone.utc) - start
         logger.error(  # noqa: TRY400
-            "Deployment failed in [bold]%s[/bold] seconds with error: %s",
+            "Deployment failed in [bold]%.2f[/bold] seconds with error: %s",
             elapsed.total_seconds(),
             err,
         )
         raise typer.Exit(1) from None
-
-    elapsed = datetime.now(tz=timezone.utc) - start
-    logger.info(
-        "Deployment succeeded in [bold]%s[/bold] seconds.",
-        elapsed.total_seconds(),
-    )
+    else:
+        elapsed = datetime.now(tz=timezone.utc) - start
+        logger.info(
+            "Deployment completed in [bold]%.2f[/bold] seconds.",
+            elapsed.total_seconds(),
+        )
