@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import boto3
 import typer
 
-from .app import app
+from ._app import ecs_app
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -14,12 +14,11 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# TODO(lasuillard): Support it as an option (e.g. `--config-section`)
 _DELETE_CHUNK_SIZE = 10
 
 
-@app.command()
-def ecs_task_definition_lifecycle(
+@ecs_app.command()
+def task_definition_lifecycle(
     ctx: typer.Context,
     *,
     family: str = typer.Option(
