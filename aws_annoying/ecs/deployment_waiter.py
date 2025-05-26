@@ -16,8 +16,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# TODO(lasuillard): Apply `validate_call` decorators on demand (preferably, via CLI flag)
-
 
 class ECSDeploymentWaiter:
     """ECS service deployment waiter."""

@@ -22,8 +22,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# TODO(lasuillard): Platform checking is spread everywhere, should be moved to a single place
-
 
 class SessionManager:
     """AWS Session Manager plugin manager."""

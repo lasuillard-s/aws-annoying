@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# TODO(lasuillard): Support it as an option (e.g. `--config-section`)
 _DELETE_CHUNK_SIZE = 10
 
 
