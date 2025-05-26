@@ -1,6 +1,7 @@
 ℹ️ Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
 ℹ️ Found 1 sources from environment variables.
-ℹ️ ┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+ℹ️ Summary:
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Index        ┃ ARN                                                           ┃
 ┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ 0            │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/… │
