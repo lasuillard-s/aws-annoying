@@ -104,7 +104,7 @@ def load_variables(
     with StringIO() as file:
         Console(file=file, emoji=False).print(table)
         table_str = file.getvalue().rstrip()
-        logger.info(table_str)
+        logger.info("Summary:\n%s", table_str)
 
     # Retrieve the variables
     loader = VariableLoader()
