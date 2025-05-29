@@ -99,7 +99,7 @@ class ECSDeploymentWaiter:
         self,
         *,
         wait_for_start: bool,
-        polling_interval: PositiveInt,
+        polling_interval: PositiveInt = 5,
         max_attempts: Optional[PositiveInt] = None,
     ) -> str:
         """Get the most recently started deployment ARN for the service.
@@ -168,7 +168,7 @@ class ECSDeploymentWaiter:
         self,
         deployment_arn: str,
         *,
-        polling_interval: PositiveInt,
+        polling_interval: PositiveInt = 5,
         max_attempts: Optional[PositiveInt] = None,
     ) -> tuple[bool, str]:
         """Wait for the ECS deployment to complete.
@@ -210,7 +210,7 @@ class ECSDeploymentWaiter:
     def wait_for_service_stability(
         self,
         *,
-        polling_interval: PositiveInt,
+        polling_interval: PositiveInt = 5,
         max_attempts: Optional[PositiveInt] = None,
     ) -> bool:
         """Wait for the ECS service to be stable.
