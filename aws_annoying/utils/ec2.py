@@ -26,11 +26,8 @@ def get_instance_id_by_name(name_or_id: str, *, session: boto3.session.Session |
 
     response = ec2.describe_instances(Filters=[{"Name": "tag:Name", "Values": [name_or_id]}])
     reservations = response["Reservations"]
-    if not reservations:
+    if not reservations or not reservations[0]["Instances"]:
         return None
 
     instances = reservations[0]["Instances"]
-    if not instances:
-        return None
-
     return str(instances[0]["InstanceId"])
