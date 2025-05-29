@@ -121,27 +121,6 @@ def test_nothing(snapshot: Snapshot) -> None:
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
-def test_unsupported_resource(snapshot: Snapshot) -> None:
-    """If unsupported resource ARN provided, should exit with error."""
-    # Arrange
-    # ...
-
-    # Act
-    result = runner.invoke(
-        app,
-        [
-            "load-variables",
-            "--arns",
-            "arn:aws:s3:::my-bucket/my-object",
-            printenv_py,
-        ],
-    )
-
-    # Assert
-    assert result.exit_code == 1
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
-
-
 def test_basic(snapshot: Snapshot) -> None:
     """Test basic usage."""
     # Arrange
@@ -231,6 +210,27 @@ def test_overwrite_env(snapshot: Snapshot) -> None:
     assert result.returncode == 0
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
+
+
+def test_unsupported_resource(snapshot: Snapshot) -> None:
+    """If unsupported resource ARN provided, should exit with error."""
+    # Arrange
+    # ...
+
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "load-variables",
+            "--arns",
+            "arn:aws:s3:::my-bucket/my-object",
+            printenv_py,
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 1
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
 @pytest.mark.parametrize(
