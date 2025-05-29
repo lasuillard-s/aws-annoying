@@ -15,3 +15,6 @@
 ⚠️ Deregistered task definition 'my-task:13'
 ⚠️ Deregistered task definition 'my-task:14'
 ⚠️ Deregistered task definition 'my-task:15'
+⚠️ Deleting 15 task definitions in chunks of size 10...
+⚠️ Deleted 10 task definitions in 0-th batch.
+⚠️ Deleted 5 task definitions in 1-th batch.
