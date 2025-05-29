@@ -81,7 +81,12 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           Get-Command session-manager-plugin | Out-String -Width 2000
-          Remove-Item -Recurse -Force "$env:ProgramFiles\Amazon\SessionManagerPlugin\"
+
+          $uri = 'https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe'
+          $outFile = 'C:\Windows\Temp\SessionManagerPluginSetup.exe'
+          Invoke-WebRequest -Uri "$uri" -OutFile "$outFile"
+          & "$outFile" /uninstall /quiet
+
           uv run pytest -m 'not docker'
 
       - name: Upload test results to Codecov
