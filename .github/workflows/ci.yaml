@@ -80,7 +80,7 @@ jobs:
       - name: Run tests (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          Get-Command session-manager-plugin -ErrorAction SilentlyContinue
+          Get-Command session-manager-plugin -ErrorAction SilentlyContinue | Out-String -Width 2000
           Invoke-WebRequest `
             -Uri "https://raw.githubusercontent.com/aws/session-manager-plugin/refs/heads/mainline/Tools/src/update/windows/uninstall.bat" `
             -OutFile "uninstall.bat"
