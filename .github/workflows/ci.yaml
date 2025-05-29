@@ -66,18 +66,21 @@ jobs:
       - name: Run tests (Ubuntu)
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
+          which session-manager-plugin || true
           sudo apt-get remove --yes session-manager-plugin
           uv run pytest
 
       - name: Run tests (macOS)
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
+          which session-manager-plugin || true
           brew uninstall session-manager-plugin
           uv run pytest -m 'not docker'
 
       - name: Run tests (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
+          Get-Command session-manager-plugin -ErrorAction SilentlyContinue
           Invoke-WebRequest `
             -Uri "https://raw.githubusercontent.com/aws/session-manager-plugin/refs/heads/mainline/Tools/src/update/windows/uninstall.bat" `
             -OutFile "uninstall.bat"
