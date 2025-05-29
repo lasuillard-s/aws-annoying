@@ -5,9 +5,14 @@ from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
 from aws_annoying.session_manager import SessionManager
-from tests._helpers import run_if_macos, run_if_windows
+from tests._helpers import ci_only, run_if_macos, run_if_windows
 
 runner = CliRunner()
+
+pytestmark = [
+    pytest.mark.integration,
+    ci_only,
+]
 
 
 @run_if_macos
