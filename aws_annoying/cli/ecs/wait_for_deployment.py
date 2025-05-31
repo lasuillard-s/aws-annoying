@@ -108,7 +108,7 @@ def _wait_for_deployment(
     wait_for_start: bool,
     polling_interval: int = 5,
     wait_for_stability: bool,
-    expected_task_definition: Optional[str] = None,
+    expected_task_definition: str | None = None,
 ) -> None:
     # Find current deployment for the service
     logger.info(
