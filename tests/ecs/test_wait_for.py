@@ -1,35 +1,30 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 from unittest import mock
 
 import boto3
 import pytest
 from botocore.stub import Stubber
 
-from aws_annoying.ecs import ECSDeploymentWaiter
-from aws_annoying.ecs.common import ECSServiceRef
-from aws_annoying.ecs.errors import NoRunningDeploymentError
-
-if TYPE_CHECKING:
-    from mypy_boto3_ecs import ECSClient
+from aws_annoying.ecs import (
+    ECSServiceRef,
+    NoRunningDeploymentError,
+    wait_for_deployment_complete,
+    wait_for_deployment_start,
+    wait_for_service_stability,
+)
 
 pytestmark = [
     pytest.mark.unit,
 ]
 
 
-class Test_ECSDeploymentWaiter:
-    def _get_waiter(self, ecs_client: ECSClient) -> ECSDeploymentWaiter:
-        mocked_session = mock.MagicMock()
-        mocked_session.client.return_value = ecs_client
-        return ECSDeploymentWaiter(ECSServiceRef("my-cluster", "my-service"), session=mocked_session)
-
-    def test_get_latest_deployment_arn(self) -> None:
+class Test_wait_for_deployment_start:
+    def test_wait_for_deployment_start(self) -> None:
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         for _ in range(2):
             stubber.add_response(
@@ -63,15 +58,21 @@ class Test_ECSDeploymentWaiter:
         # Act & Assert
         with stubber:
             assert (
-                waiter.get_latest_deployment_arn(wait_for_start=True, polling_interval=1, max_attempts=3)
+                wait_for_deployment_start(
+                    ECSServiceRef(cluster="my-cluster", service="my-service"),
+                    session=mocked_session,
+                    wait_for_start=True,
+                    polling_interval=1,
+                    max_attempts=3,
+                )
                 == "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1"  # noqa: E501
             )
 
-    def test_get_latest_deployment_arn_no_deployment(self) -> None:
+    def test_wait_for_deployment_start_no_deployment(self) -> None:
         """If there is no deployment, it should raise `NoRunningDeploymentError`."""
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         stubber.add_response(
             "list_service_deployments",
@@ -85,13 +86,17 @@ class Test_ECSDeploymentWaiter:
 
         # Act & Assert
         with stubber, pytest.raises(NoRunningDeploymentError):
-            waiter.get_latest_deployment_arn(wait_for_start=False)
+            wait_for_deployment_start(
+                ECSServiceRef(cluster="my-cluster", service="my-service"),
+                session=mocked_session,
+                wait_for_start=False,
+            )
 
-    def test_get_latest_deployment_arn_max_attempts_exceeded(self) -> None:
+    def test_wait_for_deployment_start_max_attempts_exceeded(self) -> None:
         """If there is no deployment after max attempts, it should raise `NoRunningDeploymentError`."""
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         for _ in range(5):
             stubber.add_response(
@@ -107,14 +112,22 @@ class Test_ECSDeploymentWaiter:
         # Act & Assert
         with stubber, pytest.raises(NoRunningDeploymentError):
             assert (
-                waiter.get_latest_deployment_arn(wait_for_start=True, polling_interval=1, max_attempts=3)
+                wait_for_deployment_start(
+                    ECSServiceRef(cluster="my-cluster", service="my-service"),
+                    session=mocked_session,
+                    wait_for_start=True,
+                    polling_interval=1,
+                    max_attempts=3,
+                )
                 == "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1"  # noqa: E501
             )
 
+
+class Test_wait_for_deployment_complete:
     def test_wait_for_deployment_complete(self) -> None:
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         stubber.add_response(
             "describe_service_deployments",
@@ -146,8 +159,9 @@ class Test_ECSDeploymentWaiter:
 
         # Act
         with stubber:
-            ok, actual = waiter.wait_for_deployment_complete(
+            ok, actual = wait_for_deployment_complete(
                 "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1",
+                session=mocked_session,
                 polling_interval=1,
                 max_attempts=3,
             )
@@ -159,8 +173,8 @@ class Test_ECSDeploymentWaiter:
     def test_wait_for_deployment_complete_max_attempts_exceeded(self) -> None:
         """If the deployment is still in incomplete status after max attempts, it should return `False` and last status."""  # noqa: E501
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         stubber.add_response(
             "describe_service_deployments",
@@ -184,8 +198,9 @@ class Test_ECSDeploymentWaiter:
 
         # Act
         with stubber:
-            ok, actual = waiter.wait_for_deployment_complete(
+            ok, actual = wait_for_deployment_complete(
                 "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1",
+                session=mocked_session,
                 polling_interval=1,
                 max_attempts=3,
             )
@@ -208,8 +223,8 @@ class Test_ECSDeploymentWaiter:
     def test_wait_for_deployment_complete_failed(self, status: str) -> None:
         """If the deployment is in a failed status, it should return `False` with the status."""
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         for _ in range(2):
             stubber.add_response(
@@ -234,8 +249,9 @@ class Test_ECSDeploymentWaiter:
 
         # Act
         with stubber:
-            ok, actual = waiter.wait_for_deployment_complete(
+            ok, actual = wait_for_deployment_complete(
                 "arn:aws:ecs:us-east-1:123456789012:service-deployment/example-cluster/example-service/ejGvqq2ilnbKT9qj0vLJe",
+                session=mocked_session,
                 polling_interval=1,
                 max_attempts=3,
             )
@@ -244,10 +260,12 @@ class Test_ECSDeploymentWaiter:
         assert ok is False
         assert actual == status
 
+
+class Test_wait_for_service_stability:
     def test_wait_for_service_stability(self) -> None:
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         stubber.add_response(
             "describe_services",
@@ -286,15 +304,20 @@ class Test_ECSDeploymentWaiter:
 
         # Act
         with stubber:
-            ok = waiter.wait_for_service_stability(polling_interval=1, max_attempts=3)
+            ok = wait_for_service_stability(
+                ECSServiceRef(cluster="my-cluster", service="my-service"),
+                session=mocked_session,
+                polling_interval=1,
+                max_attempts=3,
+            )
 
         # Assert
         assert ok is True
 
     def test_wait_for_service_stability_max_attempts_exceeded(self) -> None:
         # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
+        mocked_session = mock.MagicMock()
+        mocked_session.client.return_value = ecs = boto3.client("ecs")
         stubber = Stubber(ecs)
         for _ in range(5):
             stubber.add_response(
@@ -316,63 +339,12 @@ class Test_ECSDeploymentWaiter:
 
         # Act
         with stubber:
-            ok = waiter.wait_for_service_stability(polling_interval=1, max_attempts=3)
-
-        # Assert
-        assert ok is False
-
-    def test_check_service_task_definition_is(self) -> None:
-        # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
-        stubber = Stubber(ecs)
-        stubber.add_response(
-            "describe_services",
-            {
-                "services": [
-                    {"taskDefinition": "arn:aws:ecs:ap-northeast-2:000000000000:task-definition/my-task-def:1"},
-                ],
-            },
-            expected_params={
-                "cluster": "my-cluster",
-                "services": ["my-service"],
-            },
-        )
-
-        # Act
-        with stubber:
-            ok, actual = waiter.check_service_task_definition_is(
-                "arn:aws:ecs:ap-northeast-2:000000000000:task-definition/my-task-def:1",
-            )
-
-        # Assert
-        assert ok is True
-        assert actual == "arn:aws:ecs:ap-northeast-2:000000000000:task-definition/my-task-def:1"
-
-    def test_check_service_task_definition_is_not(self) -> None:
-        # Arrange
-        ecs = boto3.client("ecs")
-        waiter = self._get_waiter(ecs)
-        stubber = Stubber(ecs)
-        stubber.add_response(
-            "describe_services",
-            {
-                "services": [
-                    {"taskDefinition": "arn:aws:ecs:ap-northeast-2:000000000000:task-definition/my-task-def:2"},
-                ],
-            },
-            expected_params={
-                "cluster": "my-cluster",
-                "services": ["my-service"],
-            },
-        )
-
-        # Act
-        with stubber:
-            ok, actual = waiter.check_service_task_definition_is(
-                "arn:aws:ecs:ap-northeast-2:000000000000:task-definition/my-task-def:1",
+            ok = wait_for_service_stability(
+                ECSServiceRef(cluster="my-cluster", service="my-service"),
+                session=mocked_session,
+                polling_interval=1,
+                max_attempts=3,
             )
 
         # Assert
         assert ok is False
-        assert actual == "arn:aws:ecs:ap-northeast-2:000000000000:task-definition/my-task-def:2"
