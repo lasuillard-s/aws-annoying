@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import signal
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar, cast
-
-from pydantic import PositiveInt, validate_call
+from typing import TYPE_CHECKING, Callable, TypeVar, cast
 
 from aws_annoying.utils.platform import is_windows
 
@@ -27,8 +25,7 @@ class Timeout:
     to do nothing on Windows OS.
     """
 
-    @validate_call
-    def __init__(self, seconds: Optional[PositiveInt]) -> None:
+    def __init__(self, seconds: int | None) -> None:
         """Initialize timeout handler.
 
         Args:

@@ -10,7 +10,9 @@
   "cSpell.words": [
     "Deregistering",
     "localstack",
+    "pytestmark",
     "sessionmanagerplugin",
+    "Stubber",
     "Tampermonkey"
   ],
   "editor.formatOnSave": true,

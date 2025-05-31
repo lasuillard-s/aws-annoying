@@ -78,8 +78,6 @@ def load_variables(
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
     """  # noqa: E501
-    dry_run = ctx.meta["dry_run"]
-
     command = ctx.args
     if not command:
         logger.warning("No command provided. Exiting...")
@@ -109,9 +107,6 @@ def load_variables(
     # Retrieve the variables
     loader = VariableLoader()
     logger.info("Retrieving variables from AWS resources...")
-    if dry_run:
-        logger.warning("Dry run mode enabled. Variables won't be loaded from AWS.")
-
     try:
         variables, load_stats = loader.load(map_arns_by_index)
     except Exception as exc:  # noqa: BLE001

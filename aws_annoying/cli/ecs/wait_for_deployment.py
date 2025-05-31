@@ -6,7 +6,15 @@ from typing import Optional
 
 import typer
 
-from aws_annoying.ecs import DeploymentFailedError, ECSDeploymentWaiter, ECSServiceRef
+from aws_annoying.ecs import (
+    DeploymentFailedError,
+    ECSServiceRef,
+    ServiceTaskDefinitionAssertionError,
+    check_service_task_definition,
+    wait_for_deployment_complete,
+    wait_for_deployment_start,
+    wait_for_service_stability,
+)
 from aws_annoying.utils.timeout import OperationTimeoutError, Timeout
 
 from ._app import ecs_app
@@ -63,10 +71,10 @@ def wait_for_deployment(  # noqa: PLR0913
 ) -> None:
     """Wait for ECS deployment to complete."""
     start = datetime.now(tz=timezone.utc)
-    waiter = ECSDeploymentWaiter(ECSServiceRef(cluster=cluster, service=service))
     try:
         with Timeout(timeout_seconds):
-            waiter.wait(
+            _wait_for_deployment(
+                ECSServiceRef(cluster=cluster, service=service),
                 wait_for_start=wait_for_start,
                 polling_interval=polling_interval,
                 wait_for_stability=wait_for_stability,
@@ -92,3 +100,59 @@ def wait_for_deployment(  # noqa: PLR0913
             "Deployment completed in [bold]%.2f[/bold] seconds.",
             elapsed.total_seconds(),
         )
+
+
+def _wait_for_deployment(
+    service_ref: ECSServiceRef,
+    *,
+    wait_for_start: bool,
+    polling_interval: int = 5,
+    wait_for_stability: bool,
+    expected_task_definition: str | None = None,
+) -> None:
+    # Find current deployment for the service
+    logger.info(
+        "Looking up running deployment for service %s",
+        service_ref.service,
+    )
+    latest_deployment_arn = wait_for_deployment_start(
+        service_ref,
+        wait_for_start=wait_for_start,
+        polling_interval=polling_interval,
+    )
+
+    # Polling for the deployment to finish (successfully or unsuccessfully)
+    logger.info(
+        "Start waiting for deployment %s to finish.",
+        latest_deployment_arn,
+    )
+    ok, status = wait_for_deployment_complete(latest_deployment_arn, polling_interval=polling_interval)
+    if ok:
+        logger.info(
+            "Deployment succeeded with status %s",
+            status,
+        )
+    else:
+        msg = f"Deployment failed with status: {status}"
+        raise DeploymentFailedError(msg)
+
+    # Wait for the service to be stable
+    if wait_for_stability:
+        logger.debug(
+            "Start waiting for service %s to be stable.",
+            service_ref.service,
+        )
+        wait_for_service_stability(service_ref, polling_interval=polling_interval)
+
+    # Check if the service task definition matches the expected one
+    if expected_task_definition:
+        logger.info(
+            "Checking if the service task definition is the expected one: %s",
+            expected_task_definition,
+        )
+        ok, actual = check_service_task_definition(service_ref, expect=expected_task_definition)
+        if not ok:
+            msg = f"The service task definition is not the expected one; got: {actual!r}"
+            raise ServiceTaskDefinitionAssertionError(msg)
+
+        logger.info("The service task definition matches the expected one.")

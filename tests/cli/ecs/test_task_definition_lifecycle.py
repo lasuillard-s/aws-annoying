@@ -50,6 +50,8 @@ def test_basic(snapshot: Snapshot) -> None:
             family,
             "--keep-latest",
             str(keep_latest),
+            # ? `delete_task_definitions` not implemented in moto yet
+            # "--delete",
         ],
     )
     task_definitions = [
@@ -102,6 +104,7 @@ def test_dry_run(snapshot: Snapshot) -> None:
             family,
             "--keep-latest",
             str(keep_latest),
+            "--delete",
         ],
     )
     task_definitions = [

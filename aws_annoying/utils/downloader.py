@@ -42,14 +42,7 @@ class TQDMDownloader(AbstractDownloader):
             total_size = int(response.headers.get("content-length", 0))
             with (
                 to.open("wb") as f,
-                tqdm(
-                    # Make the URL less verbose in the progress bar
-                    desc=url.replace("https://s3.amazonaws.com/session-manager-downloads/plugin", "..."),
-                    total=total_size,
-                    unit="iB",
-                    unit_scale=True,
-                    unit_divisor=1_024,
-                ) as pbar,
+                tqdm(desc=url, total=total_size, unit="iB", unit_scale=True, unit_divisor=1_024) as pbar,
             ):
                 for chunk in response.iter_content(chunk_size=8_192):
                     size = f.write(chunk)

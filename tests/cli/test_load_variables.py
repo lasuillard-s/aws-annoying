@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
-import boto3
 import pytest
 from typer.testing import CliRunner
 
 from aws_annoying.cli.main import app
+from tests.cli._helpers import create_parameters, create_secrets
 
 from ._helpers import PRINTENV_PY, invoke_cli, normalize_console_output, repeat_options
 
@@ -35,15 +34,20 @@ def set_terminal_width() -> int:
 
 
 def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]:
-    """Set up AWS resources."""
-    _variables: dict[Literal["secrets", "parameters"], dict[str, Any]] = {
-        "secrets": {
+    """Set up AWS resources for tests."""
+    # Secrets
+    secrets = create_secrets(
+        {
             # Pass to CLI arguments
             "my-app/django-sensitive-settings": {
                 "DJANGO_SECRET_KEY": "my-secret-key",
             },
         },
-        "parameters": {
+    )
+
+    # Parameters
+    parameters = create_parameters(
+        {
             # Pass to CLI arguments
             "/my-app/django-settings": {
                 "DJANGO_SETTINGS_MODULE": "config.settings.local",
@@ -55,38 +59,19 @@ def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]
                 "DJANGO_ALLOWED_HOSTS": "127.0.0.1,192.168.0.2",
             },
         },
-    }
+    )
 
-    # Secrets
-    secretsmanager = boto3.client("secretsmanager")
-    secrets = {}
-    for name, value in _variables["secrets"].items():
-        secret = secretsmanager.create_secret(
-            Name=name,
-            SecretString=json.dumps(value),
-        )
-        secrets[name] = {"data": value, "resource": secret}
-
-    # Parameters
-    ssm = boto3.client("ssm")
-    parameters = {}
-    for name, value in _variables["parameters"].items():
-        ssm.put_parameter(
-            Name=name,
-            Value=json.dumps(value),
-            Type="String",
-        )
-        parameter = ssm.get_parameter(Name=name)["Parameter"]
-        parameters[name] = {"data": value, "resource": parameter}
-
+    # Load as environment variables
     env = env_base or os.environ | {
         # Direct environment variables
-        "LOAD_AWS_CONFIG__900_override": parameters["/my-app/override"]["resource"]["ARN"],
+        "LOAD_AWS_CONFIG__900_override": parameters["/my-app/override"],
         "DJANGO_SETTINGS_MODULE": "config.settings.development",
     }
+
+    # Load resources by passing as CLI arguments
     load_resources = [
-        secrets["my-app/django-sensitive-settings"]["resource"]["ARN"],
-        parameters["/my-app/django-settings"]["resource"]["ARN"],
+        secrets["my-app/django-sensitive-settings"],
+        parameters["/my-app/django-settings"],
     ]
 
     return {
@@ -94,8 +79,8 @@ def setup_resources(*, env_base: dict[str, str] | None = None) -> dict[str, Any]
         "env": env,
         "load_resources": load_resources,
         # Resources
-        "secrets": {k: v["resource"]["ARN"] for k, v in secrets.items()},
-        "parameters": {k: v["resource"]["ARN"] for k, v in parameters.items()},
+        "secrets": secrets,
+        "parameters": parameters,
     }
 
 
@@ -118,27 +103,6 @@ def test_nothing(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
-
-
-def test_unsupported_resource(snapshot: Snapshot) -> None:
-    """If unsupported resource ARN provided, should exit with error."""
-    # Arrange
-    # ...
-
-    # Act
-    result = runner.invoke(
-        app,
-        [
-            "load-variables",
-            "--arns",
-            "arn:aws:s3:::my-bucket/my-object",
-            printenv_py,
-        ],
-    )
-
-    # Assert
-    assert result.exit_code == 1
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
@@ -231,6 +195,27 @@ def test_overwrite_env(snapshot: Snapshot) -> None:
     assert result.returncode == 0
     snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
     assert result.stderr == ""
+
+
+def test_unsupported_resource(snapshot: Snapshot) -> None:
+    """If unsupported resource ARN provided, should exit with error."""
+    # Arrange
+    # ...
+
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "load-variables",
+            "--arns",
+            "arn:aws:s3:::my-bucket/my-object",
+            printenv_py,
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 1
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
 
 
 @pytest.mark.parametrize(
