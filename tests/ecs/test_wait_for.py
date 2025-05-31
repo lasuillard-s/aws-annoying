@@ -111,15 +111,12 @@ class Test_wait_for_deployment_start:
 
         # Act & Assert
         with stubber, pytest.raises(NoRunningDeploymentError):
-            assert (
-                wait_for_deployment_start(
-                    ECSServiceRef(cluster="my-cluster", service="my-service"),
-                    session=mocked_session,
-                    wait_for_start=True,
-                    polling_interval=1,
-                    max_attempts=3,
-                )
-                == "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1"  # noqa: E501
+            wait_for_deployment_start(
+                ECSServiceRef(cluster="my-cluster", service="my-service"),
+                session=mocked_session,
+                wait_for_start=True,
+                polling_interval=1,
+                max_attempts=3,
             )
 
 
