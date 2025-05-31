@@ -14,7 +14,6 @@ from .wait_for import (
 
 __all__ = (
     "DeploymentFailedError",
-    "ECSDeploymentWaiter",
     "ECSServiceRef",
     "NoRunningDeploymentError",
     "ServiceTaskDefinitionAssertionError",
