@@ -79,13 +79,13 @@ def wait_for_deployment_start(
         msg = "No running deployments found for service."
         raise NoRunningDeploymentError(msg)
 
-    latest_deployment = sorted(
+    latest_deployment = max(
         running_deployments,
         key=lambda dep: dep.get(
             "startedAt",
             datetime.min.replace(tzinfo=timezone.utc),
         ),
-    )[-1]
+    )
     if len(running_deployments) > 1:
         logger.warning(
             "%d running deployments found for service. Using most recently started deployment: %s",
