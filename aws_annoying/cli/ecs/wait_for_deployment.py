@@ -138,7 +138,7 @@ def _wait_for_deployment(
 
     # Wait for the service to be stable
     if wait_for_stability:
-        logger.debug(
+        logger.info(
             "Start waiting for service %s to be stable.",
             service_ref.service,
         )

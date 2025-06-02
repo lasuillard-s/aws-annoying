@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from operator import itemgetter
+from datetime import datetime, timezone
 from time import sleep
 from typing import TYPE_CHECKING
 
@@ -79,7 +79,13 @@ def wait_for_deployment_start(
         msg = "No running deployments found for service."
         raise NoRunningDeploymentError(msg)
 
-    latest_deployment = sorted(running_deployments, key=itemgetter("startedAt"))[-1]
+    latest_deployment = max(
+        running_deployments,
+        key=lambda dep: dep.get(
+            "startedAt",
+            datetime.min.replace(tzinfo=timezone.utc),
+        ),
+    )
     if len(running_deployments) > 1:
         logger.warning(
             "%d running deployments found for service. Using most recently started deployment: %s",
