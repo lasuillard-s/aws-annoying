@@ -83,7 +83,7 @@ def wait_for_deployment_start(
         running_deployments,
         key=lambda dep: dep.get(
             "startedAt",
-            default=datetime.min.replace(tzinfo=timezone.utc),
+            datetime.min.replace(tzinfo=timezone.utc),
         ),
     )[-1]
     if len(running_deployments) > 1:
