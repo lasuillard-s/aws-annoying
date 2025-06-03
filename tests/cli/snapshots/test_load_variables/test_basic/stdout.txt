@@ -1,13 +1,13 @@
-ℹ️ Summary:
+🔔 Summary:
 ┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Index ┃ ARN                                                                  ┃
 ┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ 0     │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/django-… │
 │ 1     │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-settings  │
 └───────┴──────────────────────────────────────────────────────────────────────┘
-ℹ️ Retrieving variables from AWS resources...
-ℹ️ Retrieved 1 secrets and 1 parameters.
-ℹ️ Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+🔔 Retrieving variables from AWS resources...
+🔔 Retrieved 1 secrets and 1 parameters.
+🔔 Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
 DJANGO_SETTINGS_MODULE=config.settings.development
 DJANGO_SECRET_KEY=my-secret-key
 DJANGO_DEBUG=False
