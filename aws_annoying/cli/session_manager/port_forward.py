@@ -114,25 +114,26 @@ def port_forward(  # noqa: PLR0913
         through,
         reason,
     )
-    if dry_run:
-        # If dry run mode is enabled, just print the command (the log file will catch this)
-        command = ["echo", *command]
+    if not dry_run:
+        proc = subprocess.Popen(  # noqa: S603
+            command,
+            stdout=stdout,
+            stderr=subprocess.STDOUT,
+            text=True,
+            close_fds=False,  # FD inherited from parent process
+        )
+        pid = proc.pid
+    else:
+        pid = -1
 
-    proc = subprocess.Popen(  # noqa: S603
-        command,
-        stdout=stdout,
-        stderr=subprocess.STDOUT,
-        text=True,
-        close_fds=False,  # FD inherited from parent process
-    )
     logger.info(
         "Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
-        proc.pid,
+        pid,
         log_file.absolute(),
     )
 
     # Write the PID to the file
     if not dry_run:
-        pid_file.write_text(str(proc.pid))
+        pid_file.write_text(str(pid))
 
     logger.info("PID file written to %s.", pid_file.absolute())

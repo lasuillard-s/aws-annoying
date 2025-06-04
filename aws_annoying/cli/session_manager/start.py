@@ -55,7 +55,5 @@ def start(
         parameters={},
         reason=reason,
     )
-    if dry_run:
-        command = ["echo", *command]
-
-    os.execvp(command[0], command)  # noqa: S606
+    if not dry_run:
+        os.execvp(command[0], command)  # noqa: S606
