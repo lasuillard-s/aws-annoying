@@ -40,9 +40,6 @@ def task_definition_lifecycle(
 ) -> None:
     """Execute ECS task definition lifecycle."""
     dry_run = ctx.meta["dry_run"]
-    if dry_run:
-        logger.info("Dry run mode enabled. Will not perform any actual changes.")
-
     ecs = boto3.client("ecs")
 
     # Get all task definitions for the family

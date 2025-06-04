@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
+    ctx: typer.Context,
+    *,
     # TODO(lasuillard): Add `--local-host` option, redirect the traffic to non-localhost bind (unsupported by AWS)
     local_port: int = typer.Option(
         ...,
@@ -48,7 +50,7 @@ def port_forward(  # noqa: PLR0913
         "./session-manager-plugin.pid",
         help="The path to the PID file to store the process ID of the session manager plugin.",
     ),
-    terminate_running_process: bool = typer.Option(  # noqa: FBT001
+    terminate_running_process: bool = typer.Option(
         False,  # noqa: FBT003
         help="Terminate the process in the PID file if it already exists.",
     ),
@@ -58,6 +60,7 @@ def port_forward(  # noqa: PLR0913
     ),
 ) -> None:
     """Start a port forwarding session using AWS Session Manager."""
+    dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
     # Check if the PID file already exists
@@ -86,7 +89,7 @@ def port_forward(  # noqa: PLR0913
         logger.info("Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id
     else:
-        logger.info("Instance with name '%s' not found.", through)
+        logger.error("Instance with name '%s' not found.", through)
         raise typer.Exit(1)
 
     # Initiate the session
@@ -111,19 +114,26 @@ def port_forward(  # noqa: PLR0913
         through,
         reason,
     )
-    proc = subprocess.Popen(  # noqa: S603
-        command,
-        stdout=stdout,
-        stderr=subprocess.STDOUT,
-        text=True,
-        close_fds=False,  # FD inherited from parent process
-    )
+    if not dry_run:
+        proc = subprocess.Popen(  # noqa: S603
+            command,
+            stdout=stdout,
+            stderr=subprocess.STDOUT,
+            text=True,
+            close_fds=False,  # FD inherited from parent process
+        )
+        pid = proc.pid
+    else:
+        pid = -1
+
     logger.info(
         "Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
-        proc.pid,
+        pid,
         log_file.absolute(),
     )
 
     # Write the PID to the file
-    pid_file.write_text(str(proc.pid))
+    if not dry_run:
+        pid_file.write_text(str(pid))
+
     logger.info("PID file written to %s.", pid_file.absolute())
