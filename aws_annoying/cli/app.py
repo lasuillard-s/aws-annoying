@@ -8,6 +8,8 @@ from typing import Optional
 import typer
 from rich import print  # noqa: A004
 from rich.console import Console
+from rich.highlighter import ReprHighlighter
+from rich.theme import Theme
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +55,7 @@ def main(  # noqa: D103
     ),
 ) -> None:
     log_level = logging.DEBUG if verbose else logging.INFO
-    console = Console(soft_wrap=True, emoji=False)
+    console = _get_console()
     logging_config: logging.config._DictConfigArgs = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -93,3 +95,26 @@ def main(  # noqa: D103
     ctx.meta["dry_run"] = dry_run
     if dry_run:
         logger.warning("Dry run mode enabled. Some operation may behave differently to avoid making changes.")
+
+
+def _get_console() -> Console:
+    theme = Theme(
+        {
+            "repr.arn": "bold orange3",
+            "repr.constant": "bold blue",
+        },
+    )
+    return Console(soft_wrap=True, emoji=False, highlighter=CustomHighlighter(), theme=theme)
+
+
+class CustomHighlighter(ReprHighlighter):
+    """Custom highlighter to handle additional patterns."""
+
+    highlights = [  # noqa: RUF012
+        *ReprHighlighter.highlights,
+        # AWS Resource Name; https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html
+        # NOTE: Quite simplified regex, may not cover all cases.
+        r"(?P<arn>\barn:[0-9a-zA-Z/+=,\.@_\-:]+\b)",
+        # Constants
+        r"(?P<constant>\b[A-Z_]+\b)",
+    ]
