@@ -1,4 +1,4 @@
-ℹ️ Dry run mode enabled. Will not perform any actual changes.
+⚠️ Dry run mode enabled. Some operation may behave differently to avoid making changes.
 ⚠️ Deregistering 15 task definitions...
 ⚠️ Deregistered task definition 'my-task:1'
 ⚠️ Deregistered task definition 'my-task:2'
