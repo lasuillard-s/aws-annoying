@@ -11,6 +11,8 @@ from rich.console import Console
 from rich.highlighter import ReprHighlighter
 from rich.theme import Theme
 
+logger = logging.getLogger(__name__)
+
 app = typer.Typer(
     pretty_exceptions_short=True,
     pretty_exceptions_show_locals=False,
@@ -91,6 +93,8 @@ def main(  # noqa: D103
 
     # Global flags
     ctx.meta["dry_run"] = dry_run
+    if dry_run:
+        logger.warning("Dry run mode enabled. Some operation may behave differently to avoid making changes.")
 
 
 def _get_console() -> Console:

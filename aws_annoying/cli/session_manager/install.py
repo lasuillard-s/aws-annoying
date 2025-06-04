@@ -15,12 +15,15 @@ logger = logging.getLogger(__name__)
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def install(
-    yes: bool = typer.Option(  # noqa: FBT001
+    ctx: typer.Context,
+    *,
+    yes: bool = typer.Option(
         False,  # noqa: FBT003
         help="Do not ask confirmation for installation.",
     ),
 ) -> None:
     """Install AWS Session Manager plugin."""
+    dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
     # Check session-manager-plugin already installed
@@ -31,7 +34,8 @@ def install(
 
     # Install session-manager-plugin
     logger.warning("Installing AWS Session Manager plugin. You could be prompted for admin privileges request.")
-    session_manager.install(confirm=yes, downloader=TQDMDownloader())
+    if not dry_run:
+        session_manager.install(confirm=yes, downloader=TQDMDownloader())
 
     # Verify installation
     is_installed, binary_path, version = session_manager.verify_installation()
