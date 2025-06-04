@@ -56,8 +56,10 @@ def test_basic(snapshot: Snapshot, tmp_path: Path, skip_persist: bool) -> None: 
 
     # Assert
     assert result.exit_code == 0
-    stdout = result.stdout.replace(str(tmp_path), "<tmp_path>")
-    snapshot.assert_match(normalize_console_output(stdout), "stdout.txt")
+    snapshot.assert_match(
+        normalize_console_output(result.stdout, replace={str(tmp_path): "<tmp_path>"}),
+        "stdout.txt",
+    )
 
     ini = ConfigParser()
     ini.read(aws_credentials)
@@ -102,8 +104,10 @@ def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
 
     # Assert
     assert result.exit_code == 0
-    stdout = result.stdout.replace(str(tmp_path), "<tmp_path>")
-    snapshot.assert_match(normalize_console_output(stdout), "stdout.txt")
+    snapshot.assert_match(
+        normalize_console_output(result.stdout, replace={str(tmp_path): "<tmp_path>"}),
+        "stdout.txt",
+    )
 
     ini = ConfigParser()
     ini.read(aws_credentials)
@@ -147,8 +151,10 @@ def test_dry_run(snapshot: Snapshot, tmp_path: Path) -> None:
 
     # Assert
     assert result.exit_code == 0
-    stdout = result.stdout.replace(str(tmp_path), "<tmp_path>")
-    snapshot.assert_match(normalize_console_output(stdout), "stdout.txt")
+    snapshot.assert_match(
+        normalize_console_output(result.stdout, replace={str(tmp_path): "<tmp_path>"}),
+        "stdout.txt",
+    )
 
     ini = ConfigParser()
     ini.read(aws_credentials)
