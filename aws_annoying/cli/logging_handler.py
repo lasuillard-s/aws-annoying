@@ -15,10 +15,10 @@ class RichLogHandler(logging.Handler):
 
     _level_emojis: Final[dict[str, str]] = {
         "DEBUG": "🔍",
-        "INFO": "ℹ️",  # noqa: RUF001
+        "INFO": "🔔",
         "WARNING": "⚠️",
-        "ERROR": "❗",
-        "CRITICAL": "🚨",
+        "ERROR": "🚨",
+        "CRITICAL": "🔥",
     }
 
     def __init__(self, console: Console, *args: Any, **kwargs: Any) -> None:

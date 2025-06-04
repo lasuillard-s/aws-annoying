@@ -1,6 +1,6 @@
-ℹ️ Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
-ℹ️ Found 1 sources from environment variables.
-ℹ️ Summary:
+🔔 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
+🔔 Found 1 sources from environment variables.
+🔔 Summary:
 ┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Index        ┃ ARN                                                           ┃
 ┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
@@ -8,9 +8,9 @@
 │ 1            │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-s… │
 │ 900_override │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/override  │
 └──────────────┴───────────────────────────────────────────────────────────────┘
-ℹ️ Retrieving variables from AWS resources...
-ℹ️ Retrieved 1 secrets and 2 parameters.
-ℹ️ Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+🔔 Retrieving variables from AWS resources...
+🔔 Retrieved 1 secrets and 2 parameters.
+🔔 Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
 DJANGO_SETTINGS_MODULE=config.settings.local
 DJANGO_SECRET_KEY=my-secret-key
 DJANGO_DEBUG=False
