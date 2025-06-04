@@ -53,7 +53,7 @@ def test_install_macos() -> None:
 
 
 @run_if_windows
-def test_wiinstall_ndows() -> None:
+def test_install_windows() -> None:
     # Arrange
     session_manager = SessionManager()
     assert session_manager.verify_installation() == (False, None, None)
