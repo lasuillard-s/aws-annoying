@@ -11,12 +11,12 @@ def normalize_console_output(output: str, *, replace: dict[str, str] | None = No
     # Unwrap each line
     output = re.sub(r"[ ]+\n", " ", output)
 
-    # Handle Windows path separator
-    output = output.replace("\\", "/")
-
     # Extra replacements; e.g. temporary paths that may vary
     if replace:
         for old, new in replace.items():
             output = output.replace(old, new)
 
-    return output
+    # Handle Windows path separator
+    output = output.replace("\\", "/")
+
+    return output  # noqa: RET504
