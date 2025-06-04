@@ -114,3 +114,43 @@ def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
     }
 
     snapshot.assert_match(aws_config.read_text(), "aws_config.ini")
+
+
+def test_dry_run(snapshot: Snapshot, tmp_path: Path) -> None:
+    """If dry-run mode enabled, configuration shouldn't updated."""
+    # Arrange
+    mfa_profile = "mfa"
+    aws_credentials = tmp_path / "credentials"
+    aws_config = tmp_path / "config"
+
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "--dry-run",
+            "mfa",
+            "configure",
+            "--mfa-profile",
+            mfa_profile,
+            "--mfa-source-profile",
+            "default",
+            "--mfa-serial-number",
+            "1234567890",
+            "--mfa-token-code",
+            "123456",
+            "--aws-credentials",
+            str(aws_credentials),
+            "--aws-config",
+            str(aws_config),
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 0
+    stdout = result.stdout.replace(str(tmp_path), "<tmp_path>")
+    snapshot.assert_match(normalize_console_output(stdout), "stdout.txt")
+
+    ini = ConfigParser()
+    ini.read(aws_credentials)
+    assert mfa_profile not in ini
+    assert not aws_config.exists()
