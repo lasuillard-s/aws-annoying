@@ -85,7 +85,9 @@ jobs:
           $uri = 'https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe'
           $outFile = 'C:\Windows\Temp\SessionManagerPluginSetup.exe'
           Invoke-WebRequest -Uri "$uri" -OutFile "$outFile"
-          & "$outFile" /uninstall /quiet
+          & "$outFile" /uninstall
+
+          Get-Command session-manager-plugin | Out-String -Width 2000
 
           uv run pytest -m 'not docker'
 
