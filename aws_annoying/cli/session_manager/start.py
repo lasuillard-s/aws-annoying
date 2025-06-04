@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 @session_manager_app.command()
 def start(
+    ctx: typer.Context,
+    *,
     target: str = typer.Option(
         ...,
         show_default=False,
@@ -29,6 +31,7 @@ def start(
     ),
 ) -> None:
     """Start new session."""
+    dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
     # Resolve the instance name or ID
@@ -52,4 +55,7 @@ def start(
         parameters={},
         reason=reason,
     )
+    if dry_run:
+        command = ["echo", *command]
+
     os.execvp(command[0], command)  # noqa: S606
