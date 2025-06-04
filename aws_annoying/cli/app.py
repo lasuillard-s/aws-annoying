@@ -94,16 +94,6 @@ def main(  # noqa: D103
 
 
 def _get_console() -> Console:
-    class CustomHighlighter(ReprHighlighter):
-        highlights = [  # noqa: RUF012
-            *ReprHighlighter.highlights,
-            # AWS Resource Name; https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html
-            # NOTE: Quite simplified regex, may not cover all cases.
-            r"(?P<arn>\barn:[0-9a-zA-Z/+=,\.@_\-:]+\b)",
-            # Constants
-            r"(?P<constant>\b[A-Z_]+\b)",
-        ]
-
     theme = Theme(
         {
             "repr.arn": "bold orange3",
@@ -111,3 +101,16 @@ def _get_console() -> Console:
         },
     )
     return Console(soft_wrap=True, emoji=False, highlighter=CustomHighlighter(), theme=theme)
+
+
+class CustomHighlighter(ReprHighlighter):
+    """Custom highlighter to handle additional patterns."""
+
+    highlights = [  # noqa: RUF012
+        *ReprHighlighter.highlights,
+        # AWS Resource Name; https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html
+        # NOTE: Quite simplified regex, may not cover all cases.
+        r"(?P<arn>\barn:[0-9a-zA-Z/+=,\.@_\-:]+\b)",
+        # Constants
+        r"(?P<constant>\b[A-Z_]+\b)",
+    ]
