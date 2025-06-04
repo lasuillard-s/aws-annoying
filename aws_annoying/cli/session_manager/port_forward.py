@@ -89,7 +89,7 @@ def port_forward(  # noqa: PLR0913
         logger.info("Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id
     else:
-        logger.info("Instance with name '%s' not found.", through)
+        logger.error("Instance with name '%s' not found.", through)
         raise typer.Exit(1)
 
     # Initiate the session
