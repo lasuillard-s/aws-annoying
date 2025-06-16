@@ -6,7 +6,6 @@
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true
   },
-  "autoDocstring.docstringFormat": "google-notypes",
   "cSpell.words": [
     "Deregistering",
     "localstack",
@@ -17,13 +16,6 @@
   ],
   "editor.formatOnSave": true,
   "files.eol": "\n",
-  "files.exclude": {
-    ".mypy_cache": true,
-    ".pytest_cache": true,
-    ".ruff_cache": true,
-    ".venv": true,
-    "**/__pycache__": true
-  },
   "files.insertFinalNewline": true,
   "json.format.enable": true,
   "mypy-type-checker.path": [
