@@ -19,7 +19,7 @@ Major directories of the project:
 
 ## 🚀 Installation
 
-It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying`:
+It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
 
 ```bash
 $ pipx install aws-annoying
@@ -30,21 +30,43 @@ $ aws-annoying --help
 ...
 ```
 
-Available commands:
+As the package also provides some utility functions, you can install `aws-annoying` via pip, if you are going to use those utils.
 
-- **ecs** ECS utilities.
-  - **task-definition-lifecycle** Help to manage ECS task definitions lifecycle.
-  - **wait-for-deployment** Wait for ECS deployment to complete.
-- **load-variables** Wrapper command to run command with variables from AWS resources injected as environment variables.
-- **mfa** Commands to manage MFA authentication.
-  - **configure** Configure AWS profile for MFA.
-- **session-manager** AWS Session Manager CLI utilities.
-  - **install** Install AWS Session Manager plugin.
-  - **port-forward** Start a port forwarding session using AWS Session Manager.
-  - **start** Start new session.
-  - **stop** Stop running session for PID file.
+## 💡 Usage
 
-Please refer to the CLI help for more information about the available commands and options.
+Below are brief explanation of available commands. For more detailed information about commands, please refer to the CLI help.
+
+### `ecs task-definition-lifecycle`
+
+Expire and delete ECS task definitions based on criteria.
+
+### `ecs wait-for-deployment`
+
+Wait for ECS deployment to start, complete or fail, and stabilize.
+
+### `load-variables`
+
+Wrapper command to run command with variables from various AWS resources (SSM Parameter Store, Secrets Manager, etc.) injected as environment variables.
+
+### `mfa configure`
+
+Configure AWS profile or refresh session for MFA.
+
+### `session-manager install`
+
+Install AWS Session Manager plugin.
+
+### `session-manager port-forward`
+
+Start a port forwarding session using AWS Session Manager.
+
+### `session-manager start`
+
+Start new session via Session Manager.
+
+### `session-manager stop`
+
+Stop running port forwarding session for PID file.
 
 ## 💖 Contributing
 
