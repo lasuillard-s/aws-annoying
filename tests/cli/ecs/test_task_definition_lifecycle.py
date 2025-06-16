@@ -91,6 +91,62 @@ def test_basic(snapshot: Snapshot) -> None:
     ]
 
 
+def test_delete(snapshot: Snapshot) -> None:
+    """The command should deregister the oldest task definitions."""
+    # Arrange
+    ecs = boto3.client("ecs")
+    family = "my-task"
+    num_task_defs = 25
+    for i in range(1, num_task_defs + 1):
+        ecs.register_task_definition(
+            family=family,
+            containerDefinitions=[
+                {
+                    "name": "my-container",
+                    "image": f"my-image:{i}",
+                    "cpu": 0,
+                    "memory": 0,
+                },
+            ],
+        )
+
+    # Act
+    keep_latest = 10
+    result = runner.invoke(
+        app,
+        [
+            "ecs",
+            "task-definition-lifecycle",
+            "--family",
+            family,
+            "--keep-latest",
+            str(keep_latest),
+            "--delete",
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 0
+    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+
+    active_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
+    assert active_task_definitions["taskDefinitionArns"] == [
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:16",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:17",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:18",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:19",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:20",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:21",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:22",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:23",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:24",
+        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:25",
+    ]
+
+    inactive_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="INACTIVE")
+    assert inactive_task_definitions["taskDefinitionArns"] == []
+
+
 def test_dry_run(snapshot: Snapshot) -> None:
     """If `--dry-run` option given, the command should not perform any changes."""
     # Arrange
