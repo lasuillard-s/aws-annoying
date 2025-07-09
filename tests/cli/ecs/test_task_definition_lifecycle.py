@@ -59,35 +59,12 @@ def test_basic(snapshot: Snapshot) -> None:
 
     active_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
     assert active_task_definitions["taskDefinitionArns"] == [
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:16",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:17",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:18",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:19",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:20",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:21",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:22",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:23",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:24",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:25",
+        f"arn:aws:ecs:us-east-1:123456789012:task-definition/{family}:{i}" for i in range(16, 26)
     ]
 
     inactive_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="INACTIVE")
     assert inactive_task_definitions["taskDefinitionArns"] == [
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:1",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:2",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:3",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:4",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:5",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:6",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:7",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:8",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:9",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:10",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:11",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:12",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:13",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:14",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:15",
+        f"arn:aws:ecs:us-east-1:123456789012:task-definition/{family}:{i}" for i in range(1, 16)
     ]
 
 
@@ -131,16 +108,7 @@ def test_delete(snapshot: Snapshot) -> None:
 
     active_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
     assert active_task_definitions["taskDefinitionArns"] == [
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:16",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:17",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:18",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:19",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:20",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:21",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:22",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:23",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:24",
-        "arn:aws:ecs:us-east-1:123456789012:task-definition/my-task:25",
+        f"arn:aws:ecs:us-east-1:123456789012:task-definition/{family}:{i}" for i in range(16, 26)
     ]
 
     inactive_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="INACTIVE")
