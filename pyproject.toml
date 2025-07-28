@@ -17,7 +17,7 @@ dependencies = [
 [project.scripts]
 "aws-annoying" = "aws_annoying.cli.main:entrypoint"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]>=1.37.1",
   "mypy>=1.15,<1.17",
@@ -46,6 +46,9 @@ Issues = "https://github.com/lasuillard/aws-annoying/issues"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv]
+default-groups = ["dev", "test"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["aws_annoying"]

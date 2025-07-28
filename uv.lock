@@ -45,7 +45,7 @@ dependencies = [
     { name = "typer" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "boto3-stubs", extra = ["ec2", "ecs", "secretsmanager", "ssm", "sts"] },
     { name = "mypy" },
@@ -70,27 +70,32 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1,<2" },
-    { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts", "ec2"], marker = "extra == 'dev'", specifier = ">=1.37.1" },
-    { name = "coverage", marker = "extra == 'test'", specifier = ">=7.6,<7.9" },
-    { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], marker = "extra == 'test'", specifier = "~=5.1.8" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15,<1.17" },
     { name = "pydantic", specifier = ">=2,<3" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.2,<8.5.0" },
-    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=6.0,<6.2" },
-    { name = "pytest-env", marker = "extra == 'test'", specifier = "~=1.1.1" },
-    { name = "pytest-snapshot", marker = "extra == 'test'", specifier = ">=0.9.0" },
-    { name = "pytest-sugar", marker = "extra == 'test'", specifier = "~=1.0.0" },
-    { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=3.6.1" },
     { name = "requests", specifier = ">=2,<3" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.9,<0.12.0" },
-    { name = "testcontainers", extras = ["localstack"], marker = "extra == 'test'", specifier = ">=4.9.2" },
-    { name = "toml", marker = "extra == 'test'", specifier = ">=0.10.2" },
     { name = "tqdm", specifier = ">=4,<5" },
     { name = "typer", specifier = ">=0,<1" },
-    { name = "types-requests", marker = "extra == 'dev'", specifier = ">=2.31.0.6" },
-    { name = "types-toml", marker = "extra == 'test'", specifier = ">=0.10.8.20240310" },
 ]
-provides-extras = ["dev", "test"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts", "ec2"], specifier = ">=1.37.1" },
+    { name = "mypy", specifier = ">=1.15,<1.17" },
+    { name = "ruff", specifier = ">=0.9.9,<0.12.0" },
+    { name = "types-requests", specifier = ">=2.31.0.6" },
+]
+test = [
+    { name = "coverage", specifier = ">=7.6,<7.9" },
+    { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], specifier = "~=5.1.8" },
+    { name = "pytest", specifier = ">=8.3.2,<8.5.0" },
+    { name = "pytest-cov", specifier = ">=6.0,<6.2" },
+    { name = "pytest-env", specifier = "~=1.1.1" },
+    { name = "pytest-snapshot", specifier = ">=0.9.0" },
+    { name = "pytest-sugar", specifier = "~=1.0.0" },
+    { name = "pytest-xdist", specifier = ">=3.6.1" },
+    { name = "testcontainers", extras = ["localstack"], specifier = ">=4.9.2" },
+    { name = "toml", specifier = ">=0.10.2" },
+    { name = "types-toml", specifier = ">=0.10.8.20240310" },
+]
 
 [[package]]
 name = "aws-sam-translator"
