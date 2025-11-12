@@ -1,5 +1,5 @@
 {
-  "name": "lasuillard/aws-annoying",
+  "name": "lasuillard-s/aws-annoying",
   "dockerComposeFile": [
     "./docker-compose.devcontainer.yaml"
   ],
