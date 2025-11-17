@@ -1,0 +1,33 @@
+site_name: aws-annoying
+repo_url: https://github.com/lasuillard-s/aws-annoying
+repo_name: lasuillard-s/aws-annoying
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_submodules: false
+            filters:
+              - "!^_[^_]"
+  - search
+  - mike
+nav:
+  - Introduction: index.md
+markdown_extensions:
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+extra:
+  version:
+    provider: mike
