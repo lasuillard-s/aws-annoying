@@ -20,4 +20,4 @@
 
 ::: aws_annoying.cli.session_manager.stop.stop
     options:
-        show_signature: true
+        show_signature: false

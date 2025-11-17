@@ -1,5 +1,3 @@
-
-
 ## `aws-annoying ecs task-definition-lifecycle`
 
 ::: aws_annoying.cli.ecs.task_definition_lifecycle.task_definition_lifecycle
