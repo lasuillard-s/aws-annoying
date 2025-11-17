@@ -30,7 +30,11 @@ def start(
         help="The reason for starting the session.",
     ),
 ) -> None:
-    """Start new session."""
+    """Start new session to your instance.
+
+    You can use your EC2 instance identified by its name or ID. If there are
+    more than one instance with the same name, the first one found will be used.
+    """
     dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 

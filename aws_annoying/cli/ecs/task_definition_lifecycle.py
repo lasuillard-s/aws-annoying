@@ -38,7 +38,21 @@ def task_definition_lifecycle(
         help="Delete the task definition after deregistering it.",
     ),
 ) -> None:
-    """Execute ECS task definition lifecycle."""
+    r"""Expire and delete ECS task definitions.
+
+    Expire and delete ECS task definitions for a given family, keeping revisions adhering to
+    the given constraint. You can use this command to clean up old task definitions that are no
+    longer needed.
+
+    Example usage:
+
+    ```shell
+    aws-annoying ecs task-definition-lifecycle \
+        --family <task-definition-family> \
+        --keep-latest 5 \
+        --delete
+    ```
+    """
     dry_run = ctx.meta["dry_run"]
     ecs = boto3.client("ecs")
 

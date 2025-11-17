@@ -17,6 +17,11 @@ plugins:
   - mike
 nav:
   - Introduction: index.md
+  - CLI References:
+      - ECS (Elastic Container Service): cli-references/ecs.md
+      - MFA: cli-references/mfa.md
+      - Session Manager: cli-references/session-manager.md
+      - Miscellaneous: cli-references/misc.md
 markdown_extensions:
   - def_list
   - pymdownx.tasklist:
