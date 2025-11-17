@@ -4,7 +4,7 @@
 // @version      2025.04.16
 // @description  Add link to AWS SSM Session Manager for ECS container
 // @author       lasuillard
-// @source       https://raw.githubusercontent.com/lasuillard/aws-annoying/refs/heads/main/console/ecs-exec/ecs-exec.user.js
+// @source       https://raw.githubusercontent.com/lasuillard-s/aws-annoying/refs/heads/main/console/ecs-exec/ecs-exec.user.js
 // @match        https://*.console.aws.amazon.com/ecs/v2/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        GM_log
