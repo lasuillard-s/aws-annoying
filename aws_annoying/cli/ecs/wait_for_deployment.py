@@ -69,7 +69,42 @@ def wait_for_deployment(  # noqa: PLR0913
         help="Whether to wait for the service to be stable after the deployment.",
     ),
 ) -> None:
-    """Wait for ECS deployment to complete."""
+    r"""Wait for ECS deployment for a specific service to start, complete and stabilize.
+
+    It's designed to be used after triggering a deployment (e.g., updating service, deploying new task definition),
+    in conjunction with CI/CD pipelines or deployment scripts.
+
+    Below is an example of using this command in GitHub Actions workflow:
+
+    ```yaml
+      ...
+
+      - name: Deploy to ECS service
+        id: deploy-ecs
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
+          cluster: ${{ vars.AWS_ECS_CLUSTER }}
+          service: ${{ vars.AWS_ECS_SERVICE }}
+          wait-for-service-stability: false
+
+      - name: Wait for deployment complete
+        run: |
+          pipx run aws-annoying \
+            --verbose \
+            ecs wait-for-deployment \
+              --cluster '${{ vars.AWS_ECS_CLUSTER }}' \
+              --service '${{ vars.AWS_ECS_SERVICE }}' \
+              --wait-for-start \
+              --wait-for-stability \
+              --timeout-seconds 600 \
+              --expected-task-definition '${{ steps.deploy-ecs.outputs.task-definition-arn }}'
+
+      ...
+    ```
+
+    `--wait-for-start` is necessary because there could be no deployment right after the deploy action.
+    """
     start = datetime.now(tz=timezone.utc)
     try:
         with Timeout(timeout_seconds):
