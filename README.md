@@ -15,6 +15,7 @@ Major directories of the project:
 - **aws_annoying** Python package containing CLI and utility functions.
 - **console** Utilities to help working with AWS Console.
 - **examples** Examples of how to use the package.
+- **devcontainer-features** Devcontainer features to help set up development environment.
 
 ## 🚀 Installation
 

@@ -1,0 +1,41 @@
+name: Release Dev Container Features & Generate Docs
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [v*]
+    paths:
+      - devcontainer-features/**
+
+jobs:
+  release:
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: devcontainers/action@v1
+        with:
+          publish-features: true
+          base-path-to-features: ./devcontainer-features
+          generate-docs: true
+
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Create PR for generated docs
+        uses: peter-evans/create-pull-request@v7.0.8
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          sign-commits: true
+          title: Automated documentation update
+          branch: automated-documentation-update-${{ github.run_id }}
+          delete-branch: true
