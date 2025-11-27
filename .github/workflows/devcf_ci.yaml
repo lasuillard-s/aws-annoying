@@ -1,4 +1,4 @@
-name: CI for Dev Container Features
+name: Dev Container Features - CI
 
 on:
   workflow_dispatch:

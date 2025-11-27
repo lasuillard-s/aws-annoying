@@ -1,4 +1,4 @@
-name: Release Dev Container Features & Generate Docs
+name: Dev Container Features - Release & Docs
 
 on:
   workflow_dispatch:
