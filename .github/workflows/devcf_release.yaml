@@ -6,6 +6,7 @@ on:
   # Every time when push changes to target directory, it will trigger release
   # but the CLI won't overwrite existing published features unless the version is updated
   push:
+    branches: [main]
     paths:
       - devcontainer-features/**
 
