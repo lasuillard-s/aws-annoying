@@ -2,8 +2,10 @@ name: Release Dev Container Features & Generate Docs
 
 on:
   workflow_dispatch:
+
+  # Every time when push changes to target directory, it will trigger release
+  # but the CLI won't overwrite existing published features unless the version is updated
   push:
-    tags: [v*]
     paths:
       - devcontainer-features/**
 
@@ -17,7 +19,7 @@ jobs:
       pull-requests: write
       packages: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: devcontainers/action@v1
         with:
           publish-features: true
