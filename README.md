@@ -34,39 +34,7 @@ As the package also provides some utility functions, you can install `aws-annoyi
 
 ## 💡 Usage
 
-Below are brief explanation of available commands. For more detailed information about commands, please refer to the CLI help.
-
-### `ecs task-definition-lifecycle`
-
-Expire and delete ECS task definitions based on criteria.
-
-### `ecs wait-for-deployment`
-
-Wait for ECS deployment to start, complete or fail, and stabilize.
-
-### `load-variables`
-
-Wrapper command to run command with variables from various AWS resources (SSM Parameter Store, Secrets Manager, etc.) injected as environment variables.
-
-### `mfa configure`
-
-Configure AWS profile or refresh session for MFA.
-
-### `session-manager install`
-
-Install AWS Session Manager plugin.
-
-### `session-manager port-forward`
-
-Start a port forwarding session using AWS Session Manager.
-
-### `session-manager start`
-
-Start new session via Session Manager.
-
-### `session-manager stop`
-
-Stop running port forwarding session for PID file.
+Refer to the CLI help or documentation for detailed information on how to use each command.
 
 ## 💖 Contributing
 

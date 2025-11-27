@@ -28,6 +28,11 @@ update:  ## Update deps and tools
 	pre-commit autoupdate
 .PHONY: update
 
+serve-docs:  ## Serve documentation with live reload
+	uv run mkdocs serve \
+		--dev-addr "$$([ -n "$${CONTAINER:-}" ] && echo '0.0.0.0:8000' || echo '127.0.0.1:8000')"
+.PHONY: serve-docs
+
 
 # =============================================================================
 # CI

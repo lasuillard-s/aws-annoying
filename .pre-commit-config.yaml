@@ -8,30 +8,17 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
 
-  - repo: https://github.com/lasuillard/pre-commit-hooks
-    rev: v0.4.1
+  - repo: https://github.com/lasuillard-s/devobs
+    rev: v0.2.1
     hooks:
-      - id: source-matching-test
+      - id: check-file-pair
         args:
-          - --source
-          - aws_annoying
+          - --from=pulumi_extra
+          - --to=tests
+          - --include=*.py
+          - --exclude=utils/debugger.py,_*.py
+          - --expect={to}/{relative_from}/test_{filename}
           - --create-if-not-exists
-          - --extend-exclude
-          - utils/debugger.py
-          - --extend-exclude
-          - "**/_*.py"
-      - id: test-matching-source
-        args:
-          - --target
-          - aws_annoying
-          - --extend-exclude
-          - "**/conftest.py"
-          - --extend-exclude
-          - "**/_*/**/*.py"
-          - --extend-exclude
-          - "**/_*.py"
-      - id: preferred-suffix
-        args: [--rename]
 
   - repo: local
     hooks:

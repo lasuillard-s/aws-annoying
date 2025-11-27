@@ -1,0 +1,41 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    tags: [v*]
+
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+env:
+  UV_FROZEN: 1
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: latest
+          enable-cache: true
+
+      - name: Install deps
+        run: uv sync
+
+      - name: Configure Git user
+        run: |
+          git config --local user.email "github-actions[bot]@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Build docs
+        run: |
+          uv run mike deploy --push "${{ github.ref_name }}"

@@ -59,7 +59,14 @@ def port_forward(  # noqa: PLR0913
         help="The path to the log file to store the output of the session manager plugin.",
     ),
 ) -> None:
-    """Start a port forwarding session using AWS Session Manager."""
+    """Start a port forwarding session using AWS Session Manager.
+
+    This command allows starting a port forwarding session through an EC2 instance identified by its name or ID.
+    If there are more than one instance with the same name, the first one found will be used.
+
+    Also, it manages a PID file to keep track of the session manager plugin process running in background,
+    allowing to terminate any existing process before starting a new one.
+    """
     dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 

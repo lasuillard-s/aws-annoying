@@ -20,11 +20,13 @@ dependencies = [
 [dependency-groups]
 dev = [
   "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]>=1.37.1",
+  "mike>=2.1.3",
+  "mkdocs>=1.6.1",
+  "mkdocs-material>=9.7.0",
+  "mkdocstrings[python]>=0.30.1",
   "mypy>=1.15,<1.17",
   "ruff>=0.9.9,<0.12.0",
   "types-requests>=2.31.0.6",
-]
-test = [
   "coverage>=7.6,<7.9",
   "moto[secretsmanager,server,ssm,ecs]~=5.1.8",
   "pytest>=8.3.2,<8.5.0",
@@ -39,16 +41,13 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lasuillard/aws-annoying"
-Repository = "https://github.com/lasuillard/aws-annoying.git"
-Issues = "https://github.com/lasuillard/aws-annoying/issues"
+Homepage = "https://github.com/lasuillard-s/aws-annoying"
+Repository = "https://github.com/lasuillard-s/aws-annoying.git"
+Issues = "https://github.com/lasuillard-s/aws-annoying/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.uv]
-default-groups = ["dev", "test"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["aws_annoying"]

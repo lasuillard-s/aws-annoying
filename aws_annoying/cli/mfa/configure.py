@@ -54,7 +54,27 @@ def configure(  # noqa: PLR0913
         help="Persist the MFA configuration.",
     ),
 ) -> None:
-    """Configure AWS profile for MFA."""
+    r"""Configure AWS profile for MFA.
+
+    This command retrieves temporary MFA credentials using the provided source profile (`--mfa-source-profile`)
+    and MFA token code then updates the specified AWS profile with these credentials.
+
+    You can configure it interactively, by omitting the options, or provide them directly via command-line options.
+
+    ```shell
+    aws-annoying mfa configure
+    ```
+
+    If you want to use MFA as primary authentication method for an AWS profile, you can configure
+    it to save the credentials to the default profile.
+
+    ```shell
+    aws configure --profile mfa
+    aws-annoying mfa configure \
+        --mfa-profile default \
+        --mfa-source-profile mfa
+    ```
+    """
     dry_run = ctx.meta["dry_run"]
 
     # Expand user home directory
