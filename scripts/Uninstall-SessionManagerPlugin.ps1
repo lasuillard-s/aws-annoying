@@ -27,18 +27,35 @@ $uninstallPaths = @(
 )
 
 foreach ($path in $uninstallPaths) {
-    $apps = Get-ItemProperty $path -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like "*Session Manager*" }
+    # Use specific pattern to match only AWS Session Manager Plugin
+    $apps = Get-ItemProperty $path -ErrorAction SilentlyContinue | Where-Object {
+        $_.DisplayName -like "*Session Manager Plugin*" -or
+        $_.DisplayName -like "*AWS Session Manager*" -or
+        $_.Publisher -like "*Amazon*" -and $_.DisplayName -like "*Session Manager*"
+    }
     foreach ($app in $apps) {
         if ($app.UninstallString) {
-            Write-Host "Found Session Manager Plugin, running uninstaller: $($app.UninstallString)"
+            Write-Host "Found: $($app.DisplayName)"
+            Write-Host "Running uninstaller: $($app.UninstallString)"
             $uninstallCmd = $app.UninstallString
+
             if ($uninstallCmd -match "msiexec") {
-                # MSI-based uninstallation
-                Start-Process msiexec.exe -ArgumentList "/x $($app.PSChildName) /qn /norestart" -Wait -NoNewWindow
-            } else {
-                # EXE-based uninstallation
-                Start-Process cmd.exe -ArgumentList "/c $uninstallCmd /quiet" -Wait -NoNewWindow
+                # MSI-based uninstallation - extract ProductCode from UninstallString
+                if ($uninstallCmd -match "\{[A-F0-9-]+\}") {
+                    $productCode = $matches[0]
+                    Write-Host "Uninstalling MSI with ProductCode: $productCode"
+                    Start-Process msiexec.exe -ArgumentList "/x $productCode /qn /norestart" -Wait -NoNewWindow
+                } else {
+                    # Fallback: use registry key name if it looks like a GUID
+                    $keyName = $app.PSChildName
+                    if ($keyName -match "^\{[A-F0-9-]+\}$") {
+                        Write-Host "Uninstalling MSI with key name: $keyName"
+                        Start-Process msiexec.exe -ArgumentList "/x $keyName /qn /norestart" -Wait -NoNewWindow
+                    }
+                }
             }
+            # Note: EXE-based uninstaller with /quiet flag is unreliable for this plugin,
+            # so we rely on the directory removal fallback below instead
         }
     }
 }
