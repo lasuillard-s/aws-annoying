@@ -77,10 +77,28 @@ jobs:
         run: |
           Get-Command session-manager-plugin | Out-String -Width 2000
 
-          $uri = 'https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe'
-          $outFile = 'C:\Windows\Temp\SessionManagerPluginSetup.exe'
-          Invoke-WebRequest -Uri "$uri" -OutFile "$outFile"
-          & "$outFile" /uninstall /quiet
+          # Uninstall Session Manager Plugin using multiple approaches
+          # Try WMIC first (for MSI-based installations)
+          $product = Get-CimInstance -ClassName Win32_Product -Filter "Name LIKE '%Session Manager%'" -ErrorAction SilentlyContinue
+          if ($product) {
+            Write-Host "Found product via CIM, uninstalling..."
+            $product | ForEach-Object { $_.Uninstall() }
+          }
+
+          # Remove the installation directory directly to ensure clean state
+          $installPath = "C:\Program Files\Amazon\SessionManagerPlugin"
+          if (Test-Path $installPath) {
+            Write-Host "Removing installation directory: $installPath"
+            Remove-Item -Path $installPath -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
+          # Verify uninstallation
+          $smpPath = Get-Command session-manager-plugin -ErrorAction SilentlyContinue
+          if ($smpPath) {
+            Write-Host "WARNING: session-manager-plugin still found at: $($smpPath.Source)"
+          } else {
+            Write-Host "session-manager-plugin successfully removed from PATH"
+          }
 
           uv run pytest -m 'not docker'
 
