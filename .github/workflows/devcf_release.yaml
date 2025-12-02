@@ -1,0 +1,44 @@
+name: Dev Container Features - Release & Docs
+
+on:
+  workflow_dispatch:
+
+  # Every time when push changes to target directory, it will trigger release
+  # but the CLI won't overwrite existing published features unless the version is updated
+  push:
+    branches: [main]
+    paths:
+      - devcontainer-features/**
+
+jobs:
+  release:
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: devcontainers/action@v1
+        with:
+          publish-features: true
+          base-path-to-features: ./devcontainer-features
+          generate-docs: true
+
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Create PR for generated docs
+        uses: peter-evans/create-pull-request@v7.0.8
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          sign-commits: true
+          title: Automated documentation update
+          branch: automated-documentation-update-${{ github.run_id }}
+          delete-branch: true
