@@ -1,4 +1,3 @@
-# flake8: noqa: B008
 from __future__ import annotations
 
 import json
