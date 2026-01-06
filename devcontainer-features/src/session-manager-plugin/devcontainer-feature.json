@@ -1,6 +1,6 @@
 {
   "name": "AWS SSM Session Manager Plugin",
   "id": "session-manager-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Install AWS SSM Session Manager plugin."
 }
