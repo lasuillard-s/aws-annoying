@@ -9,10 +9,12 @@
   "cSpell.words": [
     "Deregistering",
     "localstack",
+    "pydantic",
     "pytestmark",
     "sessionmanagerplugin",
     "Stubber",
-    "Tampermonkey"
+    "Tampermonkey",
+    "Typer"
   ],
   "editor.formatOnSave": true,
   "files.eol": "\n",
