@@ -67,6 +67,7 @@ ignore = [
   "D106",
   "ANN204",
   "UP007",  # Available in Python 3.10+
+  "UP045",  # Typer and pydantic may not work well with newer typing syntaxes, especially for union types
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]

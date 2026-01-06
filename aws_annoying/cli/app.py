@@ -21,7 +21,7 @@ app = typer.Typer(
 )
 
 
-def show_version(value: Optional[bool]) -> None:
+def show_version(value: Optional[bool]) -> None:  # noqa: FBT001
     """Show the version of the application."""
     if not value:
         return

@@ -265,7 +265,7 @@ class SessionManager:
         Returns:
             The command to start the session.
         """
-        is_installed, binary_path, version = self.verify_installation()
+        is_installed, binary_path, _version = self.verify_installation()
         if not is_installed:
             msg = "Session Manager plugin is not installed."
             raise PluginNotInstalledError(msg)
