@@ -1,7 +1,7 @@
 
 # AWS SSM Session Manager Plugin (session-manager-plugin)
 
-A feature to install AWS SSM Session Manager plugin.
+Install AWS SSM Session Manager plugin.
 
 ## Example Usage
 
@@ -17,4 +17,4 @@ A feature to install AWS SSM Session Manager plugin.
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/lasuillard/devcontainer-features/blob/main/src/aws-ssm-session-manager-plugin/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/lasuillard-s/aws-annoying/blob/main/devcontainer-features/src/session-manager-plugin/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
