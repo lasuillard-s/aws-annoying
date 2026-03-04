@@ -65,6 +65,9 @@ class SessionManager:
         if not binary_path_str:
             if is_windows():
                 # Windows: use the default installation path
+                logger.warning(
+                    "session-manager-plugin not found in PATH. Checking default installation path...",
+                )
                 binary_path = (
                     Path(os.environ["ProgramFiles"])  # noqa: SIM112
                     / "Amazon"
@@ -73,10 +76,12 @@ class SessionManager:
                     / "session-manager-plugin.exe"
                 )
                 if binary_path.is_file():
+                    logger.info("Found session-manager-plugin at %s", binary_path)
                     return binary_path.absolute()
 
             return None
 
+        logger.info("Found session-manager-plugin at %s", binary_path_str)
         return Path(binary_path_str).absolute()
 
     def install(
@@ -132,6 +137,10 @@ class SessionManager:
             command = [str(exe_installer), "/quiet"]
             self.before_install(command)
             subprocess.call(command, cwd=p)  # noqa: S603
+
+        logger.info(
+            "Installation complete. You may need to restart your terminal or IDE for the plugin to be detected.",
+        )
 
     # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html
     def _install_macos(self, *, arch: str, root: bool, downloader: AbstractDownloader) -> None:
