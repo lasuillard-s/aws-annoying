@@ -1,3 +1,3 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.9-bookworm
+FROM mcr.microsoft.com/devcontainers/python:3.10-bookworm
 
 RUN pipx install uv

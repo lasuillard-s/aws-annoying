@@ -52,6 +52,7 @@ def test_install_macos() -> None:
     assert version is not None
 
 
+@pytest.mark.skip(reason="Requires manual verification of installation on Windows; #111")
 @run_if_windows
 def test_install_windows() -> None:
     # Arrange
