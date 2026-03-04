@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from time import sleep
 
 import typer
 
@@ -39,14 +38,8 @@ def install(
         session_manager.install(confirm=yes, downloader=TQDMDownloader())
 
     # Verify installation
-    for i in range(5):
-        logger.info("Verifying installation... (attempt %d/5)", i + 1)
-        is_installed, binary_path, version = session_manager.verify_installation()
-        if is_installed:
-            break
-
-        sleep(1)
-    else:
+    is_installed, binary_path, version = session_manager.verify_installation()
+    if not is_installed:
         logger.error("Installation failed. Session Manager plugin not found.")
         raise typer.Exit(1)
 
