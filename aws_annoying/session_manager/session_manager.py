@@ -133,6 +133,10 @@ class SessionManager:
             self.before_install(command)
             subprocess.call(command, cwd=p)  # noqa: S603
 
+        logger.info(
+            "Installation complete. You may need to restart your terminal or IDE for the plugin to be detected.",
+        )
+
     # https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html
     def _install_macos(self, *, arch: str, root: bool, downloader: AbstractDownloader) -> None:
         """Install session-manager-plugin on macOS via signed installer."""
