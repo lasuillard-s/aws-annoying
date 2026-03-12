@@ -1,1 +1,41 @@
-../README.md
+# aws-annoying
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/lasuillard-s/aws-annoying/graph/badge.svg?token=gbcHMVVz2k)](https://codecov.io/gh/lasuillard-s/aws-annoying)
+[![PyPI - Version](https://img.shields.io/pypi/v/aws-annoying)](https://pypi.org/project/aws-annoying/)
+
+Utils to handle some annoying AWS tasks.
+
+## ❓ About
+
+This project aims to provide a set of utilities and examples to help with some annoying tasks when working with AWS.
+
+Major directories of the project:
+
+- **aws_annoying** Python package containing CLI and utility functions.
+- **console** Utilities to help working with AWS Console.
+- **examples** Examples of how to use the package.
+- **devcontainer-features** Devcontainer features to help set up development environment.
+
+## 🚀 Installation
+
+It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
+
+```bash
+$ pipx install aws-annoying
+$ aws-annoying --help
+
+ Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
+
+...
+```
+
+As the package also provides some utility functions, you can install `aws-annoying` via pip, if you are going to use those utils.
+
+## 💡 Usage
+
+Refer to the CLI help or documentation for detailed information on how to use each command.
+
+## 💖 Contributing
+
+Any feedback, suggestions or contributions are welcome! Feel free to open an issue or a pull request.
