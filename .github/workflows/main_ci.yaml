@@ -87,7 +87,7 @@ jobs:
           uv run pytest -m 'not docker'
 
       - name: Upload test results to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           use_oidc: true
           fail_ci_if_error: false
@@ -98,7 +98,7 @@ jobs:
             python-${{ matrix.python-version }}
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           use_oidc: true
           fail_ci_if_error: false
