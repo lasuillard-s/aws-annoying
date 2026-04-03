@@ -20,8 +20,11 @@ help: Makefile  ## Show help
 install:  ## Install the app locally
 	uv python install
 	uv sync --frozen
-	pre-commit install --install-hooks
 .PHONY: install
+
+init:  ## Initialize the project
+	pre-commit install --install-hooks
+.PHONY: init
 
 update:  ## Update deps and tools
 	uv sync --upgrade
