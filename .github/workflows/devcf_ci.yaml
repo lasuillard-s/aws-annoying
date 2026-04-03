@@ -18,8 +18,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: devcontainers/action@v1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: devcontainers/action@1082abd5d2bf3a11abccba70eef98df068277772 # v1
         with:
           validate-only: true
           base-path-to-features: ./devcontainer-features/src
@@ -37,7 +37,7 @@ jobs:
         features:
           - session-manager-plugin
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Dev Containers CLI
         run: npm install --global @devcontainers/cli
@@ -63,7 +63,7 @@ jobs:
         features:
           - session-manager-plugin
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Dev Containers CLI
         run: npm install --global @devcontainers/cli
@@ -88,7 +88,7 @@ jobs:
         base-image:
           - debian:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Dev Containers CLI
         run: npm install --global @devcontainers/cli
