@@ -2,10 +2,10 @@
   "recommendations": [
     "ms-python.python",
     "ms-python.vscode-pylance",
-    "streetsidesoftware.code-spell-checker",
-    "editorconfig.editorconfig",
+    "EditorConfig.EditorConfig",
     "charliermarsh.ruff",
     "ms-python.mypy-type-checker",
+    "njpwerner.autodocstring",
     "ms-python.debugpy"
   ]
 }

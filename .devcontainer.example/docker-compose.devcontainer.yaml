@@ -1,14 +1,12 @@
 services:
   workspace:
-    build:
-      context: .
+    image: mcr.microsoft.com/devcontainers/python:3.9-trixie
     volumes:
-      - ..:/workspaces/aws-annoying
       - op:/home/vscode/.config/op
       - aws:/home/vscode/.aws
       - cache:/home/vscode/.cache:delegated
     environment:
-      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-}
     healthcheck:
       disable: true
 

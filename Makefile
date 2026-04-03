@@ -40,10 +40,13 @@ serve-docs:  ## Serve documentation with live reload
 ci: lint test  ## Run CI tasks
 .PHONY: ci
 
-format:  ## Run autoformatters
-	uv run ruff check --fix .
+fmt:  ## Run autoformatters
 	uv run ruff format .
-.PHONY: format
+.PHONY: fmt
+
+fix:  ## Run all fixers
+	uv run ruff check --fix .
+.PHONY: fix
 
 lint:  ## Run all linters
 	uv run ruff check .
