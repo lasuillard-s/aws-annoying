@@ -53,7 +53,6 @@ build-backend = "hatchling.build"
 packages = ["aws_annoying"]
 
 [tool.ruff]
-target-version = "py39"
 line-length = 120
 
 [tool.ruff.lint]
@@ -79,7 +78,6 @@ ignore = [
 convention = "google"
 
 [tool.mypy]
-python_version = "3.9"
 exclude = ['^\.venv/*']
 namespace_packages = true
 check_untyped_defs = true
