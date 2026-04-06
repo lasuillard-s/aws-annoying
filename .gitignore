@@ -1,7 +1,9 @@
 *.local
 junit.xml
-.devcontainer/
-.vscode/
+.devcontainer
+.vscode
+.env
+.envrc
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,git,python,visualstudiocode,macos,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,git,python,visualstudiocode,macos,windows
