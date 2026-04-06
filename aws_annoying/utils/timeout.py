@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import signal
+from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, TypeVar, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from aws_annoying.utils.platform import is_windows
 
