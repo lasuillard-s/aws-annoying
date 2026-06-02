@@ -95,7 +95,7 @@ dev = [
     { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-material", specifier = ">=9.7.0" },
     { name = "mkdocstrings", extras = ["python"], specifier = ">=0.30.1" },
-    { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], specifier = "~=5.1.8" },
+    { name = "moto", extras = ["secretsmanager", "server", "ssm", "ecs"], specifier = "~=5.2.1" },
     { name = "mypy", specifier = ">=1.20,<1.21" },
     { name = "pytest", specifier = ">=9.0.2,<9.1.0" },
     { name = "pytest-cov", specifier = ">=7.1,<8" },
@@ -1273,28 +1273,25 @@ wheels = [
 
 [[package]]
 name = "moto"
-version = "5.1.22"
+version = "5.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
     { name = "botocore" },
     { name = "cryptography" },
-    { name = "jinja2" },
-    { name = "python-dateutil" },
     { name = "requests" },
     { name = "responses" },
     { name = "werkzeug" },
     { name = "xmltodict" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b2/3d/1765accbf753dc1ae52f26a2e2ed2881d78c2eb9322c178e45312472e4a0/moto-5.1.22.tar.gz", hash = "sha256:e5b2c378296e4da50ce5a3c355a1743c8d6d396ea41122f5bb2a40f9b9a8cc0e", size = 8547792, upload-time = "2026-03-08T21:06:43.731Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/e9/c38202162db2e76623176be9f1dbc9aa41228ffa91ee8da2d3986082c3e3/moto-5.2.1.tar.gz", hash = "sha256:ccb2f3e1dfa82e50e054bda98b0be708d244d2668364dcc1d45e8d3de6091bde", size = 8634437, upload-time = "2026-05-10T19:11:57.286Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/46/4f/8812a01e3e0bd6be3e13b90432fb5c696af9a720af3f00e6eba5ad748345/moto-5.1.22-py3-none-any.whl", hash = "sha256:d9f20ae3cf29c44f93c1f8f06c8f48d5560e5dc027816ef1d0d2059741ffcfbe", size = 6617400, upload-time = "2026-03-08T21:06:41.093Z" },
+    { url = "https://files.pythonhosted.org/packages/15/79/8085b7c1ecd48d0535c3c8444a1d8df2926e457dce8e55fabc332a382c9c/moto-5.2.1-py3-none-any.whl", hash = "sha256:19d2fbd6e613aa5b4e364c52cd5d3cea371643a0f4210689a703227bd2924c5c", size = 6671379, upload-time = "2026-05-10T19:11:53.543Z" },
 ]
 
 [package.optional-dependencies]
 server = [
     { name = "antlr4-python3-runtime" },
-    { name = "aws-sam-translator" },
     { name = "aws-xray-sdk" },
     { name = "cfn-lint" },
     { name = "docker" },
@@ -1305,7 +1302,6 @@ server = [
     { name = "jsonpath-ng" },
     { name = "openapi-spec-validator" },
     { name = "py-partiql-parser" },
-    { name = "pydantic" },
     { name = "pyparsing" },
     { name = "pyyaml" },
     { name = "setuptools" },
