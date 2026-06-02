@@ -1,6 +1,6 @@
 services:
   workspace:
-    image: mcr.microsoft.com/devcontainers/python:3.0.8-3.10-trixie
+    image: mcr.microsoft.com/devcontainers/python:3.0.8-3.10-trixie@sha256:071142a6932dcfc663f6eb188148991f29b6409b3eb8a369f47b004288aaf6f7
     volumes:
       - op:/home/vscode/.config/op
       - aws:/home/vscode/.aws
