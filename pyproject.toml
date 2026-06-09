@@ -27,7 +27,7 @@ dev = [
   "mypy==2.1.0",
   "ruff==0.15.14",
   "types-requests==2.33.0.20260518",
-  "coverage==7.14.0",
+  "coverage==7.14.1",
   "moto[secretsmanager,server,ssm,ecs]==5.2.1",
   "pytest==9.0.3",
   "pytest-cov==7.1.0",
