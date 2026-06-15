@@ -50,5 +50,7 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           sign-commits: true
           title: Automated documentation update
+          body: |
+            Automated documentation update for Dev Container Features.
           branch: automated-documentation-update/${{ github.run_id }}
           delete-branch: true
