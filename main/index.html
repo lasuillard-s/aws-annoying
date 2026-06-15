@@ -284,10 +284,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
+  <a href="#features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ❓ About
+        Features
       
     </span>
   </a>
@@ -299,17 +299,6 @@
     <span class="md-ellipsis">
       
         🚀 Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        💡 Usage
       
     </span>
   </a>
@@ -528,10 +517,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
+  <a href="#features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ❓ About
+        Features
       
     </span>
   </a>
@@ -543,17 +532,6 @@
     <span class="md-ellipsis">
       
         🚀 Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        💡 Usage
       
     </span>
   </a>
@@ -595,30 +573,43 @@
 <p><a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
 <a href="https://codecov.io/gh/lasuillard-s/aws-annoying"><img alt="codecov" src="https://codecov.io/gh/lasuillard-s/aws-annoying/graph/badge.svg?token=gbcHMVVz2k" /></a>
 <a href="https://pypi.org/project/aws-annoying/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/aws-annoying" /></a></p>
-<p>Utils to handle some annoying AWS tasks.</p>
-<h2 id="about">❓ About</h2>
-<p>This project aims to provide a set of utilities and examples to help with some annoying tasks when working with AWS.</p>
-<p>Major directories of the project:</p>
+<p>Utilities to handle annoying AWS tasks.</p>
+<h2 id="features">Features</h2>
 <ul>
-<li><strong>aws_annoying</strong> Python package containing CLI and utility functions.</li>
-<li><strong>console</strong> Utilities to help working with AWS Console.</li>
-<li><strong>examples</strong> Examples of how to use the package.</li>
-<li><strong>devcontainer-features</strong> Devcontainer features to help set up development environment.</li>
+<li><strong>CLI application</strong>: Command-line interface for handling annoying AWS tasks</li>
+<li><strong>Python library</strong>: Reusable utility functions for AWS operations</li>
+<li><strong>Console enhancements</strong>: Browser user scripts to improve AWS Console experience</li>
+<li><strong>Dev Container Features</strong>: Reusable Dev Container Features for development environments</li>
 </ul>
 <h2 id="installation">🚀 Installation</h2>
 <p>It is recommended to use <a href="https://pipx.pypa.io/stable/">pipx</a> to install <code>aws-annoying</code> CLI:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>pipx<span class="w"> </span>install<span class="w"> </span>aws-annoying
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span>aws-annoying<span class="w"> </span>--help
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span><span class="nv">TYPER_USE_RICH</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>pipx<span class="w"> </span>run<span class="w"> </span>aws-annoying<span class="w"> </span>--help
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Usage:<span class="w"> </span>aws-annoying<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w"> </span>Usage:<span class="w"> </span>aws-annoying<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>...
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Options:
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>--version<span class="w">                 </span>Show<span class="w"> </span>the<span class="w"> </span>version<span class="w"> </span>and<span class="w"> </span>exit.
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>--quiet<span class="w"> </span>/<span class="w"> </span>--no-quiet<span class="w">      </span>Disable<span class="w"> </span>outputs.<span class="w">  </span><span class="o">[</span>default:<span class="w"> </span>no-quiet<span class="o">]</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>--verbose<span class="w"> </span>/<span class="w"> </span>--no-verbose<span class="w">  </span>Enable<span class="w"> </span>verbose<span class="w"> </span>outputs.<span class="w">  </span><span class="o">[</span>default:<span class="w"> </span>no-verbose<span class="o">]</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span>--dry-run<span class="w"> </span>/<span class="w"> </span>--no-dry-run<span class="w">  </span>Enable<span class="w"> </span>dry-run<span class="w"> </span>mode.<span class="w"> </span>If<span class="w"> </span>enabled,<span class="w"> </span>certain<span class="w"> </span>commands
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">                            </span>will<span class="w"> </span>avoid<span class="w"> </span>making<span class="w"> </span>changes.<span class="w">  </span><span class="o">[</span>default:<span class="w"> </span>no-dry-run<span class="o">]</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span>--install-completion<span class="w">      </span>Install<span class="w"> </span>completion<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>current<span class="w"> </span>shell.
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span>--show-completion<span class="w">         </span>Show<span class="w"> </span>completion<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>current<span class="w"> </span>shell,<span class="w"> </span>to<span class="w"> </span>copy<span class="w"> </span>it
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">                            </span>or<span class="w"> </span>customize<span class="w"> </span>the<span class="w"> </span>installation.
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span>--help<span class="w">                    </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>Commands:
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span>load-variables<span class="w">   </span>Wrapper<span class="w"> </span><span class="nb">command</span><span class="w"> </span>to<span class="w"> </span>run<span class="w"> </span><span class="nb">command</span><span class="w"> </span>with<span class="w"> </span>variables<span class="w"> </span>from<span class="w"> </span>AWS...
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span>ecs<span class="w">              </span>ECS<span class="w"> </span><span class="o">(</span>Elastic<span class="w"> </span>Container<span class="w"> </span>Service<span class="o">)</span><span class="w"> </span>utility<span class="w"> </span>commands.
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>mfa<span class="w">              </span>Commands<span class="w"> </span>to<span class="w"> </span>manage<span class="w"> </span>MFA<span class="w"> </span>authentication.
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span>session-manager<span class="w">  </span>AWS<span class="w"> </span>Session<span class="w"> </span>Manager<span class="w"> </span>CLI<span class="w"> </span>utilities.
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>...
 </span></code></pre></div>
-<p>As the package also provides some utility functions, you can install <code>aws-annoying</code> via pip, if you are going to use those utils.</p>
-<h2 id="usage">💡 Usage</h2>
-<p>Refer to the CLI help or documentation for detailed information on how to use each command.</p>
+<p>You can also install the package via <code>pip</code> if you want to use its utility functions:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>aws-annoying
+</span></code></pre></div>
+<p>Please refer to the <a href="https://lasuillard-s.github.io/aws-annoying/">documentation</a> for more information on how to use the application and package.</p>
 <h2 id="contributing">💖 Contributing</h2>
-<p>Any feedback, suggestions or contributions are welcome! Feel free to open an issue or a pull request.</p>
+<p>Please refer to <a href="https://github.com/lasuillard-s/aws-annoying/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for more information on how to contribute to this project.</p>
 
 
 
