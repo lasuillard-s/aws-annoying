@@ -33,6 +33,7 @@ This project uses the following tech stack:
 - `devcontainer-features/`: Dev Container Features for development environment setup
 - `docs/`: Project documentation
 - `examples/`: Project usage examples
+- `tests/`: Project tests
 - `flake.nix`: Flake configuration for the development environment
 - `Justfile`: Commands for development
 - `pyproject.toml`: Project dependencies and configuration
