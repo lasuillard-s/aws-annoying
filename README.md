@@ -51,3 +51,7 @@ Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/
 ## 💖 Contributing
 
 Please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to contribute to this project.
+
+## 📜 License
+
+This project is licensed under the MIT License.
