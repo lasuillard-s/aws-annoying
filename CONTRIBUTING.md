@@ -21,7 +21,7 @@ This project uses the following tech stack:
 
 - [Python](https://www.python.org) 3.10
 - [uv](https://docs.astral.sh/uv/) for dependency management and packaging
-- [Ruff](https://docs.astral.sh/ruff/) to lint and format Python code, and [mypy](https://mypy-lang.org/) for type checking
+- [Ruff](https://docs.astral.sh/ruff/) to lint and format Python code, and [mypy](https://mypy-lang.org) for type checking
 - [pytest](https://docs.pytest.org/en/latest) for testing
 
 ### 📂 Key directory structure
@@ -46,8 +46,9 @@ For development, the following tools are required:
 This repository uses [Nix Flakes](https://nix.dev/concepts/flakes.html) to manage tools. The following tools are automatically installed (requires `nix` to be installed):
 
 - `pre-commit`
-- [Just](https://just.systems) (`just`)
+- `just`
 - `uv`
+- `pipx`
 - AWS CLI (`aws`)
 
 Simply run `nix develop` to start the development environment, then run `just install` to install dependencies.
