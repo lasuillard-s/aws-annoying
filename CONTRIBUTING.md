@@ -39,11 +39,11 @@ This project uses the following tech stack:
 
 ## 🔧 Set up the development environment
 
-For development, you must have the following tools installed:
+For development, the following tools are required:
 
 ### ❄️ Tools managed via Nix Flakes
 
-This repository uses [Nix Flakes](https://nix.dev/concepts/flakes.html) to manage tools. The following tools will be automatically installed (requires `nix` to be installed):
+This repository uses [Nix Flakes](https://nix.dev/concepts/flakes.html) to manage tools. The following tools are automatically installed (requires `nix` to be installed):
 
 - `pre-commit`
 - [Just](https://just.systems) (`just`)
@@ -56,7 +56,7 @@ If you prefer using a [Dev Container](https://containers.dev), a configuration f
 
 ## ✅ Verifying changes
 
-Before pushing your code, verify whether your changes adhere to the project's coding standards. Run `just ci` to execute all necessary linters, formatters, and tests. Alternatively, you can let the `pre-commit` hooks handle this automatically.
+Before pushing your code, verify that your changes adhere to the project's coding standards. Run `just ci` to execute all necessary linters, formatters, and tests. Alternatively, let the `pre-commit` hooks handle this automatically.
 
 ## ✨ Submitting changes
 
@@ -66,6 +66,6 @@ Please feel free to submit pull requests on GitHub. Before opening a PR, ensure 
 
 This project's artifacts are published to multiple channels:
 
-- `aws-annoying` CLI and library: [PyPI](https://pypi.org/project/aws-annoying/)
+- `aws-annoying` CLI and library: [PyPI](https://pypi.org/project/aws-annoying/) via [main_release.yaml](./.github/workflows/main_release.yaml) workflow when new releases are published
 - User scripts: [GitHub](https://github.com/lasuillard-s/aws-annoying/tree/main/console), installable via user script engines
-- Dev Container Features: [GitHub Packages](https://github.com/orgs/lasuillard-s/packages?repo_name=aws-annoying)
+- Dev Container Features: [GitHub Packages](https://github.com/orgs/lasuillard-s/packages?repo_name=aws-annoying) via [devcf_release.yaml](./.github/workflows/devcf_release.yaml) workflow when changes are pushed to the `main` branch

@@ -6,7 +6,7 @@
 
 Utilities to handle annoying AWS tasks.
 
-## Features
+## ✨ Features
 
 - **CLI application**: Command-line interface for handling annoying AWS tasks
 - **Python library**: Reusable utility functions for AWS operations
