@@ -4,38 +4,50 @@
 [![codecov](https://codecov.io/gh/lasuillard-s/aws-annoying/graph/badge.svg?token=gbcHMVVz2k)](https://codecov.io/gh/lasuillard-s/aws-annoying)
 [![PyPI - Version](https://img.shields.io/pypi/v/aws-annoying)](https://pypi.org/project/aws-annoying/)
 
-Utils to handle some annoying AWS tasks.
+Utilities to handle annoying AWS tasks.
 
-## ❓ About
+## Features
 
-This project aims to provide a set of utilities and examples to help with some annoying tasks when working with AWS.
-
-Major directories of the project:
-
-- **aws_annoying** Python package containing CLI and utility functions.
-- **console** Utilities to help working with AWS Console.
-- **examples** Examples of how to use the package.
-- **devcontainer-features** Devcontainer features to help set up development environment.
+- **CLI application**: Command-line interface for handling annoying AWS tasks
+- **Python library**: Reusable utility functions for AWS operations
+- **Console enhancements**: Browser user scripts to improve AWS Console experience
+- **Dev Container Features**: Reusable Dev Container Features for development environments
 
 ## 🚀 Installation
 
 It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
 
 ```bash
-$ pipx install aws-annoying
-$ aws-annoying --help
+$ TYPER_USE_RICH=0 pipx run aws-annoying --help
+Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
 
- Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
+Options:
+  --version                 Show the version and exit.
+  --quiet / --no-quiet      Disable outputs.  [default: no-quiet]
+  --verbose / --no-verbose  Enable verbose outputs.  [default: no-verbose]
+  --dry-run / --no-dry-run  Enable dry-run mode. If enabled, certain commands
+                            will avoid making changes.  [default: no-dry-run]
+  --install-completion      Install completion for the current shell.
+  --show-completion         Show completion for the current shell, to copy it
+                            or customize the installation.
+  --help                    Show this message and exit.
 
+Commands:
+  load-variables   Wrapper command to run command with variables from AWS...
+  ecs              ECS (Elastic Container Service) utility commands.
+  mfa              Commands to manage MFA authentication.
+  session-manager  AWS Session Manager CLI utilities.
 ...
 ```
 
-As the package also provides some utility functions, you can install `aws-annoying` via pip, if you are going to use those utils.
+You can also install the package via `pip` if you want to use its utility functions:
 
-## 💡 Usage
+```bash
+$ pip install aws-annoying
+```
 
-Refer to the CLI help or documentation for detailed information on how to use each command.
+Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/) for more information on how to use the application and package.
 
 ## 💖 Contributing
 
-Any feedback, suggestions or contributions are welcome! Feel free to open an issue or a pull request.
+Please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to contribute to this project.
