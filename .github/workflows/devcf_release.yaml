@@ -3,15 +3,20 @@ name: Dev Container Features - Release & Docs
 on:
   workflow_dispatch:
 
-  # Every time when push changes to target directory, it will trigger release
-  # but the CLI won't overwrite existing published features unless the version is updated
+  # Triggered every time when make changes to devcontainer-features/src/*/devcontainer-feature.json file
+  # It will skip the feature if it is already published for the same version, so it is safe
   push:
     branches: [main]
     paths:
-      - devcontainer-features/**
+      - devcontainer-features/src/*/devcontainer-feature.json
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   release:
+    name: Release
     if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -20,8 +25,11 @@ jobs:
       pull-requests: write
       packages: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: devcontainers/action@1082abd5d2bf3a11abccba70eef98df068277772 # v1.4.3
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Publish Dev Container Features
+        uses: devcontainers/action@1082abd5d2bf3a11abccba70eef98df068277772 # v1.4.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -33,7 +41,7 @@ jobs:
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: generate-token
         with:
-          app-id: ${{ vars.GH_APP_ID }}
+          client-id: ${{ vars.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
       - name: Create PR for generated docs
@@ -42,5 +50,5 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           sign-commits: true
           title: Automated documentation update
-          branch: automated-documentation-update-${{ github.run_id }}
+          branch: automated-documentation-update/${{ github.run_id }}
           delete-branch: true

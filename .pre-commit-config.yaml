@@ -1,4 +1,3 @@
-default_stages: [pre-commit]
 fail_fast: true
 exclude: tests/.*/?snapshots/.*
 repos:

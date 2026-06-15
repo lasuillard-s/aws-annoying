@@ -2,20 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Current File",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal",
-      "justMyCode": true
-    },
-    {
       "name": "Python: Application CLI",
       "type": "debugpy",
       "request": "launch",
       "module": "aws_annoying.cli.main",
       "console": "integratedTerminal",
       "justMyCode": true
-    },
+    }
   ]
 }

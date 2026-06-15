@@ -1,12 +1,16 @@
-*.local
-junit.xml
 .devcontainer
 .vscode
-.env
+junit.xml
+
+# Created by https://www.toptal.com/developers/gitignore/api/git,linux,macos,direnv,dotenv,python,windows,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=git,linux,macos,direnv,dotenv,python,windows,visualstudiocode
+
+### direnv ###
+.direnv
 .envrc
 
-# Created by https://www.toptal.com/developers/gitignore/api/linux,git,python,visualstudiocode,macos,windows
-# Edit at https://www.toptal.com/developers/gitignore?templates=linux,git,python,visualstudiocode,macos,windows
+### dotenv ###
+.env
 
 ### Git ###
 # Created by git for backups. To disable backups in Git:
@@ -194,7 +198,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -235,7 +238,7 @@ cython_debug/
 
 ### Python Patch ###
 # Poetry local configuration file - https://python-poetry.org/docs/configuration/#local-configuration
-#poetry.toml
+poetry.toml
 
 # ruff
 .ruff_cache/
@@ -288,4 +291,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/linux,git,python,visualstudiocode,macos,windows
+# End of https://www.toptal.com/developers/gitignore/api/git,linux,macos,direnv,dotenv,python,windows,visualstudiocode

@@ -14,16 +14,26 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+
+        # BUG: https://github.com/nixos/nixpkgs/issues/522307
+        fixedPipx = pkgs.python3Packages.toPythonApplication (
+          pkgs.python3Packages.pipx.overridePythonAttrs (oldAttrs: {
+            doCheck = false;
+          })
+        );
       in
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
-            git
-            gnumake
             pre-commit
+            just
             uv
+            fixedPipx
+            awscli2
           ];
-          shellHook = "";
+          shellHook = ''
+            pre-commit install
+          '';
         };
       }
     );
