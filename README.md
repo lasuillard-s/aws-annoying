@@ -13,7 +13,7 @@ Utilities to handle annoying AWS tasks.
 - **Console enhancements**: Browser user scripts to improve AWS Console experience
 - **Dev Container Features**: Reusable Dev Container Features for development environments
 
-## 🚀 Installation
+## 🚀 Quick start
 
 It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
 

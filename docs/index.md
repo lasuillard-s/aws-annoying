@@ -6,14 +6,14 @@
 
 Utilities to handle annoying AWS tasks.
 
-## Features
+## ✨ Features
 
 - **CLI application**: Command-line interface for handling annoying AWS tasks
 - **Python library**: Reusable utility functions for AWS operations
 - **Console enhancements**: Browser user scripts to improve AWS Console experience
 - **Dev Container Features**: Reusable Dev Container Features for development environments
 
-## 🚀 Installation
+## 🚀 Quick start
 
 It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
 
@@ -50,4 +50,8 @@ Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/
 
 ## 💖 Contributing
 
-Please refer to [CONTRIBUTING.md](https://github.com/lasuillard-s/aws-annoying/blob/main/CONTRIBUTING.md) for more information on how to contribute to this project.
+Please refer to [CONTRIBUTING.md]((https://github.com/lasuillard-s/aws-annoying/blob/main/CONTRIBUTING.md) for more information on how to contribute to this project.
+
+## 📜 License
+
+This project is licensed under the MIT License.

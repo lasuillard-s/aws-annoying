@@ -76,6 +76,7 @@ jobs:
         run: |
           which session-manager-plugin || true
           sudo apt-get remove --yes session-manager-plugin
+
           uv run pytest
 
       - name: Run tests (macOS)
@@ -83,6 +84,7 @@ jobs:
         run: |
           which session-manager-plugin || true
           brew uninstall session-manager-plugin
+
           uv run pytest -m 'not docker'
 
       - name: Run tests (Windows)

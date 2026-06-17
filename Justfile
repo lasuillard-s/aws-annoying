@@ -23,6 +23,14 @@ alias up := update
 build:
     uv build
 
+# Run the CLI application
+run *args="--help":
+    uv run aws-annoying {{args}}
+
+# Start local documentation server
+docs:
+    uv run mkdocs serve
+
 # Run all checks
 ci: lint test
 
@@ -46,10 +54,6 @@ lint:
 # Run all tests
 test:
     uv run pytest
-
-# Start local documentation server
-docs:
-    uv run mkdocs serve
 
 # =============================================================================
 # Utility

@@ -1,6 +1,6 @@
 # ❤️‍🔥 Contributing to this project
 
-Thank you for your interest in contributing to aws-annoying!
+Thank you for your interest in contributing to **aws-annoying**!
 
 ## 🐛 Reporting issues
 
@@ -10,10 +10,10 @@ Please report issues in our [GitHub repository](https://github.com/lasuillard-s/
 
 This project provides a set of utilities and examples to help with annoying AWS tasks.
 
-- **CLI application** (`aws-annoying`): Command-line interface for handling annoying AWS tasks
-- **Python library** (`aws_annoying`): Utility functions for AWS operations
-- **Browser user scripts**: Enhance the AWS Console experience
-- **Dev Container Features**: Dev Container Features for setting up development environments
+- CLI application (`aws-annoying`): Command-line interface for handling annoying AWS tasks
+- Python library (`aws_annoying`): Utility functions for AWS operations
+- Browser user scripts: Enhance the AWS Console experience
+- Dev Container Features: Dev Container Features for setting up development environments
 
 ### 🛠️ Tech stack
 
@@ -26,8 +26,6 @@ This project uses the following tech stack:
 
 ### 📂 Key directory structure
 
-- `.devcontainer.example/`: Development environment configuration
-- `.vscode.example/`: Project-specific VS Code configuration example
 - `aws_annoying/`: The project's source code
 - `console/`: User scripts for the AWS Console
 - `devcontainer-features/`: Dev Container Features for development environment setup
@@ -68,6 +66,10 @@ Please feel free to submit pull requests on GitHub. Before opening a PR, ensure 
 
 This project's artifacts are published to multiple channels:
 
-- `aws-annoying` CLI and library: [PyPI](https://pypi.org/project/aws-annoying/) via [main_release.yaml](./.github/workflows/main_release.yaml) workflow when new releases are published
-- User scripts: [GitHub](https://github.com/lasuillard-s/aws-annoying/tree/main/console), installable via user script engines
-- Dev Container Features: [GitHub Packages](https://github.com/orgs/lasuillard-s/packages?repo_name=aws-annoying) via [devcf_release.yaml](./.github/workflows/devcf_release.yaml) workflow when changes are pushed to the `main` branch
+- `aws-annoying` CLI and library: [PyPI](https://pypi.org/project/aws-annoying/), following below process
+  1. Prepare release via [main_prepare-release.yaml](./.github/workflows/main_prepare-release.yaml) workflow.
+  1. Review and merge the preparation PR.
+  1. Create and publish a new release in GitHub Releases.
+  1. [main_release.yaml](./.github/workflows/main_release.yaml) workflow will publish to PyPI when new releases are published.
+- User scripts: [GitHub](https://github.com/lasuillard-s/aws-annoying/tree/main/console), installable via user script engines. You don't need to do anything other than push changes to the `main` branch.
+- Dev Container Features: [GitHub Packages](https://github.com/orgs/lasuillard-s/packages?repo_name=aws-annoying) via [devcf_release.yaml](./.github/workflows/devcf_release.yaml) workflow when changes are pushed to the `main` branch.
