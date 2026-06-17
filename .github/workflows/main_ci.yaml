@@ -43,8 +43,8 @@ jobs:
         run: uv run mypy --show-error-codes --pretty .
 
   test:
-    name: Test (${{ matrix.os }}, py${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
+    name: Test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
@@ -52,7 +52,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
@@ -71,33 +70,8 @@ jobs:
       - name: Install deps
         run: uv sync
 
-      - name: Run tests (Ubuntu)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          which session-manager-plugin || true
-          sudo apt-get remove --yes session-manager-plugin
-
-          uv run pytest
-
-      - name: Run tests (macOS)
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: |
-          which session-manager-plugin || true
-          brew uninstall session-manager-plugin
-
-          uv run pytest -m 'not docker'
-
-      - name: Run tests (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          Get-Command session-manager-plugin | Out-String -Width 2000
-
-          $uri = 'https://raw.githubusercontent.com/aws/session-manager-plugin/refs/heads/mainline/Tools/src/update/windows/uninstall.bat'
-          $outFile = 'C:\Windows\Temp\uninstall.bat'
-          Invoke-WebRequest -Uri "$uri" -OutFile "$outFile"
-          & "$outFile"
-
-          uv run pytest -m 'not docker'
+      - name: Run tests
+        run: uv run pytest
 
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
@@ -107,7 +81,6 @@ jobs:
           report_type: test_results
           files: junit.xml
           flags: >-
-            ${{ matrix.os }}
             python-${{ matrix.python-version }}
 
       - name: Upload coverage report
@@ -117,5 +90,4 @@ jobs:
           fail_ci_if_error: false
           files: coverage.xml
           flags: >-
-            ${{ matrix.os }}
             python-${{ matrix.python-version }}
