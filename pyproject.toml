@@ -1,7 +1,7 @@
 [project]
 name = "aws-annoying"
 description = "Utilities to handle annoying AWS tasks."
-version = "0.9.0"
+version = "0.10.0"
 authors = [{ name = "Yuchan Lee", email = "lasuillard@gmail.com" }]
 readme = "README.md"
 license = "MIT"
