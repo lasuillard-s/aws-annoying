@@ -32,9 +32,9 @@ This project uses the following tech stack:
 - `docs/`: Project documentation
 - `examples/`: Project usage examples
 - `tests/`: Project tests
+- `docker-compose.yaml`: Service containers for local development
 - `flake.nix`: Flake configuration for the development environment
 - `Justfile`: Commands for development
-- `docker-compose.yaml`: Service containers for local development
 - `pyproject.toml`: Project dependencies and configuration
 
 ## 🔧 Set up the development environment
