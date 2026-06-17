@@ -1,9 +1,3 @@
-## `aws-annoying session-manager install`
-
-::: aws_annoying.cli.session_manager.install.install
-    options:
-        show_signature: false
-
 ## `aws-annoying session-manager port-forward`
 
 ::: aws_annoying.cli.session_manager.port_forward.port_forward
