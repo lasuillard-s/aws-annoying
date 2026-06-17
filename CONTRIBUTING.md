@@ -67,7 +67,7 @@ Please feel free to submit pull requests on GitHub. Before opening a PR, ensure 
 This project's artifacts are published to multiple channels:
 
 - `aws-annoying` CLI and library: [PyPI](https://pypi.org/project/aws-annoying/), following below process
-  1. Prepare release via [main_prepare-release.yaml](./.github/workflows/main_prepare-release.yaml) workflow.
+  1. Prepare release via [Prepare Release](https://github.com/lasuillard-s/aws-annoying/actions/workflows/main_prepare-release.yaml) workflow.
   1. Review and merge the preparation PR.
   1. Create and publish a new release in GitHub Releases.
   1. [main_release.yaml](./.github/workflows/main_release.yaml) workflow will publish to PyPI when new releases are published.
