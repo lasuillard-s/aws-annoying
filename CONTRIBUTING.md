@@ -21,8 +21,9 @@ This project uses the following tech stack:
 
 - [Python](https://www.python.org) 3.10+
 - [uv](https://docs.astral.sh/uv/) for dependency management and packaging
-- [Ruff](https://docs.astral.sh/ruff/) to lint and format Python code, and [mypy](https://mypy-lang.org) for type checking
+- [Ruff](https://docs.astral.sh/ruff/) to lint and format Python code, and [Mypy](https://mypy-lang.org) for type checking
 - [pytest](https://docs.pytest.org/en/latest) and [nox](https://nox.thea.codes/en/stable/) for testing
+- [MkDocs](https://www.mkdocs.org) for documentation
 
 ### 📂 Key directory structure
 
@@ -35,6 +36,7 @@ This project uses the following tech stack:
 - `docker-compose.yaml`: Service containers for local development
 - `flake.nix`: Flake configuration for the development environment
 - `Justfile`: Commands for development
+- `mkdocs.yaml`: MkDocs configurations
 - `pyproject.toml`: Project dependencies and configuration
 
 ## 🔧 Set up the development environment
@@ -74,3 +76,4 @@ This project's artifacts are published to multiple channels:
   1. [main_release.yaml](./.github/workflows/main_release.yaml) workflow will publish to PyPI when new releases are published.
 - User scripts: [GitHub](https://github.com/lasuillard-s/aws-annoying/tree/main/console), installable via user script engines. You don't need to do anything other than push changes to the `main` branch.
 - Dev Container Features: [GitHub Packages](https://github.com/orgs/lasuillard-s/packages?repo_name=aws-annoying) via [devcf_release.yaml](./.github/workflows/devcf_release.yaml) workflow when changes are pushed to the `main` branch.
+- Documentation: [GitHub Pages](https://lasuillard-s.github.io/aws-annoying/) via [docs.yaml](./.github/workflows/main_docs.yaml) when changes are pushed to the `main` branch or to a `v*` tag.
