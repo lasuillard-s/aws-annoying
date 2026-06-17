@@ -37,7 +37,6 @@ Commands:
   ecs              ECS (Elastic Container Service) utility commands.
   mfa              Commands to manage MFA authentication.
   session-manager  AWS Session Manager CLI utilities.
-...
 ```
 
 You can also install the package via `pip` if you want to use its utility functions:
