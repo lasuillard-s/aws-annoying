@@ -1,7 +1,7 @@
 name: Dev Container Features - Release & Docs
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 
   # Triggered every time when make changes to devcontainer-features/src/*/devcontainer-feature.json file
   # It will skip the feature if it is already published for the same version, so it is safe

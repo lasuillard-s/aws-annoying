@@ -1,13 +1,13 @@
 name: Dev Container Features - CI
 
 on:
-  workflow_dispatch:
   push:
-    tags: [v*]
+    branches: [main]
     paths:
       - devcontainer-features/**
 
   pull_request:
+    branches: [main]
     paths:
       - devcontainer-features/**
 
