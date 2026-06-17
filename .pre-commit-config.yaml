@@ -12,7 +12,7 @@ repos:
     hooks:
       - id: check-file-pair
         args:
-          - --from=pulumi_extra
+          - --from=aws_annoying
           - --to=tests
           - --include=*.py
           - --exclude=utils/debugger.py,_*.py

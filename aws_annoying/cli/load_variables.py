@@ -1,4 +1,4 @@
-# flake8: noqa: B008
+# ruff: noqa: B008
 from __future__ import annotations
 
 import logging

@@ -44,6 +44,7 @@ dev = [
 Homepage = "https://github.com/lasuillard-s/aws-annoying"
 Repository = "https://github.com/lasuillard-s/aws-annoying.git"
 Issues = "https://github.com/lasuillard-s/aws-annoying/issues"
+Documentation = "https://lasuillard-s.github.io/aws-annoying/"
 
 [build-system]
 requires = ["hatchling"]
@@ -58,13 +59,13 @@ line-length = 120
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-  "FIX",
-  "TD003",
-  "ANN401",
+  "ANN401", # Don't be too strict
+  "COM812", # Formatting conflict
   "D100",
   "D105",
   "D106",
-  "ANN204",
+  "FIX",
+  "TD003",
   "UP007",  # Available in Python 3.10+
   "UP045",  # Typer and pydantic may not work well with newer typing syntaxes, especially for union types
 ]
@@ -72,7 +73,6 @@ ignore = [
 [tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = ["D104"]
 "tests/*" = ["D", "S101", "PLR2004", "SLF001", "N801"]
-"scripts/*" = ["INP001", "T201"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -108,7 +108,6 @@ filterwarnings = ["ignore::DeprecationWarning::"]
 markers = [
   "unit: Isolated unit tests",
   "integration: Integration tests",
-  # Testcontainers require Docker to run but it's too complex for CI environments (macOS / Windows)
   "docker: Tests that require Docker to run",
 ]
 
