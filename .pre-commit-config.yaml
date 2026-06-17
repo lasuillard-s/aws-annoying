@@ -38,8 +38,9 @@ repos:
         name: Type check with Mypy
         language: system
         types: [python]
+        pass_filenames: false
         entry: uv run mypy
-        args: [--show-error-codes, --pretty]
+        args: [--show-error-codes, --pretty, .]
 
       - id: pytest
         name: Test with pytest
