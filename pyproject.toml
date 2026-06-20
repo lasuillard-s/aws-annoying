@@ -25,7 +25,7 @@ dev = [
   "mkdocs-material==9.7.6",
   "mkdocstrings[python]==1.0.4",
   "mypy==2.1.0",
-  "ruff==0.15.15",
+  "ruff==0.15.16",
   "types-requests==2.33.0.20260518",
   "coverage==7.14.1",
   "moto[secretsmanager,server,ssm,ecs]==5.2.1",
