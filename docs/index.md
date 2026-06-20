@@ -8,9 +8,9 @@ Utilities to handle annoying AWS tasks.
 
 ## ✨ Features
 
-- **CLI application**: Command-line interface for handling annoying AWS tasks
+- **CLI application**: Command-line interface for handling common, annoying AWS tasks
 - **Python library**: Reusable utility functions for AWS operations
-- **Console enhancements**: Browser user scripts to improve AWS Console experience
+- **Console enhancements**: Browser user scripts to improve the AWS Console experience
 - **Dev Container Features**: Reusable Dev Container Features for development environments
 
 ## 🚀 Quick start
@@ -46,6 +46,24 @@ $ pip install aws-annoying
 ```
 
 Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/) for more information on how to use the application and package.
+
+### 🐒 Browser User Scripts
+
+To use browser user scripts to improve your AWS Console experience, download the scripts from the [console]((https://github.com/lasuillard-s/aws-annoying/blob/main/console) directory and install them in your browser.
+
+Note that these scripts are provided "as is" and may not work in all cases.
+
+### 🐳 Dev Container Features
+
+You can use the Dev Container Features provided in [devcontainer-features]((https://github.com/lasuillard-s/aws-annoying/blob/main/devcontainer-features/) directory to help set up development containers. For example, add it in your `devcontainer.json` file:
+
+```json
+{
+  "features": {
+    "ghcr.io/lasuillard-s/aws-annoying/session-manager-plugin:0": {}
+  }
+}
+```
 
 ## 💖 Contributing
 
