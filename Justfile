@@ -18,11 +18,12 @@ alias up := update
 # =============================================================================
 
 # Run all checks
-ci: lint test
+ci: (format "yes") lint test
 
 # Autoformat code
-format:
-    uv run ruff format .
+[arg("check", long="check", value="yes")]
+format check="no":
+    uv run ruff format {{ if check == "yes" { "--check" } else { "" } }} .
 
 alias fmt := format
 
@@ -46,7 +47,7 @@ build:
 
 # Run the CLI application
 run *args="--help":
-    uv run aws-annoying {{args}}
+    uv run aws-annoying {{ args }}
 
 # Start local documentation server
 docs:
