@@ -28,7 +28,7 @@ dev = [
   "ruff==0.15.16",
   "types-requests==2.33.0.20260518",
   "coverage==7.14.1",
-  "moto[secretsmanager,server,ssm,ecs]==5.2.1",
+  "moto[secretsmanager,server,ssm,ecs]==5.2.2",
   "pytest==9.0.3",
   "pytest-cov==7.1.0",
   "pytest-env==1.6.0",
