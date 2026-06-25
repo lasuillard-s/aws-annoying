@@ -19,7 +19,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]==1.43.26",
+  "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]==1.43.27",
   "mike==2.2.0",
   "mkdocs==1.6.1",
   "mkdocs-material==9.7.6",
