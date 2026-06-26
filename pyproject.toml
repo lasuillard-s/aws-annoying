@@ -19,13 +19,13 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]==1.43.27",
+  "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]==1.43.28",
   "mike==2.2.0",
   "mkdocs==1.6.1",
   "mkdocs-material==9.7.6",
   "mkdocstrings[python]==1.0.4",
   "mypy==2.1.0",
-  "ruff==0.15.16",
+  "ruff==0.15.17",
   "types-requests==2.33.0.20260518",
   "coverage==7.14.1",
   "moto[secretsmanager,server,ssm,ecs]==5.2.2",
