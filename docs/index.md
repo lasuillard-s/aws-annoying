@@ -49,13 +49,13 @@ Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/
 
 ### 🐒 Browser User Scripts
 
-To use browser user scripts to improve your AWS Console experience, download the scripts from the [console]((https://github.com/lasuillard-s/aws-annoying/blob/main/console) directory and install them in your browser.
+To use browser user scripts to improve your AWS Console experience, download the scripts from the [console](https://github.com/lasuillard-s/aws-annoying/blob/main/console) directory and install them in your browser.
 
 Note that these scripts are provided "as is" and may not work in all cases.
 
 ### 🐳 Dev Container Features
 
-You can use the Dev Container Features provided in [devcontainer-features]((https://github.com/lasuillard-s/aws-annoying/blob/main/devcontainer-features/) directory to help set up development containers. For example, add it in your `devcontainer.json` file:
+You can use the Dev Container Features provided in [devcontainer-features](https://github.com/lasuillard-s/aws-annoying/blob/main/devcontainer-features/) directory to help set up development containers. For example, add it in your `devcontainer.json` file:
 
 ```json
 {
@@ -67,7 +67,7 @@ You can use the Dev Container Features provided in [devcontainer-features]((http
 
 ## 💖 Contributing
 
-Please refer to [CONTRIBUTING.md]((https://github.com/lasuillard-s/aws-annoying/blob/main/CONTRIBUTING.md) for more information on how to contribute to this project.
+Please refer to [CONTRIBUTING.md](https://github.com/lasuillard-s/aws-annoying/blob/main/CONTRIBUTING.md) for more information on how to contribute to this project.
 
 ## 📜 License
 

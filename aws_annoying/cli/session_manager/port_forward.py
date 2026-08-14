@@ -66,6 +66,10 @@ def port_forward(  # noqa: PLR0913
 
     Also, it manages a PID file to keep track of the session manager plugin process running in background,
     allowing to terminate any existing process before starting a new one.
+
+    Required IAM Permissions:
+    - `ec2:DescribeInstances`
+    - `ssm:StartSession`
     """
     dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()

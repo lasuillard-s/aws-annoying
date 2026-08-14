@@ -37,7 +37,10 @@ def port_forward(  # noqa: PLR0913
         start_timeout: The timeout in seconds to wait for the session to start.
 
     Returns:
-        The command to start the session.
+        The session manager plugin process running the port-forwarding session.
+
+    Required IAM Permissions:
+    - `ssm:StartSession`
     """
     session_manager = SessionManager()
     command = session_manager.build_command(

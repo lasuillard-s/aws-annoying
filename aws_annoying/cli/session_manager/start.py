@@ -34,6 +34,10 @@ def start(
 
     You can use your EC2 instance identified by its name or ID. If there are
     more than one instance with the same name, the first one found will be used.
+
+    Required IAM Permissions:
+    - `ec2:DescribeInstances`
+    - `ssm:StartSession`
     """
     dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()

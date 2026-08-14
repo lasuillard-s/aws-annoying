@@ -38,6 +38,9 @@ def wait_for_deployment_start(
 
     Returns:
         The ARN of the latest deployment for the service.
+
+    Required IAM Permissions:
+    - `ecs:ListServiceDeployments`
     """
     session = session or boto3.session.Session()
     ecs = session.client("ecs")
@@ -113,6 +116,9 @@ def wait_for_deployment_complete(
 
     Returns:
         A tuple containing a boolean indicating whether the deployment succeeded and the status of the deployment.
+
+    Required IAM Permissions:
+    - `ecs:DescribeServiceDeployments`
     """
     session = session or boto3.session.Session()
     ecs = session.client("ecs")
@@ -158,6 +164,9 @@ def wait_for_service_stability(
 
     Returns:
         A boolean indicating whether the service is stable.
+
+    Required IAM Permissions:
+        - `ecs:DescribeServices`
     """
     session = session or boto3.session.Session()
     ecs = session.client("ecs")

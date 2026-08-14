@@ -52,6 +52,11 @@ def task_definition_lifecycle(
         --keep-latest 5 \
         --delete
     ```
+
+    Required IAM Permissions:
+    - `ecs:ListTaskDefinitions`
+    - `ecs:DeregisterTaskDefinition`
+    - `ecs:DeleteTaskDefinitions`
     """
     dry_run = ctx.meta["dry_run"]
     ecs = boto3.client("ecs")

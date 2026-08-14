@@ -74,6 +74,9 @@ def configure(  # noqa: PLR0913
         --mfa-profile default \
         --mfa-source-profile mfa
     ```
+
+    Required IAM Permissions:
+    - `sts:GetSessionToken`
     """
     dry_run = ctx.meta["dry_run"]
 
