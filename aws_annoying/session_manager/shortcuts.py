@@ -38,6 +38,9 @@ def port_forward(  # noqa: PLR0913
 
     Returns:
         The command to start the session.
+
+    Required IAM Permissions:
+    - `ssm:StartSession`
     """
     session_manager = SessionManager()
     command = session_manager.build_command(

@@ -27,6 +27,9 @@ def check_service_task_definition(
     Returns:
         A tuple containing a boolean indicating whether the task definition matches the expected one
         and the current task definition ARN.
+
+    Required IAM Permissions:
+    - `ecs:DescribeServices`
     """
     session = session or boto3.session.Session()
     ecs = session.client("ecs")

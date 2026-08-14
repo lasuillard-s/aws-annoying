@@ -37,6 +37,11 @@ class VariableLoader:  # noqa: D101
 
         The items are merged in the order of the key of provided mapping, overwriting the variables with the same name
         in the order of the keys.
+
+        Required IAM Permissions:
+        - `secretsmanager:BatchGetSecretValue`
+        - `ssm:GetParameters`
+        - `kms:Decrypt`
         """
         # Split the ARNs by resource types
         secrets_map, parameters_map = {}, {}

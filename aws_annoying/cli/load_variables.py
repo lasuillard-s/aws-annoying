@@ -77,6 +77,11 @@ def load_variables(
 
     The variables are loaded in the order of option provided, overwriting the variables with the same name in the order of the ARNs.
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
+
+    Required IAM Permissions:
+    - `secretsmanager:BatchGetSecretValue`
+    - `ssm:GetParameters`
+    - `kms:Decrypt`
     """  # noqa: E501
     command = ctx.args
     if not command:
