@@ -106,6 +106,7 @@ def wait_for_deployment(  # noqa: PLR0913
     `--wait-for-start` is necessary because there could be no deployment right after the deploy action.
 
     Required IAM Permissions:
+
     - `ecs:ListServiceDeployments`
     - `ecs:DescribeServiceDeployments`
     - `ecs:DescribeServices`

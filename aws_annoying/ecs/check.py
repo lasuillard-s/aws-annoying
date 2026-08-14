@@ -29,6 +29,7 @@ def check_service_task_definition(
         and the current task definition ARN.
 
     Required IAM Permissions:
+
     - `ecs:DescribeServices`
     """
     session = session or boto3.session.Session()

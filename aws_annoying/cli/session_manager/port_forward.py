@@ -68,6 +68,7 @@ def port_forward(  # noqa: PLR0913
     allowing to terminate any existing process before starting a new one.
 
     Required IAM Permissions:
+
     - `ec2:DescribeInstances`
     - `ssm:StartSession`
     """

@@ -36,6 +36,7 @@ def start(
     more than one instance with the same name, the first one found will be used.
 
     Required IAM Permissions:
+
     - `ec2:DescribeInstances`
     - `ssm:StartSession`
     """

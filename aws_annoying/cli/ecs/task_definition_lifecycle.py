@@ -54,6 +54,7 @@ def task_definition_lifecycle(
     ```
 
     Required IAM Permissions:
+
     - `ecs:ListTaskDefinitions`
     - `ecs:DeregisterTaskDefinition`
     - `ecs:DeleteTaskDefinitions`

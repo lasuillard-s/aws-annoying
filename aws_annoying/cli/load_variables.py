@@ -79,6 +79,7 @@ def load_variables(
     Existing environment variables are preserved by default, unless `--overwrite-env` is provided.
 
     Required IAM Permissions:
+
     - `secretsmanager:BatchGetSecretValue`
     - `ssm:GetParameters`
     - `kms:Decrypt` (only for secrets/parameters encrypted with a customer-managed KMS key)
