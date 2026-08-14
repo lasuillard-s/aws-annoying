@@ -93,6 +93,7 @@ class SessionManager:
             The command to start the session.
 
         Required IAM Permissions:
+
         - `ssm:StartSession`
         """
         is_installed, binary_path, _version = self.verify_installation()

@@ -40,6 +40,7 @@ def port_forward(  # noqa: PLR0913
         The session manager plugin process running the port-forwarding session.
 
     Required IAM Permissions:
+
     - `ssm:StartSession`
     """
     session_manager = SessionManager()

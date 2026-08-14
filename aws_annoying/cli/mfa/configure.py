@@ -76,6 +76,7 @@ def configure(  # noqa: PLR0913
     ```
 
     Required IAM Permissions:
+
     - `sts:GetSessionToken`
     """
     dry_run = ctx.meta["dry_run"]

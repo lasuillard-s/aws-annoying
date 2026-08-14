@@ -19,6 +19,7 @@ def get_instance_id_by_name(name_or_id: str, *, session: boto3.session.Session |
         The instance ID if found, otherwise `None`.
 
     Required IAM Permissions:
+
     - `ec2:DescribeInstances`
     """
     if re.match(r"^m?i-[0-9a-f]+$", name_or_id):

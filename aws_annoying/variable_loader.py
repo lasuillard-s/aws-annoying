@@ -39,6 +39,7 @@ class VariableLoader:  # noqa: D101
         in the order of the keys.
 
         Required IAM Permissions:
+
         - `secretsmanager:BatchGetSecretValue`
         - `ssm:GetParameters`
         - `kms:Decrypt` (only for secrets/parameters encrypted with a customer-managed KMS key)
