@@ -95,7 +95,7 @@ def localstack(request: pytest.FixtureRequest) -> str:
         container.stop()
 
     request.addfinalizer(teardown)  # noqa: PT021
-    return container.get_url()  # type: ignore[no-any-return]
+    return container.get_url()
 
 
 @pytest.fixture
