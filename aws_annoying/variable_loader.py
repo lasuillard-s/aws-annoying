@@ -41,7 +41,7 @@ class VariableLoader:  # noqa: D101
         Required IAM Permissions:
         - `secretsmanager:BatchGetSecretValue`
         - `ssm:GetParameters`
-        - `kms:Decrypt`
+        - `kms:Decrypt` (only for secrets/parameters encrypted with a customer-managed KMS key)
         """
         # Split the ARNs by resource types
         secrets_map, parameters_map = {}, {}

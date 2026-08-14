@@ -118,7 +118,7 @@ def wait_for_deployment_complete(
         A tuple containing a boolean indicating whether the deployment succeeded and the status of the deployment.
 
     Required IAM Permissions:
-        - `ecs:DescribeServiceDeployments`
+    - `ecs:DescribeServiceDeployments`
     """
     session = session or boto3.session.Session()
     ecs = session.client("ecs")

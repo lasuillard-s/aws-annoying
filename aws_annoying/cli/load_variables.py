@@ -81,7 +81,7 @@ def load_variables(
     Required IAM Permissions:
     - `secretsmanager:BatchGetSecretValue`
     - `ssm:GetParameters`
-    - `kms:Decrypt`
+    - `kms:Decrypt` (only for secrets/parameters encrypted with a customer-managed KMS key)
     """  # noqa: E501
     command = ctx.args
     if not command:
