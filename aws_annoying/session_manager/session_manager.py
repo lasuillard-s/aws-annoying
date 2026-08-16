@@ -120,3 +120,56 @@ class SessionManager:
             json.dumps({"Target": target}),
             f"https://ssm.{region}.amazonaws.com",
         ]
+
+    def build_ecs_command(
+        self,
+        cluster: str,
+        task: str,
+        container: str,
+        command: str = "/bin/sh",
+    ) -> list[str]:
+        """Build command for starting an ECS Exec session.
+
+        Args:
+            cluster: The cluster name or ARN.
+            task: The task ARN.
+            container: The container name.
+            command: The command to run (default: /bin/sh).
+
+        Returns:
+            The command to start the session.
+
+        Required IAM Permissions:
+
+        - `ecs:ExecuteCommand`
+        """
+        is_installed, binary_path, _version = self.verify_installation()
+        if not is_installed:
+            msg = "Session Manager plugin is not installed."
+            raise PluginNotInstalledError(msg)
+
+        ecs = self.session.client("ecs")
+        response = ecs.execute_command(
+            cluster=cluster,
+            task=task,
+            container=container,
+            command=command,
+            interactive=True,
+        )
+
+        region = self.session.region_name
+
+        # Format target properly, avoiding ARN if possible or just use string
+        # AWS CLI uses format ecs:cluster_task_container
+        cluster_name = cluster.rsplit("/", maxsplit=1)[-1]
+        task_id = task.rsplit("/", maxsplit=1)[-1]
+
+        return [
+            str(binary_path),
+            json.dumps(response["session"]),
+            region,
+            "StartSession",
+            self.session.profile_name,
+            json.dumps({"Target": f"ecs:{cluster_name}_{task_id}_{container}"}),
+            f"https://ssm.{region}.amazonaws.com",
+        ]

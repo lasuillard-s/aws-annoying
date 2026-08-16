@@ -5,6 +5,8 @@ import os
 
 import typer
 
+from aws_annoying.cli.interactive import select_ec2_instance, select_ecs_container
+from aws_annoying.cli.ui import prompt_select
 from aws_annoying.session_manager import SessionManager
 from aws_annoying.utils.ec2 import get_instance_id_by_name
 
@@ -12,18 +14,14 @@ from ._app import session_manager_app
 
 logger = logging.getLogger(__name__)
 
-# TODO(lasuillard): ECS support (#24)
-# TODO(lasuillard): Interactive instance selection
-
 
 @session_manager_app.command()
 def start(
     ctx: typer.Context,
     *,
-    target: str = typer.Option(
-        ...,
-        show_default=False,
-        help="The name or ID of the EC2 instance to connect to.",
+    target: str | None = typer.Option(
+        None,
+        help="The name or ID of the EC2 instance to connect to. If omitted, prompts interactively.",
     ),
     reason: str = typer.Option(
         "",
@@ -43,6 +41,35 @@ def start(
     dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
+    if target is None:
+        target_type = prompt_select(
+            "Target Type",
+            choices=[
+                ("ec2", "EC2 Instance"),
+                ("ecs", "ECS Exec (Container)"),
+            ],
+        )
+        if target_type == "ec2":
+            target = select_ec2_instance()
+        else:
+            cluster, task, container = select_ecs_container()
+            logger.info(
+                "Starting ECS session to cluster=%s, task=%s, container=%s with reason: [italic]%r[/italic].",
+                cluster,
+                task,
+                container,
+                reason,
+            )
+            command = session_manager.build_ecs_command(
+                cluster=cluster,
+                task=task,
+                container=container,
+            )
+            if not dry_run:
+                os.execvp(command[0], command)  # noqa: S606
+            return
+
+    # EC2 logic
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(target)
     if instance_id:
