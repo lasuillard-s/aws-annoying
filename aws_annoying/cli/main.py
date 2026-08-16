@@ -1,6 +1,7 @@
 # ruff: noqa: F401
 from __future__ import annotations
 
+import aws_annoying.cli.ec2
 import aws_annoying.cli.ecs
 import aws_annoying.cli.load_variables
 import aws_annoying.cli.mfa
