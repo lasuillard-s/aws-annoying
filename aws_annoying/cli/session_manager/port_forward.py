@@ -3,7 +3,9 @@ from __future__ import annotations
 import logging
 import os
 import signal
+import socket
 import subprocess
+import sys
 from pathlib import Path  # noqa: TC003
 
 import typer
@@ -16,12 +18,41 @@ from ._app import session_manager_app
 logger = logging.getLogger(__name__)
 
 
+def _get_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return int(s.getsockname()[1])
+
+
+def _handle_existing_pid_file(pid_file: Path, terminate_running_process: bool) -> None:  # noqa: FBT001
+    if not pid_file.exists():
+        return
+
+    if not terminate_running_process:
+        logger.error("PID file already exists.")
+        raise typer.Exit(1)
+
+    pid_content = pid_file.read_text().strip()
+    if pid_content:
+        for pid_str in pid_content.split():
+            try:
+                existing_pid = int(pid_str)
+                logger.warning("Terminating running process with PID %d.", existing_pid)
+                os.kill(existing_pid, signal.SIGTERM)
+            except (ValueError, ProcessLookupError):  # noqa: PERF203
+                logger.warning("Tried to terminate process with PID %s but failed.", pid_str)
+        pid_file.write_text("")  # Clear the PID file
+
+
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
     ctx: typer.Context,
     *,
-    # TODO(lasuillard): Add `--local-host` option, redirect the traffic to non-localhost bind (unsupported by AWS)
+    local_host: str = typer.Option(
+        "127.0.0.1",
+        help="The local host address to bind the port forwarding connection.",
+    ),
     local_port: int = typer.Option(
         ...,
         show_default=False,
@@ -75,25 +106,7 @@ def port_forward(  # noqa: PLR0913
     dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
-    # Check if the PID file already exists
-    if pid_file.exists():
-        if not terminate_running_process:
-            logger.error("PID file already exists.")
-            raise typer.Exit(1)
-
-        pid_content = pid_file.read_text()
-        try:
-            existing_pid = int(pid_content)
-        except ValueError:
-            logger.error("PID file content is invalid; expected integer, but got: %r", type(pid_content))  # noqa: TRY400
-            raise typer.Exit(1) from None
-
-        try:
-            logger.warning("Terminating running process with PID %d.", existing_pid)
-            os.kill(existing_pid, signal.SIGTERM)
-            pid_file.write_text("")  # Clear the PID file
-        except ProcessLookupError:
-            logger.warning("Tried to terminate process with PID %d but does not exist.", existing_pid)
+    _handle_existing_pid_file(pid_file, terminate_running_process)
 
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(through)
@@ -104,6 +117,9 @@ def port_forward(  # noqa: PLR0913
         logger.error("Instance with name '%s' not found.", through)
         raise typer.Exit(1)
 
+    is_non_localhost = local_host not in ("127.0.0.1", "localhost")
+    ssm_local_port = _get_free_port() if is_non_localhost else local_port
+
     # Initiate the session
     command = session_manager.build_command(
         target=target,
@@ -111,7 +127,7 @@ def port_forward(  # noqa: PLR0913
         parameters={
             "host": [remote_host],
             "portNumber": [str(remote_port)],
-            "localPortNumber": [str(local_port)],
+            "localPortNumber": [str(ssm_local_port)],
         },
         reason=reason,
     )
@@ -126,6 +142,7 @@ def port_forward(  # noqa: PLR0913
         through,
         reason,
     )
+    pids: list[int] = []
     if not dry_run:
         proc = subprocess.Popen(  # noqa: S603
             command,
@@ -134,18 +151,32 @@ def port_forward(  # noqa: PLR0913
             text=True,
             close_fds=False,  # FD inherited from parent process
         )
-        pid = proc.pid
+        pids.append(proc.pid)
+
+        if is_non_localhost:
+            proxy_cmd = [
+                sys.executable,
+                "-m",
+                "aws_annoying.utils.tcp_proxy",
+                local_host,
+                str(local_port),
+                "127.0.0.1",
+                str(ssm_local_port),
+            ]
+            proxy_proc = subprocess.Popen(proxy_cmd)  # noqa: S603
+            pids.append(proxy_proc.pid)
+            logger.info("TCP Proxy started on %s:%d -> 127.0.0.1:%d", local_host, local_port, ssm_local_port)
     else:
-        pid = -1
+        pids.append(-1)
 
     logger.info(
-        "Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
-        pid,
+        "Session Manager Plugin started with PID %s. Outputs will be logged to %s.",
+        ", ".join(map(str, pids)),
         log_file.absolute(),
     )
 
     # Write the PID to the file
     if not dry_run:
-        pid_file.write_text(str(pid))
+        pid_file.write_text(" ".join(map(str, pids)))
 
     logger.info("PID file written to %s.", pid_file.absolute())
