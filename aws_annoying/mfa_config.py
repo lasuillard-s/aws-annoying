@@ -18,6 +18,7 @@ class MfaConfig(BaseModel):
     mfa_profile: Optional[str] = None
     mfa_source_profile: Optional[str] = None
     mfa_serial_number: Optional[str] = None
+    mfa_region: Optional[str] = None
 
     def save_ini_file(self, path: Path, section_key: str) -> None:
         """Save configuration to an AWS config file."""
@@ -57,3 +58,19 @@ def update_credentials(path: Path, profile: str, *, access_key: str, secret_key:
         credentials_ini.write(f)
 
     logger.debug("Updated credentials file %s with profile %s", path, profile)
+
+
+def update_config(path: Path, profile: str, *, region: Optional[str]) -> None:
+    """Update AWS config file with the provided profile region."""
+    if not region:
+        return
+
+    section = "default" if profile == "default" else f"profile {profile}"
+    config_ini = configparser.ConfigParser()
+    config_ini.read(path)
+    config_ini.setdefault(section, {})
+    config_ini[section]["region"] = region
+    with path.open("w") as f:
+        config_ini.write(f)
+
+    logger.debug("Updated config file %s with profile %s region %s", path, profile, region)

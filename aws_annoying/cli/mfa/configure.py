@@ -8,7 +8,7 @@ import boto3
 import typer
 from rich.prompt import Prompt
 
-from aws_annoying.mfa_config import MfaConfig, update_credentials
+from aws_annoying.mfa_config import MfaConfig, update_config, update_credentials
 
 from ._app import mfa_app
 
@@ -26,6 +26,10 @@ def configure(  # noqa: PLR0913
     mfa_source_profile: Optional[str] = typer.Option(
         None,
         help="The AWS profile to use to retrieve MFA credentials.",
+    ),
+    mfa_region: Optional[str] = typer.Option(
+        None,
+        help="The AWS region for the MFA profile.",
     ),
     mfa_serial_number: Optional[str] = typer.Option(
         None,
@@ -59,20 +63,23 @@ def configure(  # noqa: PLR0913
     This command retrieves temporary MFA credentials using the provided source profile (`--mfa-source-profile`)
     and MFA token code then updates the specified AWS profile with these credentials.
 
+    Before running this command, ensure that your source profile (default: `mfa`) is configured in AWS CLI
+    (e.g., using `aws configure --profile mfa`).
+
     You can configure it interactively, by omitting the options, or provide them directly via command-line options.
 
     ```shell
+    aws configure --profile mfa
     aws-annoying mfa configure
     ```
 
-    If you want to use MFA as primary authentication method for an AWS profile, you can configure
-    it to save the credentials to the default profile.
+    If you want to specify a custom profile or source profile, you can pass them as options:
 
     ```shell
-    aws configure --profile mfa
+    aws configure --profile my-mfa-source
     aws-annoying mfa configure \
         --mfa-profile default \
-        --mfa-source-profile mfa
+        --mfa-source-profile my-mfa-source
     ```
 
     Required IAM Permissions:
@@ -116,6 +123,19 @@ def configure(  # noqa: PLR0913
     # Get credentials
     logger.info("Retrieving MFA credentials using profile [bold]%s[/bold]", mfa_source_profile)
     session = boto3.session.Session(profile_name=mfa_source_profile)
+
+    # Prompt user to enter AWS region for the MFA profile. Defaults to the region
+    # from the source profile.
+    mfa_region = (
+        mfa_region
+        or mfa_config.mfa_region
+        or (
+            Prompt.ask("🌐 Enter AWS region", default=session.region_name)
+            if session.region_name
+            else Prompt.ask("🌐 Enter AWS region")
+        )
+    )
+
     sts = session.client("sts")
     response = sts.get_session_token(
         SerialNumber=mfa_serial_number,
@@ -137,6 +157,12 @@ def configure(  # noqa: PLR0913
             secret_key=credentials["SecretAccessKey"],
             session_token=credentials["SessionToken"],
         )
+        if mfa_region:
+            update_config(
+                aws_config,
+                mfa_profile,  # type: ignore[arg-type]
+                region=mfa_region,
+            )
 
     # Persist MFA configuration
     if persist:
@@ -148,6 +174,7 @@ def configure(  # noqa: PLR0913
         mfa_config.mfa_profile = mfa_profile
         mfa_config.mfa_source_profile = mfa_source_profile
         mfa_config.mfa_serial_number = mfa_serial_number
+        mfa_config.mfa_region = mfa_region
         if not dry_run:
             mfa_config.save_ini_file(aws_config, aws_config_section)
     else:
