@@ -32,6 +32,9 @@
             awscli2
           ];
           shellHook = ''
+            # Fix venv messed up by pre-commit
+            unset PYTHONPATH
+
             pre-commit install
           '';
         };
