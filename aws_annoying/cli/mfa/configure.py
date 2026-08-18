@@ -94,12 +94,12 @@ def configure(  # noqa: PLR0913
         mfa_profile
         or mfa_config.mfa_profile
         # _
-        or Prompt.ask("👤 Enter name of MFA profile to configure", default="mfa")
+        or Prompt.ask("👤 Enter name of MFA profile to configure", default="default")
     )
     mfa_source_profile = (
         mfa_source_profile
         or mfa_config.mfa_source_profile
-        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials", default="default")
+        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials", default="mfa")
     )
     mfa_serial_number = (
         mfa_serial_number
