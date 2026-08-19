@@ -15,10 +15,11 @@ Utilities to handle annoying AWS tasks.
 
 ## 🚀 Quick start
 
-It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
+It is recommended to use [uvx](https://docs.astral.sh/uv/concepts/tools/) (alias for `uv tool run`) to run `aws-annoying` CLI (you can also use `pipx run` if you prefer):
 
 ```bash
-$ TYPER_USE_RICH=0 pipx run aws-annoying --help
+$ export TYPER_USE_RICH=0 # Disable Rich to simplify output. Ignore this
+$ uvx aws-annoying --help
 Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
 
 Options:
