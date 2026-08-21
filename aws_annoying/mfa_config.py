@@ -46,31 +46,33 @@ class MfaConfig(BaseModel):
         return cls(), False
 
 
-def update_credentials(path: Path, profile: str, *, access_key: str, secret_key: str, session_token: str) -> None:
+def update_credentials(path: Path, profile_name: str, *, access_key: str, secret_key: str, session_token: str) -> None:
     """Update AWS credentials file with the provided profile and credentials."""
     credentials_ini = configparser.ConfigParser()
     credentials_ini.read(path)
-    credentials_ini.setdefault(profile, {})
-    credentials_ini[profile]["aws_access_key_id"] = access_key
-    credentials_ini[profile]["aws_secret_access_key"] = secret_key
-    credentials_ini[profile]["aws_session_token"] = session_token
+    credentials_ini.setdefault(profile_name, {})
+    credentials_ini[profile_name]["aws_access_key_id"] = access_key
+    credentials_ini[profile_name]["aws_secret_access_key"] = secret_key
+    credentials_ini[profile_name]["aws_session_token"] = session_token
     with path.open("w") as f:
         credentials_ini.write(f)
 
-    logger.debug("Updated credentials file %s with profile %s", path, profile)
+    logger.debug("Updated credentials file %s with profile %s", path, profile_name)
 
 
-def update_config(path: Path, profile: str, *, region: Optional[str]) -> None:
+def update_config(path: Path, profile_name: str, *, region: Optional[str]) -> None:
     """Update AWS config file with the provided profile region."""
     if not region:
         return
 
-    section = "default" if profile == "default" else f"profile {profile}"
+    section = "default" if profile_name == "default" else f"profile {profile_name}"
     config_ini = configparser.ConfigParser()
     config_ini.read(path)
     config_ini.setdefault(section, {})
-    config_ini[section]["region"] = region
+    if region:
+        config_ini[section]["region"] = region
+
     with path.open("w") as f:
         config_ini.write(f)
 
-    logger.debug("Updated config file %s with profile %s region %s", path, profile, region)
+    logger.debug("Updated config file %s with profile %s region %s", path, profile_name, region)

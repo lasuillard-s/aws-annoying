@@ -101,12 +101,12 @@ def configure(  # noqa: PLR0913
         mfa_profile
         or mfa_config.mfa_profile
         # _
-        or Prompt.ask("👤 Enter name of MFA profile to configure", default="mfa")
+        or Prompt.ask("👤 Enter name of MFA profile to configure", default="default")
     )
     mfa_source_profile = (
         mfa_source_profile
         or mfa_config.mfa_source_profile
-        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials", default="default")
+        or Prompt.ask("👤 Enter AWS profile to use to retrieve MFA credentials", default="mfa")
     )
     mfa_serial_number = (
         mfa_serial_number
@@ -134,9 +134,10 @@ def configure(  # noqa: PLR0913
             if session.region_name
             else Prompt.ask("🌐 Enter AWS region")
         )
+        or None
     )
 
-    sts = session.client("sts")
+    sts = session.client("sts", region_name=mfa_region)
     response = sts.get_session_token(
         SerialNumber=mfa_serial_number,
         TokenCode=mfa_token_code,
