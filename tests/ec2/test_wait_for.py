@@ -12,6 +12,7 @@ from aws_annoying.ec2 import (
     InstanceNotReadyError,
     InvalidInstanceIdError,
     detect_instance_platform,
+    make_ssm_checker,
     wait_for_instance_ready,
 )
 
@@ -208,3 +209,61 @@ class Test_wait_for_instance_ready:
         # Assert
         assert result is True
         assert mock_checker.call_count == 2
+
+
+class Test_make_ssm_checker:
+    def test_default_params_success(self) -> None:
+        # Arrange
+        checker = make_ssm_checker("MyCustomDoc", {"commands": ["echo 'ready'"]})
+        session = mock.MagicMock()
+        ssm = boto3.client("ssm", region_name="us-east-1")
+        session.client.return_value = ssm
+
+        stubber = Stubber(ssm)
+        stubber.add_response(
+            "send_command",
+            {"Command": {"CommandId": "00000000-0000-0000-0000-000000000001"}},
+            expected_params={
+                "InstanceIds": ["i-0123456789abcdef0"],
+                "DocumentName": "MyCustomDoc",
+                "Parameters": {"commands": ["echo 'ready'"]},
+            },
+        )
+        stubber.add_response(
+            "get_command_invocation",
+            {
+                "Status": "Success",
+                "ResponseCode": 0,
+            },
+            expected_params={
+                "CommandId": "00000000-0000-0000-0000-000000000001",
+                "InstanceId": "i-0123456789abcdef0",
+            },
+        )
+
+        # Act & Assert
+        with mock.patch("time.sleep"), stubber:
+            assert checker("i-0123456789abcdef0", session=session) is True
+
+    def test_custom_params_failure(self) -> None:
+        # Arrange
+        checker = make_ssm_checker("MyCustomDoc", {"commands": ["exit 0"]})
+        session = mock.MagicMock()
+        ssm = boto3.client("ssm", region_name="us-east-1")
+        session.client.return_value = ssm
+
+        stubber = Stubber(ssm)
+        stubber.add_client_error(
+            "send_command",
+            service_error_code="InvalidDocument",
+            service_message="Document not found",
+            expected_params={
+                "InstanceIds": ["i-0123456789abcdef0"],
+                "DocumentName": "MyCustomDoc",
+                "Parameters": {"commands": ["exit 0"]},
+            },
+        )
+
+        # Act & Assert
+        with stubber:
+            assert checker("i-0123456789abcdef0", session=session) is False

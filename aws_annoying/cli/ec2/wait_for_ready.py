@@ -126,20 +126,14 @@ def wait_for_ready(  # noqa: PLR0913
                 raise typer.BadParameter(msg, ctx, param=None)
 
     # Start waiting for the instance to be ready using the selected checker
-    logger.info("Waiting for instance %s to be ready...", instance_id)
-    if dry_run:
-        logger.info("Dry-run mode is enabled and skipping actual wait for instance readiness.")
-        return
-
     try:
-        wait_for_instance_ready(
-            instance_id=instance_id,
-            checker=checker,
-            max_attempts=max_attempts,
-            delay=delay,
-        )
+        if not dry_run:
+            wait_for_instance_ready(
+                instance_id=instance_id,
+                checker=checker,
+                max_attempts=max_attempts,
+                delay=delay,
+            )
     except (InvalidInstanceIdError, InstanceNotFoundError, InstanceNotReadyError) as err:
         logger.exception("Failed waiting for instance to be ready.")
         raise typer.Exit(1) from err
-    else:
-        logger.info("Instance %s is ready.", instance_id)

@@ -1,12 +1,11 @@
 🔔 Waiting for instance i-0123456789abcdef0 to be ready...
+🔔 Attempt 1/2...
+🔔 Attempt 2/2...
+🚨 Maximum attempts reached. Instance i-0123456789abcdef0 is not ready.
 🚨 Failed waiting for instance to be ready.
 Traceback (most recent call last):
-  File "/workspaces/aws-annoying/aws_annoying/cli/ec2/wait_for_ready.py", line 135, in wait_for_ready
+  File "/workspaces/aws-annoying/aws_annoying/cli/ec2/wait_for_ready.py", line 131, in wait_for_ready
     wait_for_instance_ready(
-  File "/home/vscode/.local/share/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/unittest/mock.py", line 1114, in __call__
-    return self._mock_call(*args, **kwargs)
-  File "/home/vscode/.local/share/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-  File "/home/vscode/.local/share/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/unittest/mock.py", line 1173, in _execute_mock_call
-    raise effect
-aws_annoying.ec2.errors.InstanceNotReadyError: Failed after max attempts
+  File "/workspaces/aws-annoying/aws_annoying/ec2/wait_for.py", line 74, in wait_for_instance_ready
+    raise InstanceNotReadyError(msg)
+aws_annoying.ec2.errors.InstanceNotReadyError: Instance 'i-0123456789abcdef0' failed to become ready after 2 attempts.
