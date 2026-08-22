@@ -5,8 +5,8 @@ import os
 
 import typer
 
+from aws_annoying.ec2 import get_instance_id_by_name
 from aws_annoying.session_manager import SessionManager
-from aws_annoying.utils.ec2 import get_instance_id_by_name
 
 from ._app import session_manager_app
 
