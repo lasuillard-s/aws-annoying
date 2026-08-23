@@ -30,7 +30,6 @@ T = TypeVar("T")
 
 @session_manager_app.command()
 def start(
-    ctx: typer.Context,
     *,
     target: str | None = typer.Option(
         None,
@@ -58,7 +57,6 @@ def start(
       - `ecs:ListTasks`
       - `ssm:StartSession` (uses the SSM Session Manager instead of ECS Exec directly)
     """
-    dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
     if target is None:
@@ -86,8 +84,7 @@ def start(
         parameters={},
         reason=reason,
     )
-    if not dry_run:
-        os.execvp(command[0], command)  # noqa: S606
+    os.execvp(command[0], command)  # noqa: S606
 
 
 class _Step(enum.IntEnum):

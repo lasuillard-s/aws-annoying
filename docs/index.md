@@ -26,8 +26,6 @@ Options:
   --version                 Show the version and exit.
   --quiet / --no-quiet      Disable outputs.  [default: no-quiet]
   --verbose / --no-verbose  Enable verbose outputs.  [default: no-verbose]
-  --dry-run / --no-dry-run  Enable dry-run mode. If enabled, certain commands
-                            will avoid making changes.  [default: no-dry-run]
   --install-completion      Install completion for the current shell.
   --show-completion         Show completion for the current shell, to copy it
                             or customize the installation.
