@@ -135,5 +135,5 @@ def wait_for_ready(  # noqa: PLR0913
                 delay=delay,
             )
     except (InvalidInstanceIdError, InstanceNotFoundError, InstanceNotReadyError) as err:
-        logger.exception("Failed waiting for instance to be ready.")
+        logger.error("Failed waiting for instance to be ready: %s", err)  # noqa: TRY400
         raise typer.Exit(1) from err
