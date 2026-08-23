@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
-    ctx: typer.Context,
     *,
     local_host: str = typer.Option(
         "127.0.0.1",
@@ -62,7 +61,6 @@ def port_forward(  # noqa: PLR0913
     - `ec2:DescribeInstances`
     - `ssm:StartSession`
     """
-    dry_run = ctx.meta.get("dry_run", False)
     session_manager = SessionManager()
 
     # Resolve the instance name or ID
@@ -95,17 +93,6 @@ def port_forward(  # noqa: PLR0913
         through,
         reason,
     )
-
-    if dry_run:
-        if is_non_localhost:
-            logger.info(
-                "TCP Proxy would start on %s:%d -> %s:%d",
-                local_host,
-                local_port,
-                ssm_local_host,
-                ssm_local_port,
-            )
-        return
 
     proxy: TCPProxy | None = None
     if is_non_localhost:
