@@ -19,7 +19,6 @@ _DELETE_CHUNK_SIZE = 10
 
 @ecs_app.command()
 def task_definition_lifecycle(
-    ctx: typer.Context,
     *,
     family: str = typer.Option(
         ...,
@@ -59,7 +58,6 @@ def task_definition_lifecycle(
     - `ecs:DeregisterTaskDefinition`
     - `ecs:DeleteTaskDefinitions`
     """
-    dry_run = ctx.meta["dry_run"]
     ecs = boto3.client("ecs")
 
     # Get all task definitions for the family
@@ -79,8 +77,7 @@ def task_definition_lifecycle(
     expired_taskdef_arns = task_definition_arns[:-keep_latest]
     logger.warning("Deregistering %d task definitions...", len(expired_taskdef_arns))
     for arn in expired_taskdef_arns:
-        if not dry_run:
-            ecs.deregister_task_definition(taskDefinition=arn)
+        ecs.deregister_task_definition(taskDefinition=arn)
 
         # ARN like: "arn:aws:ecs:<region>:<account-id>:task-definition/<family>:<revision>"
         _, family_revision = arn.split(":task-definition/")
@@ -94,8 +91,7 @@ def task_definition_lifecycle(
             _DELETE_CHUNK_SIZE,
         )
         for idx, chunk in enumerate(_chunker(expired_taskdef_arns, _DELETE_CHUNK_SIZE)):
-            if not dry_run:
-                ecs.delete_task_definitions(taskDefinitions=chunk)
+            ecs.delete_task_definitions(taskDefinitions=chunk)
 
             logger.warning("Deleted %d task definitions in %d-th batch.", len(chunk), idx)
 
