@@ -6,8 +6,8 @@ import boto3
 import pytest
 from typer.testing import CliRunner
 
-from aws_annoying.cli.main import app
-from tests.cli._helpers import normalize_console_output
+from aws_annoying._cli.main import app
+from tests._cli._helpers import normalize_console_output
 
 if TYPE_CHECKING:
     from pytest_snapshot.plugin import Snapshot

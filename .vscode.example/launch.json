@@ -5,7 +5,7 @@
       "name": "Python: Application CLI",
       "type": "debugpy",
       "request": "launch",
-      "module": "aws_annoying.cli.main",
+      "module": "aws_annoying._cli.main",
       "console": "integratedTerminal",
       "justMyCode": true
     }

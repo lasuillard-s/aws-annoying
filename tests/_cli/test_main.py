@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from aws_annoying.cli import main
+from aws_annoying._cli import main
 
 pytestmark = [
     pytest.mark.unit,

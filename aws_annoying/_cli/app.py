@@ -31,7 +31,7 @@ def show_version(value: Optional[bool]) -> None:  # noqa: FBT001
 
 
 @app.callback()
-def main(  # noqa: D103
+def main(
     ctx: typer.Context,
     *,
     version: Optional[bool] = typer.Option(  # noqa: ARG001
@@ -70,7 +70,7 @@ def main(  # noqa: D103
                 "class": "logging.NullHandler",
             },
             "rich": {
-                "class": "aws_annoying.cli.logging_handler.RichLogHandler",
+                "class": "aws_annoying._cli.logging_handler.RichLogHandler",
                 "formatter": "rich",
                 "console": console,
             },

@@ -19,7 +19,7 @@ cli = [
 ]
 
 [project.scripts]
-"aws-annoying" = "aws_annoying.cli.main:entrypoint"
+"aws-annoying" = "aws_annoying._cli.main:entrypoint"
 
 [dependency-groups]
 dev = [

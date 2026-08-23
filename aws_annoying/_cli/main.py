@@ -8,10 +8,10 @@ if TYPE_CHECKING:
     from .app import app
 
 try:
-    import aws_annoying.cli.ecs
-    import aws_annoying.cli.load_variables
-    import aws_annoying.cli.mfa
-    import aws_annoying.cli.session_manager
+    import aws_annoying._cli.ecs
+    import aws_annoying._cli.load_variables
+    import aws_annoying._cli.mfa
+    import aws_annoying._cli.session_manager
 
     from .app import app
 except ImportError:

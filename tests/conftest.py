@@ -18,7 +18,7 @@ def pytest_ignore_collect(collection_path: Path, config: pytest.Config) -> bool 
     try:
         import typer  # noqa: F401, PLC0415
     except ImportError:
-        if "tests/cli" in str(collection_path) or collection_path.name == "cli":
+        if "tests/_cli" in str(collection_path) or collection_path.name == "_cli":
             return True
 
     return None
