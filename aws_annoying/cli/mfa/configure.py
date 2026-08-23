@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 @mfa_app.command()
 def configure(  # noqa: PLR0913
-    ctx: typer.Context,
     *,
     mfa_profile: Optional[str] = typer.Option(
         None,
@@ -86,8 +85,6 @@ def configure(  # noqa: PLR0913
 
     - `sts:GetSessionToken`
     """
-    dry_run = ctx.meta["dry_run"]
-
     # Expand user home directory
     aws_credentials = aws_credentials.expanduser()
     aws_config = aws_config.expanduser()
@@ -150,20 +147,19 @@ def configure(  # noqa: PLR0913
         mfa_profile,
         aws_credentials,
     )
-    if not dry_run:
-        update_credentials(
-            aws_credentials,
+    update_credentials(
+        aws_credentials,
+        mfa_profile,  # type: ignore[arg-type]
+        access_key=credentials["AccessKeyId"],
+        secret_key=credentials["SecretAccessKey"],
+        session_token=credentials["SessionToken"],
+    )
+    if mfa_region:
+        update_config(
+            aws_config,
             mfa_profile,  # type: ignore[arg-type]
-            access_key=credentials["AccessKeyId"],
-            secret_key=credentials["SecretAccessKey"],
-            session_token=credentials["SessionToken"],
+            region=mfa_region,
         )
-        if mfa_region:
-            update_config(
-                aws_config,
-                mfa_profile,  # type: ignore[arg-type]
-                region=mfa_region,
-            )
 
     # Persist MFA configuration
     if persist:
@@ -176,7 +172,6 @@ def configure(  # noqa: PLR0913
         mfa_config.mfa_source_profile = mfa_source_profile
         mfa_config.mfa_serial_number = mfa_serial_number
         mfa_config.mfa_region = mfa_region
-        if not dry_run:
-            mfa_config.save_ini_file(aws_config, aws_config_section)
+        mfa_config.save_ini_file(aws_config, aws_config_section)
     else:
         logger.warning("MFA configuration not persisted.")
