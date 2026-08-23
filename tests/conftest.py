@@ -26,7 +26,6 @@ def terminal_width() -> int:
 def set_terminal_preferences(monkeypatch: pytest.MonkeyPatch, terminal_width: int) -> None:
     """Patch the console width."""
     monkeypatch.setenv("COLUMNS", str(terminal_width))
-    monkeypatch.setenv("NO_COLOR", "1")
 
 
 # AWS
