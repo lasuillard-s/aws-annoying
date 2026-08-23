@@ -15,10 +15,11 @@ Utilities to handle annoying AWS tasks.
 
 ## 🚀 Quick start
 
-It is recommended to use [pipx](https://pipx.pypa.io/stable/) to run or install `aws-annoying` CLI:
+It is recommended to use [uvx](https://docs.astral.sh/uv/concepts/tools/) (alias for `uv tool run`) to run `aws-annoying` CLI (you can also use `pipx run` if you prefer):
 
 ```bash
-$ TYPER_USE_RICH=0 pipx run "aws-annoying[cli]" --help
+$ export TYPER_USE_RICH=0 # Disable Rich to simplify output. Ignore this
+$ uvx "aws-annoying[cli]" --help
 Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -39,10 +40,10 @@ Commands:
   session-manager  AWS Session Manager CLI utilities.
 ```
 
-Or install the package via `pip` to install only the library then import it in your code (`aws_annoying` package) without CLI dependencies:
+Or install the package via `uv` to install only the library then import it in your code (`aws_annoying` package) without CLI dependencies:
 
 ```bash
-$ pip install aws-annoying
+$ uv add aws-annoying
 ```
 
 Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/) for more information on how to use the application and package.

@@ -43,6 +43,8 @@ def test_basic(snapshot: Snapshot, tmp_path: Path, skip_persist: bool) -> None: 
             mfa_profile,
             "--mfa-source-profile",
             "default",
+            "--mfa-region",
+            "us-west-2",
             "--mfa-serial-number",
             "1234567890",
             "--mfa-token-code",
@@ -71,7 +73,10 @@ def test_basic(snapshot: Snapshot, tmp_path: Path, skip_persist: bool) -> None: 
     }
 
     if skip_persist:
-        assert not aws_config.exists()
+        config_ini = ConfigParser()
+        config_ini.read(aws_config)
+        assert config_ini["profile mfa"]["region"] == "us-west-2"
+        assert not config_ini.has_section("aws-annoying:mfa")
     else:
         snapshot.assert_match(aws_config.read_text(), "aws_config.ini")
 
@@ -86,6 +91,7 @@ def test_load_existing_config(snapshot: Snapshot, tmp_path: Path) -> None:
         mfa_profile=mfa_profile,
         mfa_source_profile="default",
         mfa_serial_number="1234567890",
+        mfa_region="us-west-2",
     ).save_ini_file(aws_config, "aws-annoying:mfa")
 
     # Act
@@ -139,6 +145,8 @@ def test_dry_run(snapshot: Snapshot, tmp_path: Path) -> None:
             mfa_profile,
             "--mfa-source-profile",
             "default",
+            "--mfa-region",
+            "us-west-2",
             "--mfa-serial-number",
             "1234567890",
             "--mfa-token-code",
