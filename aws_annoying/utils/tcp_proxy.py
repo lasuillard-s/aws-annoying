@@ -2,8 +2,54 @@ from __future__ import annotations
 
 import contextlib
 import socket
-import sys
 import threading
+
+
+class TCPProxy:
+    """A TCP proxy forwarding traffic from a local host and port to a target host and port."""
+
+    def __init__(self, listen_host: str, listen_port: int, target_host: str, target_port: int) -> None:  # noqa: D107
+        self.listen_host = listen_host
+        self.listen_port = listen_port
+        self.target_host = target_host
+        self.target_port = target_port
+
+        self._server: socket.socket | None = None
+        self._thread: threading.Thread | None = None
+        self._running = False
+
+    def start(self) -> None:
+        """Start the proxy server in a background thread."""
+        self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._server.bind((self.listen_host, self.listen_port))
+        self._server.listen(128)
+
+        self._running = True
+
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def _run(self) -> None:
+        while self._running and self._server:
+            try:
+                client, _ = self._server.accept()
+                t = threading.Thread(
+                    target=_handle_client,
+                    args=(client, self.target_host, self.target_port),
+                    daemon=True,
+                )
+                t.start()
+            except OSError:  # noqa: PERF203
+                break
+
+    def stop(self) -> None:
+        """Stop the proxy server."""
+        self._running = False
+        if self._server:
+            with contextlib.suppress(OSError):
+                self._server.close()
+            self._server = None
 
 
 def _forward(src: socket.socket, dst: socket.socket) -> None:
@@ -33,33 +79,3 @@ def _handle_client(client_socket: socket.socket, target_host: str, target_port: 
     t2 = threading.Thread(target=_forward, args=(remote_socket, client_socket), daemon=True)
     t1.start()
     t2.start()
-
-
-def start_proxy(listen_host: str, listen_port: int, target_host: str, target_port: int) -> None:
-    """Start a TCP proxy forwarding traffic from listen_host:listen_port to target_host:target_port.
-
-    Args:
-        listen_host: Host address to bind to.
-        listen_port: Port to listen on.
-        target_host: Destination host address.
-        target_port: Destination port.
-    """
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind((listen_host, listen_port))
-    server.listen(128)
-
-    while True:
-        try:
-            client, _ = server.accept()
-            t = threading.Thread(target=_handle_client, args=(client, target_host, target_port), daemon=True)
-            t.start()
-        except (KeyboardInterrupt, OSError):  # noqa: PERF203
-            break
-
-    server.close()
-
-
-if __name__ == "__main__":
-    if len(sys.argv) == 5:  # noqa: PLR2004
-        start_proxy(sys.argv[1], int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))

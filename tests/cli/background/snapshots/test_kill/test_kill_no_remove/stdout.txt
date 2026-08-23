@@ -1,0 +1,2 @@
+⚠️ Terminating running process with PID <dummy_pid>.
+🔔 Terminated the background process successfully.

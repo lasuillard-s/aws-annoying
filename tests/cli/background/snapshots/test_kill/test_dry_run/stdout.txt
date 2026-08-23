@@ -1,0 +1,4 @@
+⚠️ Dry run mode enabled. Some operation may behave differently to avoid making changes.
+⚠️ Terminating running process with PID <dummy_pid>.
+🔔 Removed the PID file <tmp_path>/valid.pid.
+🔔 Terminated the background process successfully.

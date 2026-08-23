@@ -69,7 +69,7 @@ def use_moto(monkeypatch: pytest.MonkeyPatch, aws_credentials: None) -> Iterator
 @pytest.fixture(scope="module")
 def moto_server() -> Iterator[str]:
     """Run a Moto server for AWS mocking."""
-    server = ThreadedMotoServer()
+    server = ThreadedMotoServer(port=0)
     server.start()
     host, port = server.get_host_and_port()
     yield f"http://{host}:{port}"
