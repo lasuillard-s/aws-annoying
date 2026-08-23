@@ -1,3 +1,3 @@
-🔔 Starting background process: /workspaces/aws-annoying/.worktrees/25-non-localhost-forwarding/.venv/bin/python -m aws_annoying.cli.main ecs task-definition-lifecycle --family my-task --keep-latest 1
+🔔 Starting background process: <BASE_DIR>/.venv/bin/python -m aws_annoying.cli.main ecs task-definition-lifecycle --family my-task --keep-latest 1
 🔔 Process started with PID <pid>. Outputs will be logged to <tmp_path>/background.log.
 🔔 PID file written to <tmp_path>/test.pid.
