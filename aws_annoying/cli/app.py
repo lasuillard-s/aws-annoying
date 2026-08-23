@@ -11,8 +11,6 @@ from rich.console import Console
 from rich.highlighter import ReprHighlighter
 from rich.theme import Theme
 
-logger = logging.getLogger(__name__)
-
 app = typer.Typer(
     pretty_exceptions_short=True,
     pretty_exceptions_show_locals=False,
@@ -32,7 +30,6 @@ def show_version(value: Optional[bool]) -> None:  # noqa: FBT001
 
 @app.callback()
 def main(  # noqa: D103
-    ctx: typer.Context,
     *,
     version: Optional[bool] = typer.Option(  # noqa: ARG001
         None,
@@ -48,10 +45,6 @@ def main(  # noqa: D103
     verbose: bool = typer.Option(
         False,  # noqa: FBT003
         help="Enable verbose outputs.",
-    ),
-    dry_run: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Enable dry-run mode. If enabled, certain commands will avoid making changes.",
     ),
 ) -> None:
     log_level = logging.DEBUG if verbose else logging.INFO
@@ -90,11 +83,6 @@ def main(  # noqa: D103
         logging_config["loggers"]["aws_annoying"]["level"] = logging.CRITICAL
 
     logging.config.dictConfig(logging_config)
-
-    # Global flags
-    ctx.meta["dry_run"] = dry_run
-    if dry_run:
-        logger.warning("Dry run mode enabled. Some operation may behave differently to avoid making changes.")
 
 
 def _get_console() -> Console:

@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
-    ctx: typer.Context,
     *,
     # TODO(lasuillard): Add `--local-host` option, redirect the traffic to non-localhost bind (unsupported by AWS)
     local_port: int = typer.Option(
@@ -72,7 +71,6 @@ def port_forward(  # noqa: PLR0913
     - `ec2:DescribeInstances`
     - `ssm:StartSession`
     """
-    dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
     # Check if the PID file already exists
@@ -126,17 +124,14 @@ def port_forward(  # noqa: PLR0913
         through,
         reason,
     )
-    if not dry_run:
-        proc = subprocess.Popen(  # noqa: S603
-            command,
-            stdout=stdout,
-            stderr=subprocess.STDOUT,
-            text=True,
-            close_fds=False,  # FD inherited from parent process
-        )
-        pid = proc.pid
-    else:
-        pid = -1
+    proc = subprocess.Popen(  # noqa: S603
+        command,
+        stdout=stdout,
+        stderr=subprocess.STDOUT,
+        text=True,
+        close_fds=False,  # FD inherited from parent process
+    )
+    pid = proc.pid
 
     logger.info(
         "Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
@@ -145,7 +140,6 @@ def port_forward(  # noqa: PLR0913
     )
 
     # Write the PID to the file
-    if not dry_run:
-        pid_file.write_text(str(pid))
+    pid_file.write_text(str(pid))
 
     logger.info("PID file written to %s.", pid_file.absolute())

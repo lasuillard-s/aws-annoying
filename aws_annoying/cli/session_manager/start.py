@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 @session_manager_app.command()
 def start(
-    ctx: typer.Context,
     *,
     target: str = typer.Option(
         ...,
@@ -40,7 +39,6 @@ def start(
     - `ec2:DescribeInstances`
     - `ssm:StartSession`
     """
-    dry_run = ctx.meta["dry_run"]
     session_manager = SessionManager()
 
     # Resolve the instance name or ID
@@ -64,5 +62,4 @@ def start(
         parameters={},
         reason=reason,
     )
-    if not dry_run:
-        os.execvp(command[0], command)  # noqa: S606
+    os.execvp(command[0], command)  # noqa: S606

@@ -47,7 +47,6 @@ def _validate_json_str(ctx: typer.Context, param: typer.CallbackParam, value: Op
 
 @ec2_app.command()
 def wait_for_ready(  # noqa: PLR0913
-    ctx: typer.Context,
     *,
     instance_id: str = typer.Option(
         ...,
@@ -92,8 +91,6 @@ def wait_for_ready(  # noqa: PLR0913
     - `ssm:SendCommand`
     - `ssm:GetCommandInvocation`
     """
-    dry_run = ctx.meta.get("dry_run", False)
-
     # Check if the provided instance ID is valid
     if not is_valid_instance_id(instance_id):
         logger.error("Invalid EC2 instance ID '%s'", instance_id)
@@ -104,7 +101,7 @@ def wait_for_ready(  # noqa: PLR0913
         document_name is not None and document_parameters is None
     ):
         msg = "Both --document-name and --document-parameters must be provided together."
-        raise typer.BadParameter(msg, ctx, param=None)
+        raise typer.BadParameter(msg)
 
     # Determine the appropriate checker function based on platform choice or custom SSM document
     checker: InstanceChecker
@@ -123,17 +120,16 @@ def wait_for_ready(  # noqa: PLR0913
                 checker = make_ssm_checker("AWS-RunPowerShellScript", {"commands": ["Write-Output 'ready'"]})
             case _:
                 msg = f"Unsupported platform choice: {platform}"
-                raise typer.BadParameter(msg, ctx, param=None)
+                raise typer.BadParameter(msg)
 
     # Start waiting for the instance to be ready using the selected checker
     try:
-        if not dry_run:
-            wait_for_instance_ready(
-                instance_id=instance_id,
-                checker=checker,
-                max_attempts=max_attempts,
-                delay=delay,
-            )
+        wait_for_instance_ready(
+            instance_id=instance_id,
+            checker=checker,
+            max_attempts=max_attempts,
+            delay=delay,
+        )
     except (InvalidInstanceIdError, InstanceNotFoundError, InstanceNotReadyError) as err:
         logger.error("Failed waiting for instance to be ready: %s", err)  # noqa: TRY400
         raise typer.Exit(1) from err
