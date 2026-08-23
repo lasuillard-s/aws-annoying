@@ -19,4 +19,7 @@ def normalize_console_output(output: str, *, replace: dict[str, str] | None = No
     # Handle Windows path separator
     output = output.replace("\\", "/")
 
+    # Strip ANSI escape sequences (e.g. color codes)
+    output = re.sub(r"\x1b\[[0-9;]*m", "", output)
+
     return output  # noqa: RET504
