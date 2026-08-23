@@ -17,15 +17,16 @@ runner = CliRunner()
 
 
 @pytest.fixture
-def set_terminal_width() -> int:
+def terminal_width() -> int:
     """Set console width."""
     return 200
 
 
 @pytest.fixture(autouse=True)
-def patch_terminal_width(monkeypatch: pytest.MonkeyPatch, set_terminal_width: int) -> None:
+def set_terminal_preferences(monkeypatch: pytest.MonkeyPatch, terminal_width: int) -> None:
     """Patch the console width."""
-    monkeypatch.setenv("COLUMNS", str(set_terminal_width))
+    monkeypatch.setenv("COLUMNS", str(terminal_width))
+    monkeypatch.setenv("NO_COLOR", "1")
 
 
 # AWS
