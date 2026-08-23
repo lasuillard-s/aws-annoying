@@ -52,7 +52,6 @@ def run(
                     ...
             ```
     """
-    dry_run = ctx.meta.get("dry_run", False)
     command = ctx.args
 
     if not command:
@@ -68,19 +67,16 @@ def run(
             logger.error("PID file already exists: %s", pid_file)
             raise typer.Exit(1)
 
-        terminate_process_by_pid_file(pid_file, dry_run=dry_run, clear=True)
+        terminate_process_by_pid_file(pid_file, clear=True)
 
-    stdout = log_file.open(mode="at+", buffering=1) if not dry_run else subprocess.DEVNULL
+    stdout = log_file.open(mode="at+", buffering=1)
     logger.info("Starting background process: %s", " ".join(command))
-    if not dry_run:
-        pid = _spawn_process(command, stdout)
-        if hasattr(stdout, "close"):
-            stdout.close()
-    else:
-        pid = -1
+    pid = _spawn_process(command, stdout)
+    if hasattr(stdout, "close"):
+        stdout.close()
 
     logger.info("Process started with PID %d. Outputs will be logged to %s.", pid, log_file.absolute())
-    if not dry_run and pid_file is not None:
+    if pid_file is not None:
         pid_file.write_text(str(pid))
         logger.info("PID file written to %s.", pid_file.absolute())
 

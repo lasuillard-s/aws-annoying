@@ -37,40 +37,6 @@ def test_no_command(snapshot: Snapshot) -> None:
     assert result.stderr == ""
 
 
-def test_dry_run(snapshot: Snapshot, tmp_path: Path) -> None:
-    # Arrange
-    pid_file = tmp_path / "test.pid"
-    log_file = tmp_path / "test.log"
-
-    # Act
-    result = runner.invoke(
-        app,
-        [
-            "--dry-run",
-            "background",
-            "run",
-            "--pid-file",
-            str(pid_file),
-            "--log-file",
-            str(log_file),
-            "--",
-            "ecs",
-            "task-definition-lifecycle",
-            "--family",
-            "my-task",
-        ],
-    )
-
-    # Assert
-    assert result.exit_code == 0
-    assert not pid_file.exists()
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={str(tmp_path): "<tmp_path>"}),
-        "stdout.txt",
-    )
-    assert result.stderr == ""
-
-
 def test_run_command(snapshot: Snapshot, tmp_path: Path) -> None:
     # Arrange
     ecs = boto3.client("ecs")

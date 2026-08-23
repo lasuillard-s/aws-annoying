@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 def terminate_process_by_pid_file(
     pid_file: Path,
     *,
-    dry_run: bool = False,
     remove: bool = False,
     clear: bool = False,
 ) -> None:
@@ -24,7 +23,6 @@ def terminate_process_by_pid_file(
 
     Args:
         pid_file: Path to the PID file.
-        dry_run: If True, do not actually terminate the process or modify files.
         remove: If True, remove the PID file after termination.
         clear: If True, clear the content of the PID file after termination.
     """
@@ -40,8 +38,7 @@ def terminate_process_by_pid_file(
 
     try:
         logger.warning("Terminating running process with PID %d.", pid)
-        if not dry_run:
-            os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGTERM)
     except ProcessLookupError:
         logger.warning("Tried to terminate process with PID %d but does not exist.", pid)
     finally:
@@ -50,5 +47,4 @@ def terminate_process_by_pid_file(
 
     if remove:
         logger.info("Removed the PID file %s.", pid_file)
-        if not dry_run:
-            pid_file.unlink()
+        pid_file.unlink()

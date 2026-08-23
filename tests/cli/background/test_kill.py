@@ -136,28 +136,3 @@ def test_kill_no_remove(snapshot: Snapshot, tmp_path: Path, dummy_process: subpr
         "stdout.txt",
     )
     assert result.stderr == ""
-
-
-def test_dry_run(snapshot: Snapshot, tmp_path: Path, dummy_process: subprocess.Popen[bytes]) -> None:
-    # Arrange
-    pid_file = tmp_path / "valid.pid"
-    pid_file.write_text(str(dummy_process.pid))
-
-    # Act
-    result = runner.invoke(app, ["--dry-run", "background", "kill", "--pid-file", str(pid_file)])
-
-    # Assert
-    assert result.exit_code == 0
-    assert dummy_process.poll() is None
-    assert pid_file.exists()
-    snapshot.assert_match(
-        normalize_console_output(
-            result.stdout,
-            replace={
-                str(tmp_path): "<tmp_path>",
-                str(dummy_process.pid): "<dummy_pid>",
-            },
-        ),
-        "stdout.txt",
-    )
-    assert result.stderr == ""

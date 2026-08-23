@@ -1,4 +1,0 @@
-⚠️ Dry run mode enabled. Some operation may behave differently to avoid making changes.
-🔔 Instance ID resolved: <instance_id>
-🔔 Starting port forwarding session through my-instance with reason: 'Testing port forwarding'.
-🔔 TCP Proxy would start on 0.0.0.0:8080 -> 127.0.0.1:54321

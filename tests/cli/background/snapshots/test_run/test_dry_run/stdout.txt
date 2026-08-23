@@ -1,3 +1,0 @@
-⚠️ Dry run mode enabled. Some operation may behave differently to avoid making changes.
-🔔 Starting background process: /workspaces/aws-annoying/.worktrees/25-non-localhost-forwarding/.venv/bin/python -m aws_annoying.cli.main ecs task-definition-lifecycle --family my-task
-🔔 Process started with PID -1. Outputs will be logged to <tmp_path>/test.log.

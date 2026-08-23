@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 @background_app.command()
 def kill(
-    ctx: typer.Context,
     *,
     pid_file: Path = typer.Option(  # noqa: B008
         Path("./background.pid"),
@@ -25,12 +24,10 @@ def kill(
     ),
 ) -> None:
     """Terminate running background process for PID file."""
-    dry_run = ctx.meta.get("dry_run", False)
-
     # Check if PID file exists
     if not pid_file.is_file():
         logger.error("PID file not found: %s", pid_file)
         raise typer.Exit(1)
 
-    terminate_process_by_pid_file(pid_file, dry_run=dry_run, remove=remove)
+    terminate_process_by_pid_file(pid_file, remove=remove)
     logger.info("Terminated the background process successfully.")
