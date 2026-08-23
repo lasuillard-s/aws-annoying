@@ -34,7 +34,7 @@ lint:
 
 # Run all tests
 test:
-    uv run pytest
+    uv run pytest --snapshot-update
 
 # Apply autofixes
 fix:
