@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 runner = CliRunner()
 
 pytestmark = [
+    pytest.mark.cli,
     pytest.mark.integration,
     pytest.mark.usefixtures("use_localstack"),
     pytest.mark.docker,

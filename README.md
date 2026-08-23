@@ -15,10 +15,10 @@ Utilities to handle annoying AWS tasks.
 
 ## 🚀 Quick start
 
-It is recommended to use [pipx](https://pipx.pypa.io/stable/) to install `aws-annoying` CLI:
+It is recommended to use [pipx](https://pipx.pypa.io/stable/) to run or install `aws-annoying` CLI:
 
 ```bash
-$ TYPER_USE_RICH=0 pipx run aws-annoying --help
+$ TYPER_USE_RICH=0 pipx run "aws-annoying[cli]" --help
 Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -39,7 +39,7 @@ Commands:
   session-manager  AWS Session Manager CLI utilities.
 ```
 
-You can also install the package via `pip` if you want to use its utility functions:
+Or install the package via `pip` to install only the library then import it in your code (`aws_annoying` package) without CLI dependencies:
 
 ```bash
 $ pip install aws-annoying

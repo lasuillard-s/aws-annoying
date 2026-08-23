@@ -90,7 +90,7 @@ def wait_for_deployment(  # noqa: PLR0913
 
       - name: Wait for deployment complete
         run: |
-          pipx run aws-annoying \
+          pipx run "aws-annoying[cli]" \
             --verbose \
             ecs wait-for-deployment \
               --cluster '${{ vars.AWS_ECS_CLUSTER }}' \

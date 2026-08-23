@@ -33,6 +33,7 @@ dev = [
   "types-requests==2.33.0.20260712",
   "coverage==7.15.2",
   "moto[secretsmanager,server,ssm,ecs]==5.2.2",
+  "nox==2026.8.17",
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
   "pytest-env==1.7.0",
@@ -114,6 +115,7 @@ markers = [
   "unit: Isolated unit tests",
   "integration: Integration tests",
   "docker: Tests that require Docker to run",
+  "cli: Tests that require CLI extra dependencies",
 ]
 
 [tool.coverage.run]
