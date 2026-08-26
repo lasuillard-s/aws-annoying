@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 runner = CliRunner()
 
 pytestmark = [
-    pytest.mark.integration,
+    pytest.mark.unit,
 ]
 
 
