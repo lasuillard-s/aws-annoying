@@ -18,10 +18,17 @@ def pytest_ignore_collect(collection_path: Path, config: pytest.Config) -> bool 
     try:
         import typer  # noqa: F401, PLC0415
     except ImportError:
-        if "tests/_cli" in str(collection_path) or collection_path.name == "_cli":
+        if "_cli" in collection_path.parts:
             return True
 
     return None
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Automatically add the 'cli' marker to all tests under tests/_cli/."""
+    for item in items:
+        if "_cli" in item.path.parts:
+            item.add_marker(pytest.mark.cli)
 
 
 @pytest.fixture

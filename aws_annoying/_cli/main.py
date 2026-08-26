@@ -1,4 +1,3 @@
-# ruff: noqa: F401
 from __future__ import annotations
 
 import sys
@@ -8,14 +7,15 @@ if TYPE_CHECKING:
     from .app import app
 
 try:
-    import aws_annoying._cli.ecs
-    import aws_annoying._cli.load_variables
-    import aws_annoying._cli.mfa
-    import aws_annoying._cli.session_manager
-
-    from .app import app
+    import typer  # noqa: F401
 except ImportError:
     app = None  # type: ignore[assignment]
+else:
+    from . import ecs as _ecs  # noqa: F401
+    from . import load_variables as _load_variables  # noqa: F401
+    from . import mfa as _mfa  # noqa: F401
+    from . import session_manager as _session_manager  # noqa: F401
+    from .app import app
 
 __all__ = ("app", "entrypoint")
 
@@ -24,6 +24,7 @@ def entrypoint() -> None:
     """Run the CLI application or exit with an error message if CLI dependencies are not installed."""
     if app is None:
         sys.exit("Error: CLI dependencies are missing. Please install or run with the 'cli' extra.")
+
     app()
 
 

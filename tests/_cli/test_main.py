@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import builtins
+import importlib
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -32,3 +35,23 @@ def test_entrypoint_missing_dependencies(monkeypatch: pytest.MonkeyPatch) -> Non
     # Act & Assert
     with pytest.raises(SystemExit, match="CLI dependencies are missing"):
         main.entrypoint()
+
+
+def test_main_import_without_typer(monkeypatch: pytest.MonkeyPatch) -> None:
+    """When typer cannot be imported, main.app is set to None."""
+    orig_import = builtins.__import__
+
+    def mock_import(name: str, *args: Any, **kwargs: Any) -> Any:
+        if name == "typer":
+            msg = "No module named 'typer'"
+            raise ImportError(msg)
+
+        return orig_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mock_import)
+    reloaded = importlib.reload(main)
+    try:
+        assert reloaded.app is None
+    finally:
+        monkeypatch.undo()
+        importlib.reload(main)

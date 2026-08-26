@@ -13,8 +13,6 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = [
-  "pydantic>=2,<3",
-  "tqdm>=4,<5",
   "typer>=0,<1",
 ]
 
@@ -73,7 +71,7 @@ ignore = [
   "FIX",
   "TD003",
   "UP007",  # Available in Python 3.10+
-  "UP045",  # Typer and pydantic may not work well with newer typing syntaxes, especially for union types
+  "UP045",  # Typer may not work well with newer typing syntaxes, especially for union types
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
