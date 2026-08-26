@@ -268,15 +268,16 @@ def _select_ecs_container_in_task(ecs: ECSClient, cluster_arn: str, task_arn: st
     Returns:
         The container runtime ID, or None if cancelled.
     """
+    task_name = task_arn.rsplit("/", maxsplit=1)[-1]
     task_details = ecs.describe_tasks(cluster=cluster_arn, tasks=[task_arn])
     tasks = task_details.get("tasks", [])
     if not tasks:
-        logger.warning("ECS task '%s' not found.", task_arn.rsplit("/", maxsplit=1)[-1])
+        logger.warning("ECS task '%s' not found.", task_name)
         return None
 
     containers = tasks[0].get("containers", [])
     if not containers:
-        logger.warning("No containers found in task '%s'.", task_arn.rsplit("/", maxsplit=1)[-1])
+        logger.warning("No containers found in task '%s'.", task_name)
         return None
 
     container_choices: list[tuple[str, str]] = []
