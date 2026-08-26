@@ -245,7 +245,7 @@ def _select_ecs_task(ecs: ECSClient, cluster_arn: str, service_arn: str) -> str 
 
     tasks: list[str] = []
     task_paginator = ecs.get_paginator("list_tasks")
-    for page in task_paginator.paginate(cluster=cluster_arn, serviceName=service_arn):
+    for page in task_paginator.paginate(cluster=cluster_arn, serviceName=service_name):
         tasks.extend(page.get("taskArns", []))
 
     if not tasks:
@@ -269,7 +269,12 @@ def _select_ecs_container_in_task(ecs: ECSClient, cluster_arn: str, task_arn: st
         The container runtime ID, or None if cancelled.
     """
     task_details = ecs.describe_tasks(cluster=cluster_arn, tasks=[task_arn])
-    containers = task_details["tasks"][0].get("containers", [])
+    tasks = task_details.get("tasks", [])
+    if not tasks:
+        logger.warning("ECS task '%s' not found.", task_arn.rsplit("/", maxsplit=1)[-1])
+        return None
+
+    containers = tasks[0].get("containers", [])
     if not containers:
         logger.warning("No containers found in task '%s'.", task_arn.rsplit("/", maxsplit=1)[-1])
         return None
@@ -322,7 +327,7 @@ def _prompt_select(
         def _on_escape(event: KeyPressEvent) -> None:
             event.app.exit(result=None)
 
-    result: T | None = q.unsafe_ask()
+    result: T | None = q.ask()
     if result is None and not allow_back:
         raise typer.Exit(1)
 
