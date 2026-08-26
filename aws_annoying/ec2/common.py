@@ -8,7 +8,7 @@ import botocore.exceptions
 
 from .errors import InstanceNotFoundError
 
-INSTANCE_ID_PATTERN = re.compile(r"^m?i-[0-9a-zA-Z]+$")
+INSTANCE_ID_PATTERN = re.compile(r"^(?:i|mi)-[0-9a-fA-F]{8,17}$")
 
 
 def is_valid_instance_id(instance_id: str) -> bool:

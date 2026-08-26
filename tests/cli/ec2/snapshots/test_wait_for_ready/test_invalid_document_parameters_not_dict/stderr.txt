@@ -1,5 +1,5 @@
 Usage: root ec2 wait-for-ready [OPTIONS]
 Try 'root ec2 wait-for-ready --help' for help.
 ╭─ Error ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ Invalid value: Both --document-name and --document-parameters must be provided together.                                                                                                             │
+│ Invalid value for '--document-parameters': Parameters must be a JSON object (key-value mapping)                                                                                                      │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯

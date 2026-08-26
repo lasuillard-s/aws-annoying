@@ -5,11 +5,20 @@ import time
 from typing import Any, Optional, Protocol
 
 import boto3
+import botocore.exceptions
 
 from .common import is_valid_instance_id
 from .errors import InstanceNotReadyError, InvalidInstanceIdError
 
 logger = logging.getLogger(__name__)
+
+# Set of SSM error codes that are considered transient and may resolve on retry.
+_TRANSIENT_SSM_ERROR_CODES = frozenset(
+    {
+        "InvalidInstanceId",
+        "InvocationDoesNotExist",
+    }
+)
 
 
 class InstanceChecker(Protocol):
@@ -23,7 +32,6 @@ class InstanceChecker(Protocol):
         session: Optional[boto3.session.Session] = None,
     ) -> bool:
         """Check if an instance is ready."""
-        ...
 
 
 def wait_for_instance_ready(
@@ -59,12 +67,9 @@ def wait_for_instance_ready(
     logger.info("Waiting for instance %s to be ready...", instance_id)
     for attempt in range(max_attempts):
         logger.info("Attempt %d/%d...", attempt + 1, max_attempts)
-        try:
-            if checker(instance_id, session=session):
-                logger.info("Instance %s is ready.", instance_id)
-                return True
-        except Exception as err:  # noqa: BLE001
-            logger.debug("Attempt %d/%d failed with error: %s", attempt + 1, max_attempts, err)
+        if checker(instance_id, session=session):
+            logger.info("Instance %s is ready.", instance_id)
+            return True
 
         if attempt < max_attempts - 1:
             time.sleep(delay)
@@ -98,8 +103,13 @@ def make_ssm_checker(
                 InstanceId=instance_id,
             )
             return invocation.get("Status") == "Success" and invocation.get("ResponseCode") == 0
-        except Exception as err:  # noqa: BLE001
-            logger.debug("SSM command check failed on instance %s: %s", instance_id, err)
-            return False
+        except botocore.exceptions.ClientError as err:
+            error_code = err.response.get("Error", {}).get("Code", "")
+            if error_code in _TRANSIENT_SSM_ERROR_CODES:
+                logger.debug("SSM command check transient error on instance %s: %s", instance_id, err)
+                return False
+
+            logger.debug("SSM command check failed with non-transient error on instance %s: %s", instance_id, err)
+            raise
 
     return _checker

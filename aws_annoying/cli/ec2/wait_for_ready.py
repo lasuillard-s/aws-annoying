@@ -32,15 +32,19 @@ class PlatformChoice(str, Enum):
 
 
 def _validate_json_str(ctx: typer.Context, param: typer.CallbackParam, value: Optional[str]) -> Any:
-    """Validate if the provided string is a valid JSON string."""
+    """Validate if the provided string is a valid JSON object string."""
     if value is None:
         return value
 
     try:
-        json.loads(value)
+        parsed = json.loads(value)
     except json.JSONDecodeError as err:
         msg = "Failed to parse JSON argument"
         raise typer.BadParameter(msg, ctx, param) from err
+
+    if not isinstance(parsed, dict):
+        msg = "Parameters must be a JSON object (key-value mapping)"
+        raise typer.BadParameter(msg, ctx, param)
 
     return value
 
@@ -64,11 +68,13 @@ def wait_for_ready(  # noqa: PLR0913
     max_attempts: int = typer.Option(
         10,
         "--max-attempts",
+        min=1,
         help="Maximum number of attempts to check instance status.",
     ),
     delay: float = typer.Option(
         30.0,
         "--delay",
+        min=0.0,
         help="Delay in seconds between attempts.",
     ),
     document_name: Optional[str] = typer.Option(
@@ -113,14 +119,10 @@ def wait_for_ready(  # noqa: PLR0913
             detected = detect_instance_platform(instance_id)
             platform = PlatformChoice.WINDOWS if detected == "windows" else PlatformChoice.LINUX
 
-        match platform:
-            case PlatformChoice.LINUX:
-                checker = make_ssm_checker("AWS-RunShellScript", {"commands": ["echo 'ready'"]})
-            case PlatformChoice.WINDOWS:
-                checker = make_ssm_checker("AWS-RunPowerShellScript", {"commands": ["Write-Output 'ready'"]})
-            case _:
-                msg = f"Unsupported platform choice: {platform}"
-                raise typer.BadParameter(msg)
+        if platform == PlatformChoice.WINDOWS:
+            checker = make_ssm_checker("AWS-RunPowerShellScript", {"commands": ["Write-Output 'ready'"]})
+        else:
+            checker = make_ssm_checker("AWS-RunShellScript", {"commands": ["echo 'ready'"]})
 
     # Start waiting for the instance to be ready using the selected checker
     try:

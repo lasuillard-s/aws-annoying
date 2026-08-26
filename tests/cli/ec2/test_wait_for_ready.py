@@ -59,7 +59,26 @@ def test_invalid_document_parameters_json(snapshot: Snapshot) -> None:
     snapshot.assert_match(normalize_console_output(result.stderr), "stderr.txt")
 
 
-def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
+def test_document_name_without_parameters() -> None:
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "ec2",
+            "wait-for-ready",
+            "--instance-id",
+            "i-0123456789abcdef0",
+            "--document-name",
+            "AWS-RunShellScript",
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 2
+    assert "Both --document-name and --document-parameters must be provided together." in result.stderr
+
+
+def test_document_parameters_without_name() -> None:
     # Act
     result = runner.invoke(
         app,
@@ -69,6 +88,27 @@ def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
             "--instance-id",
             "i-0123456789abcdef0",
             "--document-parameters",
+            '{"commands": ["echo ready"]}',
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 2
+    assert "Both --document-name and --document-parameters must be provided together." in result.stderr
+
+
+def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "ec2",
+            "wait-for-ready",
+            "--instance-id",
+            "i-0123456789abcdef0",
+            "--document-name",
+            "AWS-RunShellScript",
+            "--document-parameters",
             '["not", "a", "dict"]',
         ],
     )
@@ -77,6 +117,74 @@ def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
     assert result.exit_code == 2
     assert result.stdout == ""
     snapshot.assert_match(normalize_console_output(result.stderr), "stderr.txt")
+
+
+@pytest.mark.parametrize(
+    "invalid_parameters",
+    [
+        "null",
+        "123",
+        '"a string"',
+        "true",
+    ],
+)
+def test_invalid_document_parameters_non_dict_types(invalid_parameters: str) -> None:
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "ec2",
+            "wait-for-ready",
+            "--instance-id",
+            "i-0123456789abcdef0",
+            "--document-name",
+            "AWS-RunShellScript",
+            "--document-parameters",
+            invalid_parameters,
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 2
+    assert "Parameters must be a JSON object (key-value mapping)" in result.stderr
+
+
+def test_invalid_max_attempts_bound() -> None:
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "ec2",
+            "wait-for-ready",
+            "--instance-id",
+            "i-0123456789abcdef0",
+            "--max-attempts",
+            "0",
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 2
+    assert "Invalid value for '--max-attempts': 0 is not in the range x>=1." in result.stderr
+
+
+def test_invalid_delay_bound() -> None:
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "ec2",
+            "wait-for-ready",
+            "--instance-id",
+            "i-0123456789abcdef0",
+            "--delay",
+            "-1",
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 2
+    assert "Invalid value for '--delay': -1.0 is not in the range x>=0.0." in result.stderr
 
 
 def test_wait_for_ready_success_auto(snapshot: Snapshot) -> None:

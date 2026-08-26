@@ -193,22 +193,19 @@ class Test_wait_for_instance_ready:
                 checker=mock_checker,
             )
 
-    def test_wait_checker_raises_exception_retried(self) -> None:
+    def test_wait_checker_raises_exception_propagates(self) -> None:
         # Arrange
-        mock_checker = mock.MagicMock(side_effect=[RuntimeError("Transient network glitch"), True])
+        mock_checker = mock.MagicMock(side_effect=RuntimeError("Non-retryable error"))
 
-        # Act
-        with mock.patch("time.sleep"):
-            result = wait_for_instance_ready(
+        # Act & Assert
+        with mock.patch("time.sleep"), pytest.raises(RuntimeError, match=r"Non-retryable error"):
+            wait_for_instance_ready(
                 "i-0123456789abcdef0",
                 max_attempts=3,
                 delay=0.1,
                 checker=mock_checker,
             )
-
-        # Assert
-        assert result is True
-        assert mock_checker.call_count == 2
+        mock_checker.assert_called_once()
 
 
 class Test_make_ssm_checker:
@@ -245,7 +242,61 @@ class Test_make_ssm_checker:
         with mock.patch("time.sleep"), stubber:
             assert checker("i-0123456789abcdef0", session=session) is True
 
-    def test_custom_params_failure(self) -> None:
+    def test_custom_params_transient_failure_returns_false(self) -> None:
+        # Arrange
+        checker = make_ssm_checker("MyCustomDoc", {"commands": ["exit 0"]})
+        session = mock.MagicMock()
+        ssm = boto3.client("ssm", region_name="us-east-1")
+        session.client.return_value = ssm
+
+        stubber = Stubber(ssm)
+        stubber.add_client_error(
+            "send_command",
+            service_error_code="InvalidInstanceId",
+            service_message="Instance is not in valid state",
+            expected_params={
+                "InstanceIds": ["i-0123456789abcdef0"],
+                "DocumentName": "MyCustomDoc",
+                "Parameters": {"commands": ["exit 0"]},
+            },
+        )
+
+        # Act & Assert
+        with stubber:
+            assert checker("i-0123456789abcdef0", session=session) is False
+
+    def test_custom_params_invocation_does_not_exist_returns_false(self) -> None:
+        # Arrange
+        checker = make_ssm_checker("MyCustomDoc", {"commands": ["exit 0"]})
+        session = mock.MagicMock()
+        ssm = boto3.client("ssm", region_name="us-east-1")
+        session.client.return_value = ssm
+
+        stubber = Stubber(ssm)
+        stubber.add_response(
+            "send_command",
+            {"Command": {"CommandId": "00000000-0000-0000-0000-000000000001"}},
+            expected_params={
+                "InstanceIds": ["i-0123456789abcdef0"],
+                "DocumentName": "MyCustomDoc",
+                "Parameters": {"commands": ["exit 0"]},
+            },
+        )
+        stubber.add_client_error(
+            "get_command_invocation",
+            service_error_code="InvocationDoesNotExist",
+            service_message="Invocation does not exist",
+            expected_params={
+                "CommandId": "00000000-0000-0000-0000-000000000001",
+                "InstanceId": "i-0123456789abcdef0",
+            },
+        )
+
+        # Act & Assert
+        with mock.patch("time.sleep"), stubber:
+            assert checker("i-0123456789abcdef0", session=session) is False
+
+    def test_custom_params_non_transient_failure_raises(self) -> None:
         # Arrange
         checker = make_ssm_checker("MyCustomDoc", {"commands": ["exit 0"]})
         session = mock.MagicMock()
@@ -265,5 +316,5 @@ class Test_make_ssm_checker:
         )
 
         # Act & Assert
-        with stubber:
-            assert checker("i-0123456789abcdef0", session=session) is False
+        with stubber, pytest.raises(botocore.exceptions.ClientError, match=r"Document not found"):
+            checker("i-0123456789abcdef0", session=session)

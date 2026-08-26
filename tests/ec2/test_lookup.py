@@ -17,25 +17,25 @@ pytestmark = [
 ]
 
 
-class Test_is_valid_instance_id:
-    @pytest.mark.parametrize(
-        ("instance_id", "expected"),
-        [
-            ("i-12345678", True),
-            ("i-0123456789abcdef0", True),
-            ("i-1a2b3c4d5e6f7a8b9", True),
-            ("i-AbCdEf0123456789", True),
-            ("mi-0123456789abcdef0", True),
-            ("mi-12345678", True),
-            ("my-instance", False),
-            ("i-", False),
-            ("", False),
-            ("vol-0123456789abcdef0", False),
-        ],
-    )
-    def test_validation(self, instance_id: str, *, expected: bool) -> None:
-        # Act & Assert
-        assert is_valid_instance_id(instance_id) is expected
+def test_is_valid_instance_id() -> None:
+    # Valid instance IDs
+    assert is_valid_instance_id("i-12345678")
+    assert is_valid_instance_id("i-0123456789abcdef0")
+    assert is_valid_instance_id("i-1a2b3c4d5e6f7a8b9")
+    assert is_valid_instance_id("i-AbCdEf0123456789")
+    assert is_valid_instance_id("mi-0123456789abcdef0")
+    assert is_valid_instance_id("mi-12345678")
+
+    # Invalid instance IDs
+    assert not is_valid_instance_id("i-z")
+    assert not is_valid_instance_id("i-1234567z")
+    assert not is_valid_instance_id("mi-zzzzzzzz")
+    assert not is_valid_instance_id("i-1234567")
+    assert not is_valid_instance_id("i-0123456789abcdef012")
+    assert not is_valid_instance_id("my-instance")
+    assert not is_valid_instance_id("i-")
+    assert not is_valid_instance_id("")
+    assert not is_valid_instance_id("vol-0123456789abcdef0")
 
 
 class Test_get_instance_id_by_name:
