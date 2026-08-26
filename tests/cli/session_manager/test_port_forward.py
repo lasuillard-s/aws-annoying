@@ -191,7 +191,6 @@ def test_port_forward_exit_code_failure() -> None:
         MaxCount=1,
         TagSpecifications=[{"ResourceType": "instance", "Tags": [{"Key": "Name", "Value": "my-instance"}]}],
     )
-    _instance_id = response["Instances"][0]["InstanceId"]
 
     mock_proc = mock.MagicMock()
     mock_proc.wait.return_value = 42
