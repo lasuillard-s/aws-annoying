@@ -221,8 +221,6 @@ def test_unsupported_resource(snapshot: Snapshot) -> None:
 @pytest.mark.parametrize(
     argnames="arn",
     argvalues=[
-        # TODO(lasuillard): `batch_get_secret_value` does not raise an error if secret does not exist.
-        #                   Consider implementing new flag for strict mode (e.g. `--if-not-exists={error,ignore}`)
         # "arn:aws:secretsmanager:us-east-1:123456789012:secret:unknown-secret", # noqa: ERA001
         "arn:aws:ssm:us-east-1:123456789012:parameter/unknown-parameter",
     ],

@@ -12,9 +12,6 @@ from ._app import session_manager_app
 
 logger = logging.getLogger(__name__)
 
-# TODO(lasuillard): ECS support (#24)
-# TODO(lasuillard): Interactive instance selection
-
 
 @session_manager_app.command()
 def start(
