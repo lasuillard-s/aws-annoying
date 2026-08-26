@@ -184,7 +184,7 @@ def test_port_forward_non_localhost(snapshot: Snapshot) -> None:
 def test_port_forward_exit_code_failure() -> None:
     # Arrange
     ec2 = boto3.client("ec2")
-    response = ec2.run_instances(
+    ec2.run_instances(
         ImageId="ami-12345678",
         InstanceType="t2.micro",
         MinCount=1,
