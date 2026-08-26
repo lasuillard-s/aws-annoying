@@ -188,7 +188,7 @@ def test_invalid_delay_bound() -> None:
 
     # Assert
     assert result.exit_code == 2
-    assert "Invalid value for '--delay': -1.0 is not in the range x>=0.0." in result.stderr
+    assert "Invalid value for '--delay': -1.0 is not in the range x>=0.0." in normalize_console_output(result.stderr)
 
 
 def test_wait_for_ready_success_auto(snapshot: Snapshot) -> None:
