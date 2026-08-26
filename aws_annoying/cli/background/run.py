@@ -67,7 +67,7 @@ def run(
             logger.error("PID file already exists: %s", pid_file)
             raise typer.Exit(1)
 
-        terminate_process_by_pid_file(pid_file, clear=True)
+        terminate_process_by_pid_file(pid_file, remove=True)
 
     stdout = log_file.open(mode="at+", buffering=1)
     logger.info("Starting background process: %s", " ".join(command))

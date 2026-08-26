@@ -60,12 +60,11 @@ def _forward(src: socket.socket, dst: socket.socket) -> None:
                 break
             dst.sendall(data)
     except OSError:
+        # Socket errors (e.g. connection reset or closed during teardown) are expected when closing
         pass
     finally:
         with contextlib.suppress(OSError):
-            src.close()
-        with contextlib.suppress(OSError):
-            dst.close()
+            dst.shutdown(socket.SHUT_WR)
 
 
 def _handle_client(client_socket: socket.socket, target_host: str, target_port: int) -> None:
@@ -77,5 +76,13 @@ def _handle_client(client_socket: socket.socket, target_host: str, target_port: 
 
     t1 = threading.Thread(target=_forward, args=(client_socket, remote_socket), daemon=True)
     t2 = threading.Thread(target=_forward, args=(remote_socket, client_socket), daemon=True)
-    t1.start()
-    t2.start()
+    try:
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+    finally:
+        with contextlib.suppress(OSError):
+            client_socket.close()
+        with contextlib.suppress(OSError):
+            remote_socket.close()

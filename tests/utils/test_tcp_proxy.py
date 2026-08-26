@@ -37,6 +37,7 @@ def _start_echo_server(port: int, stop_event: threading.Event) -> None:
 
 
 def test_tcp_proxy() -> None:
+    """Test basic bi-directional data forwarding between a client and a target server through the TCP proxy."""
     # Arrange
     echo_port = get_free_port()
     proxy_port = get_free_port()
@@ -64,3 +65,81 @@ def test_tcp_proxy() -> None:
         proxy.stop()
         stop_event.set()
         echo_thread.join(timeout=1.0)
+
+
+def test_tcp_proxy_target_unreachable() -> None:
+    """Test that connecting to the proxy when the target server is unreachable closes the client connection cleanly."""
+    # Arrange
+    target_port = get_free_port()
+    proxy_port = get_free_port()
+
+    proxy = TCPProxy("127.0.0.1", proxy_port, "127.0.0.1", target_port)
+    proxy.start()
+    time.sleep(0.05)
+
+    try:
+        # Act & Assert
+        with socket.create_connection(("127.0.0.1", proxy_port), timeout=2.0) as client:
+            # Since target is not running, proxy closes client socket
+            data = client.recv(1024)
+            assert data == b""
+    finally:
+        proxy.stop()
+
+
+def test_tcp_proxy_half_close() -> None:
+    """Test that TCP half-close (SHUT_WR) from client is forwarded, allowing the response to be received."""
+    # Arrange
+    echo_port = get_free_port()
+    proxy_port = get_free_port()
+    stop_event = threading.Event()
+
+    def _read_all_then_reply_server(port: int, stop: threading.Event) -> None:
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind(("127.0.0.1", port))
+        server.listen(1)
+        server.settimeout(0.5)
+
+        while not stop.is_set():
+            try:
+                client, _ = server.accept()
+                chunks = []
+                while True:
+                    buf = client.recv(1024)
+                    if not buf:
+                        break
+                    chunks.append(buf)
+                client.sendall(b"".join(chunks))
+                client.close()
+            except TimeoutError:
+                continue
+            except OSError:
+                break
+
+        server.close()
+
+    server_thread = threading.Thread(target=_read_all_then_reply_server, args=(echo_port, stop_event), daemon=True)
+    server_thread.start()
+    time.sleep(0.05)
+
+    proxy = TCPProxy("127.0.0.1", proxy_port, "127.0.0.1", echo_port)
+    proxy.start()
+    time.sleep(0.05)
+
+    try:
+        with socket.create_connection(("127.0.0.1", proxy_port), timeout=2.0) as client:
+            client.sendall(b"ping")
+            client.shutdown(socket.SHUT_WR)
+            reply = client.recv(1024)
+            assert reply == b"ping"
+    finally:
+        proxy.stop()
+        stop_event.set()
+        server_thread.join(timeout=1.0)
+
+
+def test_tcp_proxy_stop_when_not_started() -> None:
+    """Test that stopping a proxy instance that has not been started succeeds without error."""
+    proxy = TCPProxy("127.0.0.1", 12345, "127.0.0.1", 54321)
+    proxy.stop()  # Should not raise

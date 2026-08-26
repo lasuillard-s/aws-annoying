@@ -179,3 +179,46 @@ def test_port_forward_non_localhost(snapshot: Snapshot) -> None:
             "stdout.txt",
         )
         assert result.stderr == ""
+
+
+def test_port_forward_exit_code_failure() -> None:
+    # Arrange
+    ec2 = boto3.client("ec2")
+    response = ec2.run_instances(
+        ImageId="ami-12345678",
+        InstanceType="t2.micro",
+        MinCount=1,
+        MaxCount=1,
+        TagSpecifications=[{"ResourceType": "instance", "Tags": [{"Key": "Name", "Value": "my-instance"}]}],
+    )
+    _instance_id = response["Instances"][0]["InstanceId"]
+
+    mock_proc = mock.MagicMock()
+    mock_proc.wait.return_value = 42
+
+    with (
+        mock.patch(
+            "aws_annoying.session_manager.SessionManager.build_command",
+            return_value=["session-manager-plugin", "arg1"],
+        ),
+        mock.patch("subprocess.Popen", return_value=mock_proc),
+    ):
+        # Act
+        result = runner.invoke(
+            app,
+            [
+                "session-manager",
+                "port-forward",
+                "--through",
+                "my-instance",
+                "--local-port",
+                "8080",
+                "--remote-host",
+                "10.0.0.1",
+                "--remote-port",
+                "80",
+            ],
+        )
+
+        # Assert
+        assert result.exit_code == 42

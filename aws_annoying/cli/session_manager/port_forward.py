@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import signal
 import subprocess
-import sys
 from typing import Any
 
 import typer
@@ -106,9 +105,12 @@ def port_forward(  # noqa: PLR0913
             ssm_local_port,
         )
 
+    # NOTE: stdout=None inherits the parent process's standard output stream without
+    #       requiring a concrete file descriptor (sys.stdout.fileno()), preventing errors in
+    #       environments where stdout is captured (e.g. pytest or CLI test runners).
     proc = subprocess.Popen(  # noqa: S603
         command,
-        stdout=sys.stdout,
+        stdout=None,
         stderr=subprocess.STDOUT,
         text=True,
     )
@@ -123,7 +125,10 @@ def port_forward(  # noqa: PLR0913
     signal.signal(signal.SIGTERM, handle_signal)
 
     try:
-        proc.wait()
+        return_code = proc.wait()
     finally:
         if proxy is not None:
             proxy.stop()
+
+    if return_code != 0:
+        raise typer.Exit(return_code)

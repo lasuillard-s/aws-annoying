@@ -17,17 +17,19 @@ def terminate_process_by_pid_file(
     pid_file: Path,
     *,
     remove: bool = False,
-    clear: bool = False,
 ) -> None:
     """Terminate the process recorded in the given PID file.
 
     Args:
         pid_file: Path to the PID file.
         remove: If True, remove the PID file after termination.
-        clear: If True, clear the content of the PID file after termination.
     """
     pid_content = pid_file.read_text().strip()
     if not pid_content:
+        if remove:
+            logger.info("Removed the PID file %s.", pid_file)
+            pid_file.unlink()
+
         return
 
     try:
@@ -41,9 +43,6 @@ def terminate_process_by_pid_file(
         os.kill(pid, signal.SIGTERM)
     except ProcessLookupError:
         logger.warning("Tried to terminate process with PID %d but does not exist.", pid)
-    finally:
-        if clear:
-            pid_file.write_text("")
 
     if remove:
         logger.info("Removed the PID file %s.", pid_file)

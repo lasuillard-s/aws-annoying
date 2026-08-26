@@ -136,3 +136,31 @@ def test_kill_no_remove(snapshot: Snapshot, tmp_path: Path, dummy_process: subpr
         "stdout.txt",
     )
     assert result.stderr == ""
+
+
+def test_kill_empty_pid_file(tmp_path: Path) -> None:
+    # Arrange
+    pid_file = tmp_path / "empty.pid"
+    pid_file.write_text("")
+
+    # Act
+    result = runner.invoke(app, ["background", "kill", "--pid-file", str(pid_file)])
+
+    # Assert
+    assert result.exit_code == 0
+    assert not pid_file.exists()
+    assert result.stderr == ""
+
+
+def test_kill_empty_pid_file_no_remove(tmp_path: Path) -> None:
+    # Arrange
+    pid_file = tmp_path / "empty.pid"
+    pid_file.write_text("")
+
+    # Act
+    result = runner.invoke(app, ["background", "kill", "--pid-file", str(pid_file), "--no-remove"])
+
+    # Assert
+    assert result.exit_code == 0
+    assert pid_file.exists()
+    assert result.stderr == ""
