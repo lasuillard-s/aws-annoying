@@ -145,8 +145,8 @@ def _handle_interactive_start() -> str:
                     step = _Step.ECS_TASK
                     continue
 
-                cluster_name = (cluster_arn or "").rsplit("/", maxsplit=1)[-1]
-                task_id = (task_arn or "").rsplit("/", maxsplit=1)[-1]
+                cluster_name = _get_cluster_name(cluster_arn or "")
+                task_id = _get_task_id(task_arn or "")
                 return f"ecs:{cluster_name}_{task_id}_{runtime_id}"
 
 
@@ -200,7 +200,7 @@ def _select_ecs_cluster(ecs: ECSClient) -> str | None:
         return None
 
     logger.debug("Found %d ECS clusters.", len(cluster_arns))
-    cluster_choices = [(arn, (_name := arn.rsplit("/", maxsplit=1)[-1])) for arn in cluster_arns]
+    cluster_choices = [(arn, _get_cluster_name(arn)) for arn in cluster_arns]
     return _prompt_select("Select ECS Cluster:", cluster_choices, allow_back=True)
 
 
@@ -214,7 +214,7 @@ def _select_ecs_service(ecs: ECSClient, cluster_arn: str) -> str | None:
     Returns:
         The selected ECS service ARN, or None if cancelled.
     """
-    cluster_name = cluster_arn.rsplit("/", maxsplit=1)[-1]
+    cluster_name = _get_cluster_name(cluster_arn)
 
     service_arns: list[str] = []
     service_paginator = ecs.get_paginator("list_services")
@@ -226,7 +226,7 @@ def _select_ecs_service(ecs: ECSClient, cluster_arn: str) -> str | None:
         return None
 
     logger.debug("Found %d ECS services in cluster '%s'.", len(service_arns), cluster_name)
-    service_choices = [(arn, (_name := arn.rsplit("/", maxsplit=1)[-1])) for arn in service_arns]
+    service_choices = [(arn, _get_service_name(arn)) for arn in service_arns]
     return _prompt_select("Select ECS Service:", service_choices, allow_back=True)
 
 
@@ -241,7 +241,7 @@ def _select_ecs_task(ecs: ECSClient, cluster_arn: str, service_arn: str) -> str 
     Returns:
         The selected ECS task ARN, or None if cancelled.
     """
-    service_name = service_arn.rsplit("/", maxsplit=1)[-1]
+    service_name = _get_service_name(service_arn)
 
     tasks: list[str] = []
     task_paginator = ecs.get_paginator("list_tasks")
@@ -253,7 +253,7 @@ def _select_ecs_task(ecs: ECSClient, cluster_arn: str, service_arn: str) -> str 
         return None
 
     logger.debug("Found %d running ECS tasks for service '%s'.", len(tasks), service_name)
-    task_choices = [(arn, (_name := arn.rsplit("/", maxsplit=1)[-1])) for arn in tasks]
+    task_choices = [(arn, _get_task_id(arn)) for arn in tasks]
     return _prompt_select("Select ECS Task:", task_choices, allow_back=True)
 
 
@@ -268,16 +268,16 @@ def _select_ecs_container_in_task(ecs: ECSClient, cluster_arn: str, task_arn: st
     Returns:
         The container runtime ID, or None if cancelled.
     """
-    task_name = task_arn.rsplit("/", maxsplit=1)[-1]
+    task_id = _get_task_id(task_arn)
     task_details = ecs.describe_tasks(cluster=cluster_arn, tasks=[task_arn])
     tasks = task_details.get("tasks", [])
     if not tasks:
-        logger.warning("ECS task '%s' not found.", task_name)
+        logger.warning("ECS task '%s' not found.", task_id)
         return None
 
     containers = tasks[0].get("containers", [])
     if not containers:
-        logger.warning("No containers found in task '%s'.", task_name)
+        logger.warning("No containers found in task '%s'.", task_id)
         return None
 
     container_choices: list[tuple[str, str]] = []
@@ -333,3 +333,18 @@ def _prompt_select(
         raise typer.Exit(1)
 
     return result
+
+
+def _get_cluster_name(cluster_arn: str) -> str:
+    """Extract cluster name from ECS cluster ARN."""
+    return cluster_arn.rsplit("/", maxsplit=1)[-1]
+
+
+def _get_service_name(service_arn: str) -> str:
+    """Extract service name from ECS service ARN."""
+    return service_arn.rsplit("/", maxsplit=1)[-1]
+
+
+def _get_task_id(task_arn: str) -> str:
+    """Extract task ID from ECS task ARN."""
+    return task_arn.rsplit("/", maxsplit=1)[-1]
