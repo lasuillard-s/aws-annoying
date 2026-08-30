@@ -51,7 +51,7 @@ class Test_get_instance_id_by_name:
         )
 
         # Act
-        instance_id = get_instance_id_by_name("my-instance")
+        instance_id = get_instance_id_by_name("my-instance", client=ec2)
 
         # Assert
         assert len(ec2.describe_instances()["Reservations"]) == 1
@@ -63,7 +63,7 @@ class Test_get_instance_id_by_name:
         ec2 = boto3.client("ec2")
 
         # Act
-        instance_id = get_instance_id_by_name("my-instance")
+        instance_id = get_instance_id_by_name("my-instance", client=ec2)
 
         # Assert
         assert len(ec2.describe_instances()["Reservations"]) == 0
@@ -82,7 +82,7 @@ class Test_get_instance_id_by_name:
         instance_id = response["Instances"][0]["InstanceId"]
 
         # Act
-        fetched_instance_id = get_instance_id_by_name(instance_id)
+        fetched_instance_id = get_instance_id_by_name(instance_id, client=ec2)
 
         # Assert
         assert len(ec2.describe_instances()["Reservations"]) == 1
@@ -101,7 +101,7 @@ class Test_get_instance_id_by_name:
             )
 
         # Act
-        instance_id = get_instance_id_by_name("my-instance")
+        instance_id = get_instance_id_by_name("my-instance", client=ec2)
 
         # Assert
         assert len(ec2.describe_instances()["Reservations"]) == 3
@@ -122,4 +122,4 @@ class Test_get_instance_id_by_name:
 
         # Act & Assert
         with pytest.raises(MultipleInstancesFoundError, match=r"Multiple instances found with name 'my-instance'"):
-            get_instance_id_by_name("my-instance", expect_one=True)
+            get_instance_id_by_name("my-instance", client=ec2, expect_one=True)

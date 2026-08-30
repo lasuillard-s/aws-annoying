@@ -5,18 +5,18 @@ import logging
 from enum import Enum
 from typing import Any, Optional
 
+import boto3
+import botocore.exceptions
 import typer
 
 from aws_annoying._cli.ec2._app import ec2_app
 from aws_annoying.ec2 import (
-    InstanceChecker,
     InstanceNotFoundError,
     InstanceNotReadyError,
+    InstanceReadinessWaiter,
     InvalidInstanceIdError,
     detect_instance_platform,
     is_valid_instance_id,
-    make_ssm_checker,
-    wait_for_instance_ready,
 )
 
 logger = logging.getLogger(__name__)
@@ -95,6 +95,11 @@ def wait_for_ready(  # noqa: PLR0913
     - `ec2:DescribeInstances` (when platform is 'auto' and no custom document is specified)
     - `ssm:SendCommand`
     - `ssm:GetCommandInvocation`
+
+    Note:
+    The target EC2 instance must have the AWS Systems Manager (SSM) Agent installed and running.
+    It must also be attached to an IAM role/instance profile with sufficient SSM permissions
+    (e.g., `AmazonSSMManagedInstanceCore`). Most standard AWS AMIs have the agent pre-installed.
     """
     # Check if the provided instance ID is valid
     if not is_valid_instance_id(instance_id):
@@ -108,26 +113,43 @@ def wait_for_ready(  # noqa: PLR0913
         msg = "Both --document-name and --document-parameters must be provided together."
         raise typer.BadParameter(msg)
 
-    # Determine the appropriate checker function based on platform choice or custom SSM document
-    checker: InstanceChecker
+    # Determine the appropriate waiter based on platform choice or custom SSM document
+    ssm_client = boto3.client("ssm")
+    waiter: InstanceReadinessWaiter
     if document_name is not None and document_parameters is not None:
         parsed_parameters: dict[str, Any] = json.loads(document_parameters)
-        checker = make_ssm_checker(document_name, parsed_parameters)
+        waiter = InstanceReadinessWaiter(document_name, parsed_parameters, client=ssm_client)
     else:
         if platform == PlatformChoice.AUTO:
-            detected = detect_instance_platform(instance_id)
+            ec2_client = boto3.client("ec2")
+            try:
+                response = ec2_client.describe_instances(InstanceIds=[instance_id])
+                detected = detect_instance_platform(response, instance_id)
+            except botocore.exceptions.ClientError as err:
+                if err.response.get("Error", {}).get("Code") == "InvalidInstanceID.NotFound":
+                    msg = f"Instance '{instance_id}' not found."
+                    raise InstanceNotFoundError(msg) from err
+                raise
+
             platform = PlatformChoice.WINDOWS if detected == "windows" else PlatformChoice.LINUX
 
         if platform == PlatformChoice.WINDOWS:
-            checker = make_ssm_checker("AWS-RunPowerShellScript", {"commands": ["Write-Output 'ready'"]})
+            waiter = InstanceReadinessWaiter(
+                "AWS-RunPowerShellScript",
+                {"commands": ["Write-Output 'ready'"]},
+                client=ssm_client,
+            )
         else:
-            checker = make_ssm_checker("AWS-RunShellScript", {"commands": ["echo 'ready'"]})
+            waiter = InstanceReadinessWaiter(
+                "AWS-RunShellScript",
+                {"commands": ["echo 'ready'"]},
+                client=ssm_client,
+            )
 
-    # Start waiting for the instance to be ready using the selected checker
+    # Start waiting for the instance to be ready using the selected waiter
     try:
-        wait_for_instance_ready(
+        waiter.wait_for_ready(
             instance_id=instance_id,
-            checker=checker,
             max_attempts=max_attempts,
             delay=delay,
         )

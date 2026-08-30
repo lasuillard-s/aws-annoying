@@ -330,8 +330,8 @@ def test_wait_for_ready_not_ready_failure(snapshot: Snapshot) -> None:
     with (
         mock.patch("time.sleep"),
         mock.patch(
-            "aws_annoying._cli.ec2.wait_for_ready.make_ssm_checker",
-            return_value=mock.MagicMock(return_value=False),
+            "aws_annoying._cli.ec2.wait_for_ready.InstanceReadinessWaiter.check_ready",
+            return_value=False,
         ),
     ):
         result = runner.invoke(

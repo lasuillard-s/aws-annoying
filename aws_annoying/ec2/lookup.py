@@ -1,17 +1,16 @@
-from __future__ import annotations
-
-from typing import Optional
-
-import boto3
+from typing import TYPE_CHECKING
 
 from .common import is_valid_instance_id
 from .errors import MultipleInstancesFoundError
+
+if TYPE_CHECKING:
+    from mypy_boto3_ec2 import EC2Client
 
 
 def get_instance_id_by_name(
     name_or_id: str,
     *,
-    session: Optional[boto3.session.Session] = None,
+    client: "EC2Client",
     expect_one: bool = False,
 ) -> str | None:
     """Get the EC2 instance ID by name or ID.
@@ -21,7 +20,7 @@ def get_instance_id_by_name(
 
     Args:
         name_or_id: The name or ID of the EC2 instance.
-        session: The boto3 session to use. If not provided, a new session will be created.
+        client: The boto3 EC2 client to use.
         expect_one: Whether to raise an exception if multiple instances are found.
 
     Returns:
@@ -37,10 +36,7 @@ def get_instance_id_by_name(
     if is_valid_instance_id(name_or_id):
         return name_or_id
 
-    session = session or boto3.session.Session()
-    ec2 = session.client("ec2")
-
-    response = ec2.describe_instances(Filters=[{"Name": "tag:Name", "Values": [name_or_id]}])
+    response = client.describe_instances(Filters=[{"Name": "tag:Name", "Values": [name_or_id]}])
     instances = [
         instance for reservation in response.get("Reservations", []) for instance in reservation.get("Instances", [])
     ]

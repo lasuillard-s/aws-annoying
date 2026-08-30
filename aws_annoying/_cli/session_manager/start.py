@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 
+import boto3
 import typer
 
 from aws_annoying.ec2 import get_instance_id_by_name
@@ -39,7 +40,8 @@ def start(
     session_manager = SessionManager()
 
     # Resolve the instance name or ID
-    instance_id = get_instance_id_by_name(target)
+    ec2_client = boto3.client("ec2")
+    instance_id = get_instance_id_by_name(target, client=ec2_client)
     if instance_id:
         logger.info("Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id
