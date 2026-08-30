@@ -6,8 +6,11 @@ from unittest import mock
 import boto3
 import pytest
 import typer
-from aws_annoying.cli.main import app
-from aws_annoying.cli.session_manager.start import (
+from prompt_toolkit.key_binding import KeyBindings
+from typer.testing import CliRunner
+
+from aws_annoying._cli.main import app
+from aws_annoying._cli.session_manager.start import (
     _get_cluster_name,
     _get_service_name,
     _get_task_id,
@@ -19,9 +22,6 @@ from aws_annoying.cli.session_manager.start import (
     _select_ecs_service,
     _select_ecs_task,
 )
-from prompt_toolkit.key_binding import KeyBindings
-from typer.testing import CliRunner
-
 from aws_annoying.session_manager import SessionManager
 
 runner = CliRunner()
@@ -137,7 +137,7 @@ def test_start_interactive_invoked(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(os, "execvp", mock_execvp)
     monkeypatch.setattr(SessionManager, "build_command", mock_build_command)
     monkeypatch.setattr(
-        "aws_annoying.cli.session_manager.start._handle_interactive_start",
+        "aws_annoying._cli.session_manager.start._handle_interactive_start",
         mock.MagicMock(return_value="ecs:cluster_task_container"),
     )
 
@@ -176,7 +176,7 @@ class Test_select_ec2_instance:
         instance_id = res["Instances"][0]["InstanceId"]
 
         mock_prompt = mock.MagicMock(return_value=instance_id)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ec2_instance(ec2)
         assert selected == instance_id
@@ -194,7 +194,7 @@ class Test_select_ecs_cluster:
         cluster_arn = ecs.create_cluster(clusterName="main-cluster")["cluster"]["clusterArn"]
 
         mock_prompt = mock.MagicMock(return_value=cluster_arn)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ecs_cluster(ecs)
         assert selected == cluster_arn
@@ -222,7 +222,7 @@ class Test_select_ecs_service:
         )["service"]["serviceArn"]
 
         mock_prompt = mock.MagicMock(return_value=service_arn)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ecs_service(ecs, cluster_arn)
         assert selected == service_arn
@@ -257,7 +257,7 @@ class Test_select_ecs_task:
         task_arn = run_res["tasks"][0]["taskArn"]
 
         mock_prompt = mock.MagicMock(return_value=task_arn)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ecs_task(ecs, cluster_arn, "arn:aws:ecs:us-east-1:123456789012:service/web-service")
         assert selected == task_arn
@@ -305,7 +305,7 @@ class Test_select_ecs_container_in_task:
         )
 
         mock_prompt = mock.MagicMock(return_value="app")
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ecs_container_in_task(ecs, cluster_arn, task_arn)
         assert selected == "container-runtime-123"
@@ -331,7 +331,7 @@ class Test_select_ecs_container_in_task:
         )
 
         mock_prompt = mock.MagicMock(return_value="sidecar")
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ecs_container_in_task(ecs, cluster_arn, task_arn)
         assert selected == "sidecar"
@@ -357,7 +357,7 @@ class Test_select_ecs_container_in_task:
         )
 
         mock_prompt = mock.MagicMock(return_value=None)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", mock_prompt)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", mock_prompt)
 
         selected = _select_ecs_container_in_task(ecs, cluster_arn, task_arn)
         assert selected is None
@@ -390,11 +390,11 @@ class Test_select_ecs_container_in_task:
 class Test_handle_interactive_start:
     def test_interactive_ec2_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._prompt_select",
+            "aws_annoying._cli.session_manager.start._prompt_select",
             mock.MagicMock(return_value="ec2"),
         )
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._select_ec2_instance",
+            "aws_annoying._cli.session_manager.start._select_ec2_instance",
             mock.MagicMock(return_value="i-1234567890abcdef0"),
         )
 
@@ -403,23 +403,23 @@ class Test_handle_interactive_start:
 
     def test_interactive_ecs_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._prompt_select",
+            "aws_annoying._cli.session_manager.start._prompt_select",
             mock.MagicMock(return_value="ecs"),
         )
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._select_ecs_cluster",
+            "aws_annoying._cli.session_manager.start._select_ecs_cluster",
             mock.MagicMock(return_value="arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster"),
         )
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._select_ecs_service",
+            "aws_annoying._cli.session_manager.start._select_ecs_service",
             mock.MagicMock(return_value="arn:aws:ecs:us-east-1:123456789012:service/my-service"),
         )
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._select_ecs_task",
+            "aws_annoying._cli.session_manager.start._select_ecs_task",
             mock.MagicMock(return_value="arn:aws:ecs:us-east-1:123456789012:task/my-cluster/task-123"),
         )
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._select_ecs_container_in_task",
+            "aws_annoying._cli.session_manager.start._select_ecs_container_in_task",
             mock.MagicMock(return_value="runtime-456"),
         )
 
@@ -439,10 +439,10 @@ class Test_handle_interactive_start:
                 return target_type_mock()
             return None
 
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", prompt_dispatcher)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._select_ec2_instance", select_ec2_mock)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._select_ecs_cluster", select_ecs_cluster_mock)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._select_ecs_service", select_ecs_service_mock)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", prompt_dispatcher)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._select_ec2_instance", select_ec2_mock)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._select_ecs_cluster", select_ecs_cluster_mock)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._select_ecs_service", select_ecs_service_mock)
 
         result = _handle_interactive_start()
         assert result == "i-99999999"
@@ -464,12 +464,12 @@ class Test_handle_interactive_start:
                 return target_type_mock()
             return None
 
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._prompt_select", prompt_dispatcher)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._select_ecs_cluster", select_ecs_cluster_mock)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._select_ecs_service", select_ecs_service_mock)
-        monkeypatch.setattr("aws_annoying.cli.session_manager.start._select_ecs_task", select_ecs_task_mock)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._prompt_select", prompt_dispatcher)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._select_ecs_cluster", select_ecs_cluster_mock)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._select_ecs_service", select_ecs_service_mock)
+        monkeypatch.setattr("aws_annoying._cli.session_manager.start._select_ecs_task", select_ecs_task_mock)
         monkeypatch.setattr(
-            "aws_annoying.cli.session_manager.start._select_ecs_container_in_task",
+            "aws_annoying._cli.session_manager.start._select_ecs_container_in_task",
             select_ecs_container_mock,
         )
 
