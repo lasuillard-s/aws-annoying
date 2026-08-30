@@ -7,13 +7,28 @@ import pytest
 from moto import mock_aws
 from moto.server import ThreadedMotoServer
 from testcontainers.localstack import LocalStackContainer
-from typer.testing import CliRunner
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from pathlib import Path
 
-runner = CliRunner()
+
+def pytest_ignore_collect(collection_path: Path, config: pytest.Config) -> bool | None:  # noqa: ARG001
+    """Ignore collection of CLI tests if CLI dependencies are not installed."""
+    try:
+        import typer  # noqa: F401, PLC0415
+    except ImportError:
+        if "_cli" in collection_path.parts:
+            return True
+
+    return None
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Automatically add the 'cli' marker to all tests under tests/_cli/."""
+    for item in items:
+        if "_cli" in item.path.parts:
+            item.add_marker(pytest.mark.cli)
 
 
 @pytest.fixture

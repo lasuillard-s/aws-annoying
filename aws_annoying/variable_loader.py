@@ -27,8 +27,6 @@ class VariableLoader:  # noqa: D101
         """
         self.session = session or boto3.session.Session()
 
-    # TODO(lasuillard): Currently not using pagination (do we need more than 10-20 secrets or parameters each?)
-    #                   ; consider adding it if needed
     def load(self, map_arns: dict[str, _ARN]) -> tuple[dict[str, Any], _LoadStatsDict]:
         """Load the variables from the AWS Secrets Manager and SSM Parameter Store.
 

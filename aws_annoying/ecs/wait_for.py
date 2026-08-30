@@ -174,7 +174,7 @@ def wait_for_service_stability(
     session = session or boto3.session.Session()
     ecs = session.client("ecs")
 
-    # TODO(lasuillard): Likely to be a problem in some cases: https://github.com/boto/botocore/issues/3314
+    # NOTE: Can be a problem in some cases: https://github.com/boto/botocore/issues/3314
     stability_waiter = ecs.get_waiter("services_stable")
 
     attempts = 0
