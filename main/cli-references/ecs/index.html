@@ -369,7 +369,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aws_annoying.cli.ecs.task_definition_lifecycle.task_definition_lifecycle" class="md-nav__link">
+  <a href="#aws_annoying._cli.ecs.task_definition_lifecycle.task_definition_lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
         task_definition_lifecycle
@@ -391,7 +391,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aws_annoying.cli.ecs.wait_for_deployment.wait_for_deployment" class="md-nav__link">
+  <a href="#aws_annoying._cli.ecs.wait_for_deployment.wait_for_deployment" class="md-nav__link">
     <span class="md-ellipsis">
       
         wait_for_deployment
@@ -537,7 +537,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aws_annoying.cli.ecs.task_definition_lifecycle.task_definition_lifecycle" class="md-nav__link">
+  <a href="#aws_annoying._cli.ecs.task_definition_lifecycle.task_definition_lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
         task_definition_lifecycle
@@ -559,7 +559,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aws_annoying.cli.ecs.wait_for_deployment.wait_for_deployment" class="md-nav__link">
+  <a href="#aws_annoying._cli.ecs.wait_for_deployment.wait_for_deployment" class="md-nav__link">
     <span class="md-ellipsis">
       
         wait_for_deployment
@@ -598,7 +598,7 @@
 
 
 
-<a id="aws_annoying.cli.ecs.task_definition_lifecycle.task_definition_lifecycle"></a>
+<a id="aws_annoying._cli.ecs.task_definition_lifecycle.task_definition_lifecycle"></a>
     <div class="doc doc-contents first">
 
         <p>Expire and delete ECS task definitions.</p>
@@ -620,7 +620,7 @@ longer needed.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>aws_annoying/cli/ecs/task_definition_lifecycle.py</code></summary>
+              <summary>Source code in <code>aws_annoying/_cli/ecs/task_definition_lifecycle.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-20">20</a></span>
 <span class="normal"><a href="#__codelineno-0-21">21</a></span>
 <span class="normal"><a href="#__codelineno-0-22">22</a></span>
@@ -785,7 +785,7 @@ longer needed.</p>
 
 
 
-<a id="aws_annoying.cli.ecs.wait_for_deployment.wait_for_deployment"></a>
+<a id="aws_annoying._cli.ecs.wait_for_deployment.wait_for_deployment"></a>
     <div class="doc doc-contents first">
 
         <p>Wait for ECS deployment for a specific service to start, complete and stabilize.</p>
@@ -805,7 +805,7 @@ in conjunction with CI/CD pipelines or deployment scripts.</p>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Wait for deployment complete</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">      </span><span class="no">pipx run aws-annoying \</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">      </span><span class="no">pipx run &quot;aws-annoying[cli]&quot; \</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">        </span><span class="no">--verbose \</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="no">ecs wait-for-deployment \</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">          </span><span class="no">--cluster &#39;${{ vars.AWS_ECS_CLUSTER }}&#39; \</span>
@@ -827,7 +827,7 @@ in conjunction with CI/CD pipelines or deployment scripts.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>aws_annoying/cli/ecs/wait_for_deployment.py</code></summary>
+              <summary>Source code in <code>aws_annoying/_cli/ecs/wait_for_deployment.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-25"> 25</a></span>
 <span class="normal"><a href="#__codelineno-0-26"> 26</a></span>
 <span class="normal"><a href="#__codelineno-0-27"> 27</a></span>
@@ -1014,7 +1014,7 @@ in conjunction with CI/CD pipelines or deployment scripts.</p>
 </span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">      - name: Wait for deployment complete</span>
 </span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">        run: |</span>
-</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">          pipx run aws-annoying \</span>
+</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">          pipx run &quot;aws-annoying[cli]&quot; \</span>
 </span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">            --verbose \</span>
 </span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">            ecs wait-for-deployment \</span>
 </span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">              --cluster &#39;${{ vars.AWS_ECS_CLUSTER }}&#39; \</span>

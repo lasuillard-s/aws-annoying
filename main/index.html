@@ -662,7 +662,7 @@
 <h2 id="quick-start">🚀 Quick start</h2>
 <p>It is recommended to use <a href="https://docs.astral.sh/uv/concepts/tools/">uvx</a> (alias for <code>uv tool run</code>) to run <code>aws-annoying</code> CLI (you can also use <code>pipx run</code> if you prefer):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">TYPER_USE_RICH</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="c1"># Disable Rich to simplify output. Ignore this</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span>uvx<span class="w"> </span>aws-annoying<span class="w"> </span>--help
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span>uvx<span class="w"> </span><span class="s2">&quot;aws-annoying[cli]&quot;</span><span class="w"> </span>--help
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Usage:<span class="w"> </span>aws-annoying<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Options:
@@ -680,8 +680,8 @@
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span>mfa<span class="w">              </span>Commands<span class="w"> </span>to<span class="w"> </span>manage<span class="w"> </span>MFA<span class="w"> </span>authentication.
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>session-manager<span class="w">  </span>AWS<span class="w"> </span>Session<span class="w"> </span>Manager<span class="w"> </span>CLI<span class="w"> </span>utilities.
 </span></code></pre></div>
-<p>You can also install the package via <code>pip</code> if you want to use its utility functions:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>aws-annoying
+<p>Or install the package via <code>uv</code> to install only the library then import it in your code (<code>aws_annoying</code> package) without CLI dependencies:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>uv<span class="w"> </span>add<span class="w"> </span>aws-annoying
 </span></code></pre></div>
 <p>Please refer to the <a href="https://lasuillard-s.github.io/aws-annoying/">documentation</a> for more information on how to use the application and package.</p>
 <h3 id="browser-user-scripts">🐒 Browser User Scripts</h3>
