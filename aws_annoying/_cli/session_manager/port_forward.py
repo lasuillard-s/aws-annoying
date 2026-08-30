@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
     *,
-    # TODO(lasuillard): Add `--local-host` option, redirect the traffic to non-localhost bind (unsupported by AWS)
     local_port: int = typer.Option(
         ...,
         show_default=False,
