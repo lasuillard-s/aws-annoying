@@ -149,7 +149,7 @@ def configure(  # noqa: PLR0913
     )
     _update_credentials(
         aws_credentials,
-        mfa_profile,  # type: ignore[arg-type]
+        mfa_profile,
         access_key=credentials["AccessKeyId"],
         secret_key=credentials["SecretAccessKey"],
         session_token=credentials["SessionToken"],
@@ -157,7 +157,7 @@ def configure(  # noqa: PLR0913
     if mfa_region:
         _update_config(
             aws_config,
-            mfa_profile,  # type: ignore[arg-type]
+            mfa_profile,
             region=mfa_region,
         )
 
