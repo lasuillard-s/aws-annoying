@@ -162,10 +162,6 @@
 
     // Periodically check current URL; the site's internal navigation doesn't trigger script when needed
     let previousPage = null;
-
-    // TODO(lasuillard): Could use `setTimeout` instead of `setInterval` for fine-tuned behavior
-    //                   such as retry backoff, maximum retries, ...
-    // See also: https://stackoverflow.com/questions/1280263/changing-the-interval-of-setinterval-while-its-running
     GM_log("Start checking for page changes...");
     setInterval(() => {
       GM_log("Checking for page change...");
