@@ -5,7 +5,7 @@ Example usage of the `session-manager` command to automate [DBeaver](https://dbe
 1. Install the **aws-annoying** CLI. Here, we use [pipx](https://github.com/pypa/pipx):
 
     ```shell
-    pipx install aws-annoying
+    pipx install "aws-annoying[cli]"
     ```
 
 2. Run DBeaver. Since DBeaver, by default, runs scripts in a non-login shell, environment variables may need to be forwarded.

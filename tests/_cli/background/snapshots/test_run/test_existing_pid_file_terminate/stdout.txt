@@ -1,0 +1,5 @@
+⚠️ Terminating running process with PID <dummy_pid>.
+🔔 Removed the PID file <tmp_path>/test.pid.
+🔔 Starting background process: <PYTHON_EXECUTABLE> -m aws_annoying._cli.main ecs task-definition-lifecycle --family my-task --keep-latest 1
+🔔 Process started with PID <new_pid>. Outputs will be logged to <tmp_path>/test.log.
+🔔 PID file written to <tmp_path>/test.pid.
