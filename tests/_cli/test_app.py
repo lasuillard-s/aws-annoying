@@ -6,7 +6,7 @@ import pytest
 import toml
 from typer.testing import CliRunner
 
-from aws_annoying.cli.main import app
+from aws_annoying._cli.main import app
 
 runner = CliRunner()
 

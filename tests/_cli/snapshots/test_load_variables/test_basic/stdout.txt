@@ -7,7 +7,7 @@
 └───────┴──────────────────────────────────────────────────────────────────────┘
 🔔 Retrieving variables from AWS resources...
 🔔 Retrieved 1 secrets and 1 parameters.
-🔔 Running the command: tests/cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+🔔 Running the command: tests/_cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
 DJANGO_SETTINGS_MODULE=config.settings.development
 DJANGO_SECRET_KEY=my-secret-key
 DJANGO_DEBUG=False

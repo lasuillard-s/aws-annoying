@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from typer.testing import CliRunner
 
-from aws_annoying.cli.main import app
-from tests.cli._helpers import create_parameters, create_secrets
+from aws_annoying._cli.main import app
+from tests._cli._helpers import create_parameters, create_secrets
 
 from ._helpers import PRINTENV_PY, invoke_cli, normalize_console_output, repeat_options
 

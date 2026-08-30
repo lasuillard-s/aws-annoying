@@ -6,7 +6,7 @@ import subprocess
 
 def invoke_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(  # noqa: S603
-        ["uv", "run", "aws-annoying", *args],  # noqa: S607
+        ["uv", "run", "--no-sync", "aws-annoying", *args],  # noqa: S607
         check=False,
         capture_output=True,
         text=True,

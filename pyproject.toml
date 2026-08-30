@@ -9,13 +9,15 @@ requires-python = ">=3.10, <4.0"
 dependencies = [
   "boto3>=1,<2",
   "requests>=2,<3",
-  "tqdm>=4,<5",
+]
+
+[project.optional-dependencies]
+cli = [
   "typer>=0,<1",
-  "pydantic>=2,<3",
 ]
 
 [project.scripts]
-"aws-annoying" = "aws_annoying.cli.main:entrypoint"
+"aws-annoying" = "aws_annoying._cli.main:entrypoint"
 
 [dependency-groups]
 dev = [
@@ -29,6 +31,7 @@ dev = [
   "types-requests==2.33.0.20260712",
   "coverage==7.15.4",
   "moto[secretsmanager,server,ssm,ecs]==5.2.2",
+  "nox==2026.8.17",
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
   "pytest-env==1.7.0",
@@ -68,7 +71,7 @@ ignore = [
   "FIX",
   "TD003",
   "UP007",  # Available in Python 3.10+
-  "UP045",  # Typer and pydantic may not work well with newer typing syntaxes, especially for union types
+  "UP045",  # Typer may not work well with newer typing syntaxes, especially for union types
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
@@ -110,6 +113,7 @@ markers = [
   "unit: Isolated unit tests",
   "integration: Integration tests",
   "docker: Tests that require Docker to run",
+  "cli: Tests that require CLI extra dependencies",
 ]
 
 [tool.coverage.run]

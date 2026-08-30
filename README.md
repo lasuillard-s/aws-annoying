@@ -19,7 +19,7 @@ It is recommended to use [uvx](https://docs.astral.sh/uv/concepts/tools/) (alias
 
 ```bash
 $ export TYPER_USE_RICH=0 # Disable Rich to simplify output. Ignore this
-$ uvx aws-annoying --help
+$ uvx "aws-annoying[cli]" --help
 Usage: aws-annoying [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -38,10 +38,10 @@ Commands:
   session-manager  AWS Session Manager CLI utilities.
 ```
 
-You can also install the package via `pip` if you want to use its utility functions:
+Or install the package via `uv` to install only the library then import it in your code (`aws_annoying` package) without CLI dependencies:
 
 ```bash
-$ pip install aws-annoying
+$ uv add aws-annoying
 ```
 
 Please refer to the [documentation](https://lasuillard-s.github.io/aws-annoying/) for more information on how to use the application and package.

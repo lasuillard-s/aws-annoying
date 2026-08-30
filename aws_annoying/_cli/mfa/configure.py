@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+import configparser
 import logging
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path  # noqa: TC003
 from typing import Optional
 
 import boto3
 import typer
 from rich.prompt import Prompt
-
-from aws_annoying.mfa_config import MfaConfig, update_config, update_credentials
 
 from ._app import mfa_app
 
@@ -90,7 +90,7 @@ def configure(  # noqa: PLR0913
     aws_config = aws_config.expanduser()
 
     # Load configuration
-    mfa_config, exists = MfaConfig.from_ini_file(aws_config, aws_config_section)
+    mfa_config, exists = _MfaConfig.from_ini_file(aws_config, aws_config_section)
     if exists:
         logger.info("Loaded MFA configuration from AWS config (%s).", aws_config)
 
@@ -147,7 +147,7 @@ def configure(  # noqa: PLR0913
         mfa_profile,
         aws_credentials,
     )
-    update_credentials(
+    _update_credentials(
         aws_credentials,
         mfa_profile,  # type: ignore[arg-type]
         access_key=credentials["AccessKeyId"],
@@ -155,7 +155,7 @@ def configure(  # noqa: PLR0913
         session_token=credentials["SessionToken"],
     )
     if mfa_region:
-        update_config(
+        _update_config(
             aws_config,
             mfa_profile,  # type: ignore[arg-type]
             region=mfa_region,
@@ -175,3 +175,80 @@ def configure(  # noqa: PLR0913
         mfa_config.save_ini_file(aws_config, aws_config_section)
     else:
         logger.warning("MFA configuration not persisted.")
+
+
+@dataclass
+class _MfaConfig:
+    """MFA configuration for AWS profiles."""
+
+    mfa_profile: Optional[str] = None
+    mfa_source_profile: Optional[str] = None
+    mfa_serial_number: Optional[str] = None
+    mfa_region: Optional[str] = None
+
+    def save_ini_file(self, path: Path, section_key: str) -> None:
+        """Save configuration to an AWS config file."""
+        config_ini = configparser.ConfigParser()
+        config_ini.read(path)
+        config_ini.setdefault(section_key, {})
+        for k, v in asdict(self).items():
+            if v is not None:
+                config_ini[section_key][k] = v
+
+        with path.open("w") as f:
+            config_ini.write(f)
+
+        logger.debug("Saved config to %s with section %s", path, section_key)
+
+    @classmethod
+    def from_ini_file(cls, path: Path, section_key: str) -> tuple[_MfaConfig, bool]:
+        """Load configuration from an AWS config file, with boolean indicating if the config already exists."""
+        logger.debug("Loading config from %s with section %s", path, section_key)
+        config_ini = configparser.ConfigParser()
+        config_ini.read(path)
+        if config_ini.has_section(section_key):
+            section = dict(config_ini.items(section_key))
+            valid_fields = {f.name for f in fields(cls)}
+            filtered = {k: v for k, v in section.items() if k in valid_fields}
+            return cls(**filtered), True
+
+        return cls(), False
+
+
+def _update_credentials(
+    path: Path,
+    profile_name: str,
+    *,
+    access_key: str,
+    secret_key: str,
+    session_token: str,
+) -> None:
+    """Update AWS credentials file with the provided profile and credentials."""
+    credentials_ini = configparser.ConfigParser()
+    credentials_ini.read(path)
+    credentials_ini.setdefault(profile_name, {})
+    credentials_ini[profile_name]["aws_access_key_id"] = access_key
+    credentials_ini[profile_name]["aws_secret_access_key"] = secret_key
+    credentials_ini[profile_name]["aws_session_token"] = session_token
+    with path.open("w") as f:
+        credentials_ini.write(f)
+
+    logger.debug("Updated credentials file %s with profile %s", path, profile_name)
+
+
+def _update_config(path: Path, profile_name: str, *, region: Optional[str]) -> None:
+    """Update AWS config file with the provided profile region."""
+    if not region:
+        return
+
+    section = "default" if profile_name == "default" else f"profile {profile_name}"
+    config_ini = configparser.ConfigParser()
+    config_ini.read(path)
+    config_ini.setdefault(section, {})
+    if region:
+        config_ini[section]["region"] = region
+
+    with path.open("w") as f:
+        config_ini.write(f)
+
+    logger.debug("Updated config file %s with profile %s region %s", path, profile_name, region)

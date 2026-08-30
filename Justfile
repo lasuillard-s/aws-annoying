@@ -4,11 +4,11 @@ _default:
 # Install deps and tools
 install:
     uv python install
-    uv sync --frozen
+    uv sync --all-extras --frozen
 
 # Update deps and tools
 update:
-    uv sync --upgrade
+    uv sync --all-extras --upgrade
     pre-commit autoupdate
 
 alias up := update
@@ -34,7 +34,7 @@ lint:
 
 # Run all tests
 test:
-    uv run pytest
+    uv run nox
 
 # Apply autofixes
 fix:
