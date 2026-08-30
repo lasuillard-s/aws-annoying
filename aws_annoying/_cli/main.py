@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 try:
     import typer  # noqa: F401
 except ImportError:
-    app = None
+    app = None  # type: ignore[assignment]
 else:
     from . import ecs as _ecs  # noqa: F401
     from . import load_variables as _load_variables  # noqa: F401
