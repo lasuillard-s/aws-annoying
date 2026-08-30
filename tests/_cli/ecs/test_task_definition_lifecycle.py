@@ -16,7 +16,6 @@ runner = CliRunner()
 
 pytestmark = [
     pytest.mark.unit,
-    pytest.mark.cli,
     pytest.mark.usefixtures("use_moto"),
 ]
 

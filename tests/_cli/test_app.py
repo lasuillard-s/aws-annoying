@@ -12,7 +12,6 @@ runner = CliRunner()
 
 pytestmark = [
     pytest.mark.unit,
-    pytest.mark.cli,
 ]
 
 
