@@ -1,16 +1,10 @@
-from __future__ import annotations
-
 import logging
-from typing import TYPE_CHECKING
+from collections.abc import Iterator
 
 import boto3
 import typer
 
 from ._app import ecs_app
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
 
 logger = logging.getLogger(__name__)
 

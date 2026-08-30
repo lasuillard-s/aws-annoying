@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import logging
 import os
 import signal
 import subprocess
-from pathlib import Path  # noqa: TC003
+from pathlib import Path
 
 import typer
 

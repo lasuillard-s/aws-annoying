@@ -1,5 +1,4 @@
 # ruff: noqa: D103, T201
-from __future__ import annotations
 
 import os
 

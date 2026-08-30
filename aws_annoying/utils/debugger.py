@@ -1,11 +1,6 @@
-from __future__ import annotations
-
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
 
 
 # https://stackoverflow.com/questions/38634988/check-if-program-runs-in-debug-mode

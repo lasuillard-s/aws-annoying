@@ -1,17 +1,12 @@
-from __future__ import annotations
-
 import logging
 from datetime import datetime, timezone
 from time import sleep
-from typing import TYPE_CHECKING
 
 import boto3
 import botocore.exceptions
 
+from .common import ECSServiceRef
 from .errors import NoRunningDeploymentError
-
-if TYPE_CHECKING:
-    from .common import ECSServiceRef
 
 logger = logging.getLogger(__name__)
 

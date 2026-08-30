@@ -34,7 +34,7 @@ lint:
 
 # Run all tests
 test:
-    uv run nox
+    uv run pytest --numprocesses=0 --inline-snapshot=create,fix
 
 # Apply autofixes
 fix:

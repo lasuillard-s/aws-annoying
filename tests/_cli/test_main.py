@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import builtins
 import importlib
 from typing import Any
@@ -39,6 +37,7 @@ def test_entrypoint_missing_dependencies(monkeypatch: pytest.MonkeyPatch) -> Non
 
 def test_main_import_without_typer(monkeypatch: pytest.MonkeyPatch) -> None:
     """When typer cannot be imported, main.app is set to None."""
+    # Arrange
     orig_import = builtins.__import__
 
     def mock_import(name: str, *args: Any, **kwargs: Any) -> Any:
@@ -49,7 +48,11 @@ def test_main_import_without_typer(monkeypatch: pytest.MonkeyPatch) -> None:
         return orig_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", mock_import)
+
+    # Act
     reloaded = importlib.reload(main)
+
+    # Assert
     try:
         assert reloaded.app is None
     finally:

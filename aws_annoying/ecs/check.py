@@ -1,12 +1,8 @@
-from __future__ import annotations
-
 import logging
-from typing import TYPE_CHECKING
 
 import boto3
 
-if TYPE_CHECKING:
-    from .common import ECSServiceRef
+from .common import ECSServiceRef
 
 logger = logging.getLogger(__name__)
 

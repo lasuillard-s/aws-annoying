@@ -1,9 +1,7 @@
-from __future__ import annotations
-
 import configparser
 import logging
 from dataclasses import asdict, dataclass, fields
-from pathlib import Path  # noqa: TC003
+from pathlib import Path
 from typing import Optional
 
 import boto3
@@ -201,7 +199,7 @@ class _MfaConfig:
         logger.debug("Saved config to %s with section %s", path, section_key)
 
     @classmethod
-    def from_ini_file(cls, path: Path, section_key: str) -> tuple[_MfaConfig, bool]:
+    def from_ini_file(cls, path: Path, section_key: str) -> tuple["_MfaConfig", bool]:
         """Load configuration from an AWS config file, with boolean indicating if the config already exists."""
         logger.debug("Loading config from %s with section %s", path, section_key)
         config_ini = configparser.ConfigParser()

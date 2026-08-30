@@ -1,17 +1,11 @@
-from __future__ import annotations
-
 import logging
 import subprocess
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
 
 from aws_annoying.utils.timeout import Timeout
 
 from .session_manager import SessionManager
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
 
 logger = logging.getLogger(__name__)
 
