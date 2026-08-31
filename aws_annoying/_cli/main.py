@@ -11,6 +11,7 @@ try:
 except ImportError:
     app = None  # type: ignore[assignment]
 else:
+    from . import ec2 as _ec2  # noqa: F401
     from . import ecs as _ecs  # noqa: F401
     from . import load_variables as _load_variables  # noqa: F401
     from . import mfa as _mfa  # noqa: F401
