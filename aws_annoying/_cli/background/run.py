@@ -26,7 +26,7 @@ def run(
     ctx: typer.Context,
     *,
     pid_file: Path = typer.Option(  # noqa: B008
-        Path("./background.pid"),
+        Path("./.aws-annoying.pid"),
         help="The path to the PID file to store the process ID of the background command.",
     ),
     terminate_running_process: bool = typer.Option(
@@ -34,7 +34,7 @@ def run(
         help="Terminate the process in the PID file if it already exists.",
     ),
     log_file: Path = typer.Option(  # noqa: B008
-        Path("./background.log"),
+        Path("./.aws-annoying.log"),
         help="The path to the log file to store the output of the background command.",
     ),
 ) -> None:

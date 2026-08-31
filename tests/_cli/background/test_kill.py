@@ -164,3 +164,35 @@ def test_kill_empty_pid_file_no_remove(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert pid_file.exists()
     assert result.stderr == ""
+
+
+def test_kill_default_pid_file(
+    snapshot: Snapshot,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    dummy_process: subprocess.Popen[bytes],
+) -> None:
+    # Arrange
+    monkeypatch.chdir(tmp_path)
+    pid_file = tmp_path / ".aws-annoying.pid"
+    pid_file.write_text(str(dummy_process.pid))
+
+    # Act
+    result = runner.invoke(app, ["background", "kill"])
+
+    # Assert
+    assert result.exit_code == 0
+    dummy_process.wait(timeout=2.0)
+    assert dummy_process.returncode in (-signal.SIGTERM, signal.SIGTERM)
+    assert not pid_file.exists()
+    snapshot.assert_match(
+        normalize_console_output(
+            result.stdout,
+            replace={
+                str(tmp_path): "<tmp_path>",
+                str(dummy_process.pid): "<dummy_pid>",
+            },
+        ),
+        "stdout.txt",
+    )
+    assert result.stderr == ""

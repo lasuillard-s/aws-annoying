@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def kill(
     *,
     pid_file: Path = typer.Option(  # noqa: B008
-        Path("./background.pid"),
+        Path("./.aws-annoying.pid"),
         help="The path to the PID file of the background process to terminate.",
     ),
     remove: bool = typer.Option(

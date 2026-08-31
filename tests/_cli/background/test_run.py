@@ -222,7 +222,7 @@ def test_default_log_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, t
     # Assert
     assert result.exit_code == 0
     pid = int(pid_file.read_text().strip())
-    default_log = tmp_path / "background.log"
+    default_log = tmp_path / ".aws-annoying.log"
 
     for _ in range(50):
         if default_log.exists():
@@ -269,7 +269,7 @@ def test_default_pid_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, t
 
     # Assert
     assert result.exit_code == 0
-    default_pid_file = tmp_path / "background.pid"
+    default_pid_file = tmp_path / ".aws-annoying.pid"
     assert default_pid_file.exists()
     pid = int(default_pid_file.read_text().strip())
     assert pid > 0
