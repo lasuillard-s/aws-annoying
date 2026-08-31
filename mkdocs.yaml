@@ -19,6 +19,7 @@ nav:
   - Introduction: index.md
   - CLI References:
       - Background: cli-references/background.md
+      - EC2 (Elastic Compute Cloud): cli-references/ec2.md
       - ECS (Elastic Container Service): cli-references/ecs.md
       - MFA: cli-references/mfa.md
       - Session Manager: cli-references/session-manager.md

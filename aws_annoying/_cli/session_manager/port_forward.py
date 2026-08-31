@@ -7,8 +7,8 @@ from typing import Any
 
 import typer
 
+from aws_annoying.ec2 import get_instance_id_by_name
 from aws_annoying.session_manager import SessionManager
-from aws_annoying.utils.ec2 import get_instance_id_by_name
 from aws_annoying.utils.network import get_free_port
 from aws_annoying.utils.tcp_proxy import TCPProxy
 
