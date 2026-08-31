@@ -4,7 +4,6 @@ import logging
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -26,8 +25,8 @@ logger = logging.getLogger(__name__)
 def run(
     ctx: typer.Context,
     *,
-    pid_file: Optional[Path] = typer.Option(  # noqa: B008
-        None,
+    pid_file: Path = typer.Option(  # noqa: B008
+        Path("./background.pid"),
         help="The path to the PID file to store the process ID of the background command.",
     ),
     terminate_running_process: bool = typer.Option(
@@ -62,7 +61,7 @@ def run(
     command = [sys.executable, "-m", "aws_annoying._cli.main", *command]
 
     # Handle existing PID file if specified
-    if pid_file is not None and pid_file.exists():
+    if pid_file.exists():
         if not terminate_running_process:
             logger.error("PID file already exists: %s", pid_file)
             raise typer.Exit(1)
@@ -76,9 +75,8 @@ def run(
         stdout.close()
 
     logger.info("Process started with PID %d. Outputs will be logged to %s.", pid, log_file.absolute())
-    if pid_file is not None:
-        pid_file.write_text(str(pid))
-        logger.info("PID file written to %s.", pid_file.absolute())
+    pid_file.write_text(str(pid))
+    logger.info("PID file written to %s.", pid_file.absolute())
 
 
 def _spawn_process(command: list[str], stdout: subprocess._FILE) -> int:

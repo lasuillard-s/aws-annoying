@@ -242,3 +242,46 @@ def test_default_log_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, t
         "stdout.txt",
     )
     assert result.stderr == ""
+
+
+def test_default_pid_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Arrange
+    monkeypatch.chdir(tmp_path)
+    log_file = tmp_path / "test.log"
+
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "background",
+            "run",
+            "--log-file",
+            str(log_file),
+            "--",
+            "ecs",
+            "task-definition-lifecycle",
+            "--family",
+            "my-task",
+            "--keep-latest",
+            "1",
+        ],
+    )
+
+    # Assert
+    assert result.exit_code == 0
+    default_pid_file = tmp_path / "background.pid"
+    assert default_pid_file.exists()
+    pid = int(default_pid_file.read_text().strip())
+    assert pid > 0
+
+    snapshot.assert_match(
+        normalize_console_output(
+            result.stdout,
+            replace={
+                str(tmp_path): "<tmp_path>",
+                str(pid): "<pid>",
+            },
+        ),
+        "stdout.txt",
+    )
+    assert result.stderr == ""
