@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
+import boto3
 
 from .common import is_valid_instance_id
 from .errors import MultipleInstancesFoundError
@@ -10,7 +14,7 @@ if TYPE_CHECKING:
 def get_instance_id_by_name(
     name_or_id: str,
     *,
-    client: "EC2Client",
+    client: EC2Client | None = None,
     expect_one: bool = False,
 ) -> str | None:
     """Get the EC2 instance ID by name or ID.
@@ -20,7 +24,7 @@ def get_instance_id_by_name(
 
     Args:
         name_or_id: The name or ID of the EC2 instance.
-        client: The boto3 EC2 client to use.
+        client: The boto3 EC2 client to use. If not specified, a default EC2 client is created.
         expect_one: Whether to raise an exception if multiple instances are found.
 
     Returns:
@@ -36,6 +40,7 @@ def get_instance_id_by_name(
     if is_valid_instance_id(name_or_id):
         return name_or_id
 
+    client = client or boto3.client("ec2")
     response = client.describe_instances(Filters=[{"Name": "tag:Name", "Values": [name_or_id]}])
     instances = [
         instance for reservation in response.get("Reservations", []) for instance in reservation.get("Instances", [])

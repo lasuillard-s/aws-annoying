@@ -6,7 +6,6 @@ import signal
 import subprocess
 from pathlib import Path  # noqa: TC003
 
-import boto3
 import typer
 
 from aws_annoying.ec2 import get_instance_id_by_name
@@ -94,8 +93,7 @@ def port_forward(  # noqa: PLR0913
             logger.warning("Tried to terminate process with PID %d but does not exist.", existing_pid)
 
     # Resolve the instance name or ID
-    ec2_client = boto3.client("ec2")
-    instance_id = get_instance_id_by_name(through, client=ec2_client)
+    instance_id = get_instance_id_by_name(through)
     if instance_id:
         logger.info("Instance ID resolved: [bold]%s[/bold]", instance_id)
         target = instance_id

@@ -34,7 +34,7 @@ lint:
 
 # Run all tests
 test:
-    uv run pytest --snapshot-update
+    uv run nox
 
 # Apply autofixes
 fix:

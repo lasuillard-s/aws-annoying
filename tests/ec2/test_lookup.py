@@ -58,6 +58,24 @@ class Test_get_instance_id_by_name:
         assert instance_id is not None
         assert re.match(r"^i-[0-9a-zA-Z]+$", instance_id) is not None
 
+    def test_get_by_name_default_client(self) -> None:
+        # Arrange
+        ec2 = boto3.client("ec2")
+        ec2.run_instances(
+            ImageId="ami-12345678",
+            InstanceType="t2.micro",
+            MinCount=1,
+            MaxCount=1,
+            TagSpecifications=[{"ResourceType": "instance", "Tags": [{"Key": "Name", "Value": "my-instance"}]}],
+        )
+
+        # Act
+        instance_id = get_instance_id_by_name("my-instance")
+
+        # Assert
+        assert instance_id is not None
+        assert re.match(r"^i-[0-9a-zA-Z]+$", instance_id) is not None
+
     def test_get_by_name_not_found(self) -> None:
         # Arrange
         ec2 = boto3.client("ec2")
