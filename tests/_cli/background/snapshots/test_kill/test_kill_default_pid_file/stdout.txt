@@ -1,0 +1,3 @@
+⚠️ Terminating running process with PID <dummy_pid>.
+🔔 Removed the PID file .aws-annoying.pid.
+🔔 Terminated the background process successfully.

@@ -9,9 +9,3 @@
 ::: aws_annoying._cli.session_manager.start.start
     options:
         show_signature: false
-
-## `aws-annoying session-manager stop`
-
-::: aws_annoying._cli.session_manager.stop.stop
-    options:
-        show_signature: false

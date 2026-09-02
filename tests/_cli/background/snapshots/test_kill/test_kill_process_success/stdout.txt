@@ -1,0 +1,3 @@
+⚠️ Terminating running process with PID <dummy_pid>.
+🔔 Removed the PID file <tmp_path>/valid.pid.
+🔔 Terminated the background process successfully.
