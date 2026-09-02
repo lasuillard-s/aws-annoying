@@ -1,13 +1,14 @@
 import logging
-import os
 import signal
 import subprocess
-from pathlib import Path
+from typing import Any
 
 import typer
 
+from aws_annoying.ec2 import get_instance_id_by_name
 from aws_annoying.session_manager import SessionManager
-from aws_annoying.utils.ec2 import get_instance_id_by_name
+from aws_annoying.utils.network import get_free_port
+from aws_annoying.utils.tcp_proxy import Address, TCPProxy
 
 from ._app import session_manager_app
 
@@ -18,6 +19,10 @@ logger = logging.getLogger(__name__)
 @session_manager_app.command()
 def port_forward(  # noqa: PLR0913
     *,
+    local_host: str = typer.Option(
+        "127.0.0.1",
+        help="The local host address to bind the port forwarding connection.",
+    ),
     local_port: int = typer.Option(
         ...,
         show_default=False,
@@ -42,26 +47,11 @@ def port_forward(  # noqa: PLR0913
         "",
         help="The reason for starting the port forwarding session.",
     ),
-    pid_file: Path = typer.Option(  # noqa: B008
-        "./session-manager-plugin.pid",
-        help="The path to the PID file to store the process ID of the session manager plugin.",
-    ),
-    terminate_running_process: bool = typer.Option(
-        False,  # noqa: FBT003
-        help="Terminate the process in the PID file if it already exists.",
-    ),
-    log_file: Path = typer.Option(  # noqa: B008
-        "./session-manager-plugin.log",
-        help="The path to the log file to store the output of the session manager plugin.",
-    ),
 ) -> None:
     """Start a port forwarding session using AWS Session Manager.
 
     This command allows starting a port forwarding session through an EC2 instance identified by its name or ID.
     If there are more than one instance with the same name, the first one found will be used.
-
-    Also, it manages a PID file to keep track of the session manager plugin process running in background,
-    allowing to terminate any existing process before starting a new one.
 
     Required IAM Permissions:
 
@@ -69,26 +59,6 @@ def port_forward(  # noqa: PLR0913
     - `ssm:StartSession`
     """
     session_manager = SessionManager()
-
-    # Check if the PID file already exists
-    if pid_file.exists():
-        if not terminate_running_process:
-            logger.error("PID file already exists.")
-            raise typer.Exit(1)
-
-        pid_content = pid_file.read_text()
-        try:
-            existing_pid = int(pid_content)
-        except ValueError:
-            logger.error("PID file content is invalid; expected integer, but got: %r", type(pid_content))  # noqa: TRY400
-            raise typer.Exit(1) from None
-
-        try:
-            logger.warning("Terminating running process with PID %d.", existing_pid)
-            os.kill(existing_pid, signal.SIGTERM)
-            pid_file.write_text("")  # Clear the PID file
-        except ProcessLookupError:
-            logger.warning("Tried to terminate process with PID %d but does not exist.", existing_pid)
 
     # Resolve the instance name or ID
     instance_id = get_instance_id_by_name(through)
@@ -99,6 +69,10 @@ def port_forward(  # noqa: PLR0913
         logger.error("Instance with name '%s' not found.", through)
         raise typer.Exit(1)
 
+    is_non_localhost = local_host not in ("127.0.0.1", "localhost")
+    ssm_local_host = "127.0.0.1"
+    ssm_local_port = get_free_port() if is_non_localhost else local_port
+
     # Initiate the session
     command = session_manager.build_command(
         target=target,
@@ -106,37 +80,53 @@ def port_forward(  # noqa: PLR0913
         parameters={
             "host": [remote_host],
             "portNumber": [str(remote_port)],
-            "localPortNumber": [str(local_port)],
+            "localPortNumber": [str(ssm_local_port)],
         },
         reason=reason,
     )
-    stdout: subprocess._FILE
-    if log_file is not None:  # noqa: SIM108
-        stdout = log_file.open(mode="at+", buffering=1)
-    else:
-        stdout = subprocess.DEVNULL
 
     logger.info(
         "Starting port forwarding session through [bold]%s[/bold] with reason: [italic]%r[/italic].",
         through,
         reason,
     )
+
+    proxy: TCPProxy | None = None
+    if is_non_localhost:
+        proxy = TCPProxy(Address(local_host, local_port), Address(ssm_local_host, ssm_local_port))
+        proxy.start()
+        logger.info(
+            "TCP Proxy started on %s:%d -> %s:%d",
+            local_host,
+            local_port,
+            ssm_local_host,
+            ssm_local_port,
+        )
+
+    # NOTE: stdout=None inherits the parent process's standard output stream without
+    #       requiring a concrete file descriptor (sys.stdout.fileno()), preventing errors in
+    #       environments where stdout is captured (e.g. pytest or CLI test runners).
     proc = subprocess.Popen(  # noqa: S603
         command,
-        stdout=stdout,
+        stdout=None,
         stderr=subprocess.STDOUT,
         text=True,
-        close_fds=False,  # FD inherited from parent process
-    )
-    pid = proc.pid
-
-    logger.info(
-        "Session Manager Plugin started with PID %d. Outputs will be logged to %s.",
-        pid,
-        log_file.absolute(),
     )
 
-    # Write the PID to the file
-    pid_file.write_text(str(pid))
+    def handle_signal(sig: int, _frame: Any) -> None:
+        logger.info("Received signal %d, stopping port forwarding...", sig)
+        proc.terminate()
+        if proxy is not None:
+            proxy.stop()
 
-    logger.info("PID file written to %s.", pid_file.absolute())
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    try:
+        return_code = proc.wait()
+    finally:
+        if proxy is not None:
+            proxy.stop()
+
+    if return_code != 0:
+        raise typer.Exit(return_code)

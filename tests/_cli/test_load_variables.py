@@ -24,7 +24,7 @@ pytestmark = [
 
 
 @pytest.fixture
-def set_terminal_width() -> int:
+def terminal_width() -> int:
     """Use small terminal to simplify test assertions (due to secret random suffix)."""
     return 80
 
