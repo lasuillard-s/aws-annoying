@@ -10,7 +10,7 @@ import typer
 from aws_annoying.ec2 import get_instance_id_by_name
 from aws_annoying.session_manager import SessionManager
 from aws_annoying.utils.network import get_free_port
-from aws_annoying.utils.tcp_proxy import TCPProxy
+from aws_annoying.utils.tcp_proxy import Address, TCPProxy
 
 from ._app import session_manager_app
 
@@ -95,7 +95,7 @@ def port_forward(  # noqa: PLR0913
 
     proxy: TCPProxy | None = None
     if is_non_localhost:
-        proxy = TCPProxy(local_host, local_port, ssm_local_host, ssm_local_port)
+        proxy = TCPProxy(Address(local_host, local_port), Address(ssm_local_host, ssm_local_port))
         proxy.start()
         logger.info(
             "TCP Proxy started on %s:%d -> %s:%d",

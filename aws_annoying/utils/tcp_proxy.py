@@ -1,88 +1,117 @@
-from __future__ import annotations
-
-import contextlib
-import socket
+import asyncio
+import logging
 import threading
+from typing import NamedTuple
+
+logger = logging.getLogger(__name__)
+
+
+class Address(NamedTuple):
+    """Network address containing a host string and integer port."""
+
+    host: str
+    port: int
 
 
 class TCPProxy:
     """A TCP proxy forwarding traffic from a local host and port to a target host and port."""
 
-    def __init__(self, listen_host: str, listen_port: int, target_host: str, target_port: int) -> None:  # noqa: D107
-        self.listen_host = listen_host
-        self.listen_port = listen_port
-        self.target_host = target_host
-        self.target_port = target_port
+    def __init__(  # noqa: D107
+        self,
+        listen: Address,
+        target: Address,
+        *,
+        buffer_size: int = 4_096,
+    ) -> None:
+        self.listen = listen
+        self.target = target
+        self.buffer_size = buffer_size
 
-        self._server: socket.socket | None = None
         self._thread: threading.Thread | None = None
-        self._running = False
+        self._running = threading.Event()
+
+        self._server: asyncio.Server | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._async_stop_event: asyncio.Event | None = None
 
     def start(self) -> None:
         """Start the proxy server in a background thread."""
-        self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._server.bind((self.listen_host, self.listen_port))
-        self._server.listen(128)
-
-        self._running = True
-
+        self._running.set()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
 
     def _run(self) -> None:
-        while self._running and self._server:
-            try:
-                client, _ = self._server.accept()
-                t = threading.Thread(
-                    target=_handle_client,
-                    args=(client, self.target_host, self.target_port),
-                    daemon=True,
-                )
-                t.start()
-            except OSError:  # noqa: PERF203
-                break
+        """Set up the asyncio event loop and run the proxy server until it is stopped."""
+        self._loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._loop)
+        try:
+            self._loop.run_until_complete(self._async_run())
+        finally:
+            pending = asyncio.all_tasks(self._loop)
+            for task in pending:
+                task.cancel()
+
+            if pending:
+                self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+
+            self._loop.close()
+
+    async def _async_run(self) -> None:
+        """Start the asyncio server and block until the stop event is signaled."""
+        self._async_stop_event = asyncio.Event()
+        self._server = await asyncio.start_server(
+            self._handle_client,
+            self.listen.host,
+            self.listen.port,
+        )
+        async with self._server:
+            # Run server until the event is set
+            await self._async_stop_event.wait()
 
     def stop(self) -> None:
         """Stop the proxy server."""
-        self._running = False
-        if self._server:
-            with contextlib.suppress(OSError):
-                self._server.close()
-            self._server = None
+        self._running.clear()
+        if self._loop and self._async_stop_event:
+            self._loop.call_soon_threadsafe(self._async_stop_event.set)
 
+        if self._thread:
+            self._thread.join(timeout=2.0)
 
-def _forward(src: socket.socket, dst: socket.socket) -> None:
-    try:
-        while True:
-            data = src.recv(4096)
-            if not data:
-                break
-            dst.sendall(data)
-    except OSError:
-        # Socket errors (e.g. connection reset or closed during teardown) are expected when closing
-        pass
-    finally:
-        with contextlib.suppress(OSError):
-            dst.shutdown(socket.SHUT_WR)
+    async def _forward(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        """Asynchronously forward data from a stream reader to a stream writer."""
+        try:
+            while True:
+                data = await reader.read(self.buffer_size)
+                if not data:
+                    break
 
+                writer.write(data)
+                await writer.drain()
+        except OSError as e:
+            logger.debug("Socket error during port forwarding: %s", e)
+        finally:
+            if writer.can_write_eof():
+                writer.write_eof()
+            else:
+                writer.close()
 
-def _handle_client(client_socket: socket.socket, target_host: str, target_port: int) -> None:
-    try:
-        remote_socket = socket.create_connection((target_host, target_port))
-    except OSError:
-        client_socket.close()
-        return
+    async def _handle_client(self, client_reader: asyncio.StreamReader, client_writer: asyncio.StreamWriter) -> None:
+        """Handle an incoming client connection.
 
-    t1 = threading.Thread(target=_forward, args=(client_socket, remote_socket), daemon=True)
-    t2 = threading.Thread(target=_forward, args=(remote_socket, client_socket), daemon=True)
-    try:
-        t1.start()
-        t2.start()
-        t1.join()
-        t2.join()
-    finally:
-        with contextlib.suppress(OSError):
-            client_socket.close()
-        with contextlib.suppress(OSError):
-            remote_socket.close()
+        Establishes a connection to the target and spawns bidirectional data forwarding tasks.
+        """
+        try:
+            remote_reader, remote_writer = await asyncio.open_connection(self.target.host, self.target.port)
+        except OSError as e:
+            logger.debug("Failed to connect to target %s:%d: %s", self.target.host, self.target.port, e)
+            client_writer.close()
+            return
+
+        t1 = asyncio.create_task(self._forward(client_reader, remote_writer))
+        t2 = asyncio.create_task(self._forward(remote_reader, client_writer))
+
+        try:
+            await asyncio.gather(t1, t2)
+        finally:
+            client_writer.close()
+            remote_writer.close()

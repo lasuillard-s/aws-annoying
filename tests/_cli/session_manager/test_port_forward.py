@@ -8,6 +8,7 @@ import pytest
 from typer.testing import CliRunner
 
 from aws_annoying._cli.main import app
+from aws_annoying.utils.tcp_proxy import Address
 from tests._cli._helpers import normalize_console_output
 
 if TYPE_CHECKING:
@@ -88,25 +89,25 @@ def test_port_forward_localhost(snapshot: Snapshot) -> None:
             ],
         )
 
-        # Assert
-        assert result.exit_code == 0
-        mock_build_cmd.assert_called_once_with(
-            target=instance_id,
-            document_name="AWS-StartPortForwardingSessionToRemoteHost",
-            parameters={
-                "host": ["10.0.0.1"],
-                "portNumber": ["80"],
-                "localPortNumber": ["8080"],
-            },
-            reason="Testing port forwarding",
-        )
-        mock_popen.assert_called_once()
-        mock_proc.wait.assert_called_once()
-        snapshot.assert_match(
-            normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}),
-            "stdout.txt",
-        )
-        assert result.stderr == ""
+    # Assert
+    assert result.exit_code == 0
+    mock_build_cmd.assert_called_once_with(
+        target=instance_id,
+        document_name="AWS-StartPortForwardingSessionToRemoteHost",
+        parameters={
+            "host": ["10.0.0.1"],
+            "portNumber": ["80"],
+            "localPortNumber": ["8080"],
+        },
+        reason="Testing port forwarding",
+    )
+    mock_popen.assert_called_once()
+    mock_proc.wait.assert_called_once()
+    snapshot.assert_match(
+        normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}),
+        "stdout.txt",
+    )
+    assert result.stderr == ""
 
 
 def test_port_forward_non_localhost(snapshot: Snapshot) -> None:
@@ -157,28 +158,28 @@ def test_port_forward_non_localhost(snapshot: Snapshot) -> None:
             ],
         )
 
-        # Assert
-        assert result.exit_code == 0
-        mock_proxy_cls.assert_called_once_with("0.0.0.0", 8080, "127.0.0.1", 54321)  # noqa: S104
-        mock_proxy.start.assert_called_once()
-        mock_build_cmd.assert_called_once_with(
-            target=instance_id,
-            document_name="AWS-StartPortForwardingSessionToRemoteHost",
-            parameters={
-                "host": ["10.0.0.1"],
-                "portNumber": ["80"],
-                "localPortNumber": ["54321"],
-            },
-            reason="Testing port forwarding",
-        )
-        mock_popen.assert_called_once()
-        mock_proc.wait.assert_called_once()
-        mock_proxy.stop.assert_called_once()
-        snapshot.assert_match(
-            normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}),
-            "stdout.txt",
-        )
-        assert result.stderr == ""
+    # Assert
+    assert result.exit_code == 0
+    mock_proxy_cls.assert_called_once_with(Address("0.0.0.0", 8080), Address("127.0.0.1", 54321))  # noqa: S104
+    mock_proxy.start.assert_called_once()
+    mock_build_cmd.assert_called_once_with(
+        target=instance_id,
+        document_name="AWS-StartPortForwardingSessionToRemoteHost",
+        parameters={
+            "host": ["10.0.0.1"],
+            "portNumber": ["80"],
+            "localPortNumber": ["54321"],
+        },
+        reason="Testing port forwarding",
+    )
+    mock_popen.assert_called_once()
+    mock_proc.wait.assert_called_once()
+    mock_proxy.stop.assert_called_once()
+    snapshot.assert_match(
+        normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}),
+        "stdout.txt",
+    )
+    assert result.stderr == ""
 
 
 def test_port_forward_exit_code_failure() -> None:
@@ -219,5 +220,5 @@ def test_port_forward_exit_code_failure() -> None:
             ],
         )
 
-        # Assert
-        assert result.exit_code == 42
+    # Assert
+    assert result.exit_code == 42

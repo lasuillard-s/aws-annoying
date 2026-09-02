@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import contextlib
 import signal
-import subprocess
-import sys
 import time
 from typing import TYPE_CHECKING
 
@@ -15,6 +12,7 @@ from aws_annoying._cli.main import app
 from tests._cli._helpers import normalize_console_output
 
 if TYPE_CHECKING:
+    import subprocess
     from pathlib import Path
 
     from pytest_snapshot.plugin import Snapshot
@@ -28,6 +26,7 @@ pytestmark = [
 
 
 def test_no_command(snapshot: Snapshot) -> None:
+    """Test that running without specifying a command to execute fails."""
     # Arrange & Act
     result = runner.invoke(app, ["background", "run"])
 
@@ -38,6 +37,7 @@ def test_no_command(snapshot: Snapshot) -> None:
 
 
 def test_run_command(snapshot: Snapshot, tmp_path: Path) -> None:
+    """Test running a valid background command, verifying its execution and log outputs."""
     # Arrange
     ecs = boto3.client("ecs")
     family = "bg-task"
@@ -109,6 +109,7 @@ def test_run_command(snapshot: Snapshot, tmp_path: Path) -> None:
 
 
 def test_existing_pid_file_error(snapshot: Snapshot, tmp_path: Path) -> None:
+    """Test that running a command fails when a PID file already exists."""
     # Arrange
     pid_file = tmp_path / "test.pid"
     pid_file.write_text("12345")
@@ -138,65 +139,64 @@ def test_existing_pid_file_error(snapshot: Snapshot, tmp_path: Path) -> None:
     assert result.stderr == ""
 
 
-def test_existing_pid_file_terminate(snapshot: Snapshot, tmp_path: Path) -> None:
+def test_existing_pid_file_terminate(
+    snapshot: Snapshot, tmp_path: Path, dummy_process: subprocess.Popen[bytes]
+) -> None:
+    """Test using `--terminate-running-process` to successfully kill the existing process and overwrite PID file."""
     # Arrange
-    dummy_proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
-    dummy_pid = dummy_proc.pid
+    dummy_pid = dummy_process.pid
 
     pid_file = tmp_path / "test.pid"
     pid_file.write_text(str(dummy_pid))
     log_file = tmp_path / "test.log"
 
-    try:
-        # Act
-        result = runner.invoke(
-            app,
-            [
-                "background",
-                "run",
-                "--pid-file",
-                str(pid_file),
-                "--log-file",
-                str(log_file),
-                "--terminate-running-process",
-                "--",
-                "ecs",
-                "task-definition-lifecycle",
-                "--family",
-                "my-task",
-                "--keep-latest",
-                "1",
-            ],
-        )
+    # Act
+    result = runner.invoke(
+        app,
+        [
+            "background",
+            "run",
+            "--pid-file",
+            str(pid_file),
+            "--log-file",
+            str(log_file),
+            "--terminate-running-process",
+            "--",
+            "ecs",
+            "task-definition-lifecycle",
+            "--family",
+            "my-task",
+            "--keep-latest",
+            "1",
+        ],
+    )
 
-        # Assert
-        assert result.exit_code == 0
+    # Assert
+    assert result.exit_code == 0
 
-        dummy_proc.wait(timeout=2.0)
-        assert dummy_proc.returncode in (-signal.SIGTERM, signal.SIGTERM)
+    dummy_process.wait(timeout=2.0)
+    assert dummy_process.returncode in (-signal.SIGTERM, signal.SIGTERM)
 
-        new_pid = int(pid_file.read_text().strip())
-        assert new_pid != dummy_pid
-        assert new_pid > 0
+    new_pid = int(pid_file.read_text().strip())
+    assert new_pid != dummy_pid
+    assert new_pid > 0
 
-        snapshot.assert_match(
-            normalize_console_output(
-                result.stdout,
-                replace={
-                    str(tmp_path): "<tmp_path>",
-                    str(dummy_pid): "<dummy_pid>",
-                    str(new_pid): "<new_pid>",
-                },
-            ),
-            "stdout.txt",
-        )
-        assert result.stderr == ""
-    finally:
-        with contextlib.suppress(OSError):
-            dummy_proc.kill()
+    snapshot.assert_match(
+        normalize_console_output(
+            result.stdout,
+            replace={
+                str(tmp_path): "<tmp_path>",
+                str(dummy_pid): "<dummy_pid>",
+                str(new_pid): "<new_pid>",
+            },
+        ),
+        "stdout.txt",
+    )
+    assert result.stderr == ""
 
 
 def test_default_log_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Test that the default log file is created when no explicit log file path is provided."""
     # Arrange
     monkeypatch.chdir(tmp_path)
     pid_file = tmp_path / "test.pid"
@@ -245,6 +245,7 @@ def test_default_log_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, t
 
 
 def test_default_pid_file(snapshot: Snapshot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Test that the default PID file is created when no explicit PID file path is provided."""
     # Arrange
     monkeypatch.chdir(tmp_path)
     log_file = tmp_path / "test.log"

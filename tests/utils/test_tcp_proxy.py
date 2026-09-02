@@ -3,53 +3,65 @@ from __future__ import annotations
 import socket
 import threading
 import time
+from typing import TYPE_CHECKING
 
 import pytest
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 from aws_annoying.utils.network import get_free_port
-from aws_annoying.utils.tcp_proxy import TCPProxy
+from aws_annoying.utils.tcp_proxy import Address, TCPProxy
 
 pytestmark = [
     pytest.mark.unit,
 ]
 
 
-def _start_echo_server(port: int, stop_event: threading.Event) -> None:
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(("127.0.0.1", port))
-    server.listen(5)
-    server.settimeout(0.5)
-
-    while not stop_event.is_set():
-        try:
-            client, _ = server.accept()
-            data = client.recv(1024)
-            if data:
-                client.sendall(data)
-            client.close()
-        except TimeoutError:  # noqa: PERF203
-            continue
-        except OSError:
-            break
-
-    server.close()
-
-
-def test_tcp_proxy() -> None:
-    """Test basic bi-directional data forwarding between a client and a target server through the TCP proxy."""
-    # Arrange
-    echo_port = get_free_port()
-    proxy_port = get_free_port()
+@pytest.fixture
+def echo_server() -> Generator[int, None, None]:
+    port = get_free_port()
     stop_event = threading.Event()
 
-    # Start target echo server
-    echo_thread = threading.Thread(target=_start_echo_server, args=(echo_port, stop_event), daemon=True)
-    echo_thread.start()
+    def _start() -> None:
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind(("127.0.0.1", port))
+        server.listen(5)
+        server.settimeout(0.5)
+
+        while not stop_event.is_set():
+            try:
+                client, _ = server.accept()
+                data = client.recv(1_024)
+                if data:
+                    client.sendall(data)
+                client.close()
+            except TimeoutError:  # noqa: PERF203
+                continue
+            except OSError:
+                break
+
+        server.close()
+
+    thread = threading.Thread(target=_start, daemon=True)
+    thread.start()
     time.sleep(0.05)
 
+    try:
+        yield port
+    finally:
+        stop_event.set()
+        thread.join(timeout=1.0)
+
+
+def test_tcp_proxy(echo_server: int) -> None:
+    """Test basic bi-directional data forwarding between a client and a target server through the TCP proxy."""
+    # Arrange
+    proxy_port = get_free_port()
+
     # Start proxy server
-    proxy = TCPProxy("127.0.0.1", proxy_port, "127.0.0.1", echo_port)
+    proxy = TCPProxy(Address("127.0.0.1", proxy_port), Address("127.0.0.1", echo_server))
     proxy.start()
     time.sleep(0.05)
 
@@ -63,8 +75,6 @@ def test_tcp_proxy() -> None:
             assert data == b"hello world"
     finally:
         proxy.stop()
-        stop_event.set()
-        echo_thread.join(timeout=1.0)
 
 
 def test_tcp_proxy_target_unreachable() -> None:
@@ -73,7 +83,7 @@ def test_tcp_proxy_target_unreachable() -> None:
     target_port = get_free_port()
     proxy_port = get_free_port()
 
-    proxy = TCPProxy("127.0.0.1", proxy_port, "127.0.0.1", target_port)
+    proxy = TCPProxy(Address("127.0.0.1", proxy_port), Address("127.0.0.1", target_port))
     proxy.start()
     time.sleep(0.05)
 
@@ -81,7 +91,7 @@ def test_tcp_proxy_target_unreachable() -> None:
         # Act & Assert
         with socket.create_connection(("127.0.0.1", proxy_port), timeout=2.0) as client:
             # Since target is not running, proxy closes client socket
-            data = client.recv(1024)
+            data = client.recv(1_024)
             assert data == b""
     finally:
         proxy.stop()
@@ -106,7 +116,7 @@ def test_tcp_proxy_half_close() -> None:
                 client, _ = server.accept()
                 chunks = []
                 while True:
-                    buf = client.recv(1024)
+                    buf = client.recv(1_024)
                     if not buf:
                         break
                     chunks.append(buf)
@@ -123,7 +133,7 @@ def test_tcp_proxy_half_close() -> None:
     server_thread.start()
     time.sleep(0.05)
 
-    proxy = TCPProxy("127.0.0.1", proxy_port, "127.0.0.1", echo_port)
+    proxy = TCPProxy(Address("127.0.0.1", proxy_port), Address("127.0.0.1", echo_port))
     proxy.start()
     time.sleep(0.05)
 
@@ -131,7 +141,7 @@ def test_tcp_proxy_half_close() -> None:
         with socket.create_connection(("127.0.0.1", proxy_port), timeout=2.0) as client:
             client.sendall(b"ping")
             client.shutdown(socket.SHUT_WR)
-            reply = client.recv(1024)
+            reply = client.recv(1_024)
             assert reply == b"ping"
     finally:
         proxy.stop()
@@ -141,5 +151,5 @@ def test_tcp_proxy_half_close() -> None:
 
 def test_tcp_proxy_stop_when_not_started() -> None:
     """Test that stopping a proxy instance that has not been started succeeds without error."""
-    proxy = TCPProxy("127.0.0.1", 12345, "127.0.0.1", 54321)
+    proxy = TCPProxy(Address("127.0.0.1", 12345), Address("127.0.0.1", 54321))
     proxy.stop()  # Should not raise
