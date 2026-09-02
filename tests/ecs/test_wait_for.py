@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime
 from unittest import mock
 
@@ -42,7 +40,7 @@ class Test_wait_for_deployment_start:
             {
                 "serviceDeployments": [
                     {
-                        "serviceDeploymentArn": "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1",  # noqa: E501
+                        "serviceDeploymentArn": "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1",
                         "startedAt": datetime(2025, 5, 22, 17, 59, 58, 808000),  # noqa: DTZ001
                         "status": "PENDING",
                     },
@@ -55,18 +53,21 @@ class Test_wait_for_deployment_start:
             },
         )
 
-        # Act & Assert
+        # Act
         with stubber:
-            assert (
-                wait_for_deployment_start(
-                    ECSServiceRef(cluster="my-cluster", service="my-service"),
-                    session=mocked_session,
-                    wait_for_start=True,
-                    polling_interval=1,
-                    max_attempts=3,
-                )
-                == "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1"  # noqa: E501
+            result = wait_for_deployment_start(
+                ECSServiceRef(cluster="my-cluster", service="my-service"),
+                session=mocked_session,
+                wait_for_start=True,
+                polling_interval=1,
+                max_attempts=3,
             )
+
+        # Assert
+        assert (
+            result
+            == "arn:aws:ecs:ap-northeast-2:000000000000:service-deployment/my-cluster/my-service/wAMeGIKKhxAmoq1Ef03r1"
+        )
 
     def test_wait_for_deployment_start_no_deployment(self) -> None:
         """If there is no deployment, it should raise `NoRunningDeploymentError`."""
@@ -168,7 +169,7 @@ class Test_wait_for_deployment_complete:
         assert actual == "SUCCESSFUL"
 
     def test_wait_for_deployment_complete_max_attempts_exceeded(self) -> None:
-        """If the deployment is still in incomplete status after max attempts, it should return `False` and last status."""  # noqa: E501
+        """If the deployment is still in incomplete status after max attempts, it should return `False` and last status."""
         # Arrange
         mocked_session = mock.MagicMock()
         mocked_session.client.return_value = ecs = boto3.client("ecs")

@@ -1,3 +1,0 @@
-🔔 Retrieving MFA credentials using profile default
-⚠️ Updating MFA profile (mfa) to AWS credentials (<tmp_path>/credentials)
-🔔 Persisting MFA configuration in AWS config (<tmp_path>/config), in aws-annoying:mfa section.

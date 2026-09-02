@@ -1,15 +1,10 @@
-from __future__ import annotations
-
 import signal
 from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, TypeVar, cast
+from types import FrameType
+from typing import Any, TypeVar, cast
 
 from aws_annoying.utils.platform import is_windows
-
-if TYPE_CHECKING:
-    from types import FrameType
-    from typing import Any
 
 
 class OperationTimeoutError(Exception):

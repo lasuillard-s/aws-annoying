@@ -1,13 +1,9 @@
-from __future__ import annotations
-
 import logging
 import logging.config
-from typing import TYPE_CHECKING, Any, Final
+from typing import Any, Final
 
+from rich.console import Console
 from typing_extensions import override
-
-if TYPE_CHECKING:
-    from rich.console import Console
 
 
 class RichLogHandler(logging.Handler):

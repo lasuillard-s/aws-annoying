@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import socket
 
 import pytest
@@ -12,6 +10,7 @@ pytestmark = [
 
 
 def test_get_free_port() -> None:
+    """Test retrieving an available free ephemeral TCP port."""
     # Act
     port = get_free_port()
 

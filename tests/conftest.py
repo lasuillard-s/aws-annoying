@@ -1,16 +1,11 @@
-from __future__ import annotations
-
+from collections.abc import Iterator
 from configparser import ConfigParser
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import pytest
 from moto import mock_aws
 from moto.server import ThreadedMotoServer
 from testcontainers.localstack import LocalStackContainer
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-    from pathlib import Path
 
 
 def pytest_ignore_collect(collection_path: Path, config: pytest.Config) -> bool | None:  # noqa: ARG001

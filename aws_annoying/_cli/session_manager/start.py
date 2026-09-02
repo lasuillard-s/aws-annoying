@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 import enum
 import logging
 import os
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, TypeVar
 
 import boto3
@@ -17,8 +16,6 @@ from aws_annoying.session_manager import SessionManager
 from ._app import session_manager_app
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from mypy_boto3_ec2 import EC2Client
     from mypy_boto3_ecs import ECSClient
     from prompt_toolkit.key_binding import KeyPressEvent
@@ -151,7 +148,7 @@ def _handle_interactive_start() -> str:
                 return _build_ecs_target(cluster_name, task_id, runtime_id)
 
 
-def _select_ec2_instance(ec2: EC2Client) -> str | None:
+def _select_ec2_instance(ec2: "EC2Client") -> str | None:
     """Interactively select an EC2 instance.
 
     Args:
@@ -182,7 +179,7 @@ def _select_ec2_instance(ec2: EC2Client) -> str | None:
     return _prompt_select("Select EC2 Instance:", instances, allow_back=True)
 
 
-def _select_ecs_cluster(ecs: ECSClient) -> str | None:
+def _select_ecs_cluster(ecs: "ECSClient") -> str | None:
     """Interactively select an ECS cluster.
 
     Args:
@@ -205,7 +202,7 @@ def _select_ecs_cluster(ecs: ECSClient) -> str | None:
     return _prompt_select("Select ECS Cluster:", cluster_choices, allow_back=True)
 
 
-def _select_ecs_service(ecs: ECSClient, cluster_arn: str) -> str | None:
+def _select_ecs_service(ecs: "ECSClient", cluster_arn: str) -> str | None:
     """Interactively select an ECS service.
 
     Args:
@@ -231,7 +228,7 @@ def _select_ecs_service(ecs: ECSClient, cluster_arn: str) -> str | None:
     return _prompt_select("Select ECS Service:", service_choices, allow_back=True)
 
 
-def _select_ecs_task(ecs: ECSClient, cluster_arn: str, service_arn: str) -> str | None:
+def _select_ecs_task(ecs: "ECSClient", cluster_arn: str, service_arn: str) -> str | None:
     """Interactively select an ECS task.
 
     Args:
@@ -258,7 +255,7 @@ def _select_ecs_task(ecs: ECSClient, cluster_arn: str, service_arn: str) -> str 
     return _prompt_select("Select ECS Task:", task_choices, allow_back=True)
 
 
-def _select_ecs_container_in_task(ecs: ECSClient, cluster_arn: str, task_arn: str) -> str | None:
+def _select_ecs_container_in_task(ecs: "ECSClient", cluster_arn: str, task_arn: str) -> str | None:
     """Interactively select an ECS container in a task.
 
     Args:
@@ -298,7 +295,7 @@ def _select_ecs_container_in_task(ecs: ECSClient, cluster_arn: str, task_arn: st
 
 def _prompt_select(
     title: str,
-    choices: Sequence[tuple[T, str]],
+    choices: Sequence[tuple["T", str]],
     *,
     allow_back: bool = False,
     use_search_filter: bool = True,
@@ -326,7 +323,7 @@ def _prompt_select(
     if isinstance(q.application.key_bindings, KeyBindings):
 
         @q.application.key_bindings.add("escape", eager=True)
-        def _on_escape(event: KeyPressEvent) -> None:
+        def _on_escape(event: "KeyPressEvent") -> None:
             event.app.exit(result=None)
 
     result: T | None = q.ask()

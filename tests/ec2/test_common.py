@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 
 import pytest
@@ -16,6 +14,7 @@ pytestmark = [
 
 class Test_detect_instance_platform:
     def test_detect_linux(self) -> None:
+        """Test detecting Linux platform from EC2 instance description."""
         # Arrange
         response: Any = {
             "Reservations": [
@@ -30,11 +29,14 @@ class Test_detect_instance_platform:
             ]
         }
 
-        # Act & Assert
+        # Act
         platform = detect_instance_platform(response, "i-0123456789abcdef0")
+
+        # Assert
         assert platform == "linux"
 
     def test_detect_windows_from_platform_field(self) -> None:
+        """Test detecting Windows platform from Platform field."""
         # Arrange
         response: Any = {
             "Reservations": [
@@ -50,11 +52,14 @@ class Test_detect_instance_platform:
             ]
         }
 
-        # Act & Assert
+        # Act
         platform = detect_instance_platform(response, "i-0123456789abcdef0")
+
+        # Assert
         assert platform == "windows"
 
     def test_detect_windows_from_platform_details(self) -> None:
+        """Test detecting Windows platform from PlatformDetails field."""
         # Arrange
         response: Any = {
             "Reservations": [
@@ -69,11 +74,14 @@ class Test_detect_instance_platform:
             ]
         }
 
-        # Act & Assert
+        # Act
         platform = detect_instance_platform(response, "i-0123456789abcdef0")
+
+        # Assert
         assert platform == "windows"
 
     def test_instance_not_found_empty_reservations(self) -> None:
+        """Test error raised when reservations list is empty."""
         # Arrange
         response: Any = {"Reservations": []}
 
@@ -82,6 +90,7 @@ class Test_detect_instance_platform:
             detect_instance_platform(response, "i-0123456789abcdef0")
 
     def test_instance_not_found_empty_instances(self) -> None:
+        """Test error raised when instances list in reservation is empty."""
         # Arrange
         response: Any = {"Reservations": [{"Instances": []}]}
 

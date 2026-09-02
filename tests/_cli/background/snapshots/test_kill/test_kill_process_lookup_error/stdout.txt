@@ -1,4 +1,0 @@
-⚠️ Terminating running process with PID 999999.
-⚠️ Tried to terminate process with PID 999999 but does not exist.
-🔔 Removed the PID file <tmp_path>/valid.pid.
-🔔 Terminated the background process successfully.

@@ -1,3 +1,0 @@
-🔔 Starting background process: <PYTHON_EXECUTABLE> -m aws_annoying._cli.main ecs task-definition-lifecycle --family my-task --keep-latest 1
-🔔 Process started with PID <pid>. Outputs will be logged to <tmp_path>/.aws-annoying.log.
-🔔 PID file written to <tmp_path>/test.pid.

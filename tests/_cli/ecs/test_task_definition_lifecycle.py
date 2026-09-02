@@ -1,16 +1,10 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 import boto3
 import pytest
+from inline_snapshot import snapshot
 from typer.testing import CliRunner
 
 from aws_annoying._cli.main import app
 from tests._cli._helpers import normalize_console_output
-
-if TYPE_CHECKING:
-    from pytest_snapshot.plugin import Snapshot
 
 runner = CliRunner()
 
@@ -20,7 +14,7 @@ pytestmark = [
 ]
 
 
-def test_basic(snapshot: Snapshot) -> None:
+def test_basic() -> None:
     """The command should deregister the oldest task definitions."""
     # Arrange
     ecs = boto3.client("ecs")
@@ -55,7 +49,24 @@ def test_basic(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+⚠️ Deregistering 15 task definitions...
+⚠️ Deregistered task definition 'my-task:1'
+⚠️ Deregistered task definition 'my-task:2'
+⚠️ Deregistered task definition 'my-task:3'
+⚠️ Deregistered task definition 'my-task:4'
+⚠️ Deregistered task definition 'my-task:5'
+⚠️ Deregistered task definition 'my-task:6'
+⚠️ Deregistered task definition 'my-task:7'
+⚠️ Deregistered task definition 'my-task:8'
+⚠️ Deregistered task definition 'my-task:9'
+⚠️ Deregistered task definition 'my-task:10'
+⚠️ Deregistered task definition 'my-task:11'
+⚠️ Deregistered task definition 'my-task:12'
+⚠️ Deregistered task definition 'my-task:13'
+⚠️ Deregistered task definition 'my-task:14'
+⚠️ Deregistered task definition 'my-task:15'\
+""")
 
     active_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
     assert active_task_definitions["taskDefinitionArns"] == [
@@ -68,7 +79,7 @@ def test_basic(snapshot: Snapshot) -> None:
     ]
 
 
-def test_delete(snapshot: Snapshot) -> None:
+def test_delete() -> None:
     """The command should deregister the oldest task definitions."""
     # Arrange
     ecs = boto3.client("ecs")
@@ -104,7 +115,27 @@ def test_delete(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+⚠️ Deregistering 15 task definitions...
+⚠️ Deregistered task definition 'my-task:1'
+⚠️ Deregistered task definition 'my-task:2'
+⚠️ Deregistered task definition 'my-task:3'
+⚠️ Deregistered task definition 'my-task:4'
+⚠️ Deregistered task definition 'my-task:5'
+⚠️ Deregistered task definition 'my-task:6'
+⚠️ Deregistered task definition 'my-task:7'
+⚠️ Deregistered task definition 'my-task:8'
+⚠️ Deregistered task definition 'my-task:9'
+⚠️ Deregistered task definition 'my-task:10'
+⚠️ Deregistered task definition 'my-task:11'
+⚠️ Deregistered task definition 'my-task:12'
+⚠️ Deregistered task definition 'my-task:13'
+⚠️ Deregistered task definition 'my-task:14'
+⚠️ Deregistered task definition 'my-task:15'
+⚠️ Deleting 15 task definitions in chunks of size 10...
+⚠️ Deleted 10 task definitions in 0-th batch.
+⚠️ Deleted 5 task definitions in 1-th batch.\
+""")
 
     active_task_definitions = ecs.list_task_definitions(familyPrefix=family, status="ACTIVE")
     assert active_task_definitions["taskDefinitionArns"] == [

@@ -37,12 +37,12 @@ dev = [
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
   "pytest-env==1.7.0",
-  "pytest-snapshot==0.9.0",
   "pytest-sugar==1.1.1",
   "pytest-xdist==3.8.0",
   "testcontainers[localstack]==4.15.0",
   "toml==0.10.2",
   "types-toml==0.10.8.20260518",
+  "inline-snapshot==0.35.4",
 ]
 
 [project.urls]
@@ -78,7 +78,7 @@ ignore = [
 
 [tool.ruff.lint.extend-per-file-ignores]
 "**/__init__.py" = ["D104"]
-"tests/*" = ["D", "S101", "PLR2004", "SLF001", "N801"]
+"tests/*" = ["D", "S101", "PLR2004", "SLF001", "N801", "E501"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -107,7 +107,6 @@ addopts = [
   "--cov-report=xml",
   "--show-capture=all",
   "--junitxml=junit.xml",
-  "--allow-snapshot-deletion",
 ]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning::"]
@@ -117,6 +116,10 @@ markers = [
   "docker: Tests that require Docker to run",
   "cli: Tests that require CLI extra dependencies",
 ]
+
+[tool.inline-snapshot]
+default-flags = ["report"]
+format-command = "ruff format --stdin-filename {filename}"
 
 [tool.coverage.run]
 include = ["aws_annoying/*"]

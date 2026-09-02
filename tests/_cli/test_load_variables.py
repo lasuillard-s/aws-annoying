@@ -1,10 +1,9 @@
-from __future__ import annotations
-
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pytest
+from inline_snapshot import snapshot
 from typer.testing import CliRunner
 
 from aws_annoying._cli.main import app
@@ -12,11 +11,8 @@ from tests._cli._helpers import create_parameters, create_secrets
 
 from ._helpers import PRINTENV_PY, invoke_cli, normalize_console_output, repeat_options
 
-if TYPE_CHECKING:
-    from pytest_snapshot.plugin import Snapshot
-
 # * Command `load-variables` cannot use Typer CLI runner because it uses `os.execvpe` internally,
-# * which replaces the current process with the new one, breaking pytest runtime.
+# * technical reasons: replaces the current process with the new one, breaking pytest runtime.
 # * But tests that does not reach the `os.execvpe` statement can use Typer CLI runner (or provide `--no-replace` flag).
 runner = CliRunner()
 
@@ -88,7 +84,7 @@ printenv_py = str(PRINTENV_PY.relative_to(Path.cwd()))
 printenv = [printenv_py, "DJANGO_SETTINGS_MODULE", "DJANGO_SECRET_KEY", "DJANGO_DEBUG", "DJANGO_ALLOWED_HOSTS"]
 
 
-def test_nothing(snapshot: Snapshot) -> None:
+def test_nothing() -> None:
     """If nothing is provided, the command should do nothing."""
     # Arrange
     # ...
@@ -103,10 +99,10 @@ def test_nothing(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("⚠️ No command provided. Exiting...")
 
 
-def test_basic(snapshot: Snapshot) -> None:
+def test_basic() -> None:
     """Test basic usage."""
     # Arrange
     setup = setup_resources()
@@ -123,11 +119,26 @@ def test_basic(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.returncode == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+🔔 Summary:
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ ARN                                                                  ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0     │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/django-… │
+│ 1     │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-settings  │
+└───────┴──────────────────────────────────────────────────────────────────────┘
+🔔 Retrieving variables from AWS resources...
+🔔 Retrieved 1 secrets and 1 parameters.
+🔔 Running the command: tests/_cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+DJANGO_SETTINGS_MODULE=config.settings.development
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=*\
+""")
     assert result.stderr == ""
 
 
-def test_replace_quiet(snapshot: Snapshot) -> None:
+def test_replace_quiet() -> None:
     """Test the most common practical use-case."""
     # Arrange
     setup = setup_resources()
@@ -146,11 +157,16 @@ def test_replace_quiet(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.returncode == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+DJANGO_SETTINGS_MODULE=config.settings.development
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2\
+""")
     assert result.stderr == ""
 
 
-def test_env_prefix(snapshot: Snapshot) -> None:
+def test_env_prefix() -> None:
     """Test prefixed environment variables support."""
     # Arrange
     setup = setup_resources()
@@ -169,11 +185,29 @@ def test_env_prefix(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.returncode == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+🔔 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
+🔔 Found 1 sources from environment variables.
+🔔 Summary:
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index        ┃ ARN                                                           ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0            │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/… │
+│ 1            │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-s… │
+│ 900_override │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/override  │
+└──────────────┴───────────────────────────────────────────────────────────────┘
+🔔 Retrieving variables from AWS resources...
+🔔 Retrieved 1 secrets and 2 parameters.
+🔔 Running the command: tests/_cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+DJANGO_SETTINGS_MODULE=config.settings.development
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2\
+""")
     assert result.stderr == ""
 
 
-def test_overwrite_env(snapshot: Snapshot) -> None:
+def test_overwrite_env() -> None:
     """Test `--overwrite-env` flag. If provided, it should overwrite the existing environment variables."""
     # Arrange
     setup = setup_resources()
@@ -193,11 +227,29 @@ def test_overwrite_env(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.returncode == 0
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+🔔 Loading ARNs from environment variables with prefix: 'LOAD_AWS_CONFIG__'
+🔔 Found 1 sources from environment variables.
+🔔 Summary:
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index        ┃ ARN                                                           ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0            │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/… │
+│ 1            │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-s… │
+│ 900_override │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/override  │
+└──────────────┴───────────────────────────────────────────────────────────────┘
+🔔 Retrieving variables from AWS resources...
+🔔 Retrieved 1 secrets and 2 parameters.
+🔔 Running the command: tests/_cli/_helpers/scripts/printenv.py DJANGO_SETTINGS_MODULE DJANGO_SECRET_KEY DJANGO_DEBUG DJANGO_ALLOWED_HOSTS
+DJANGO_SETTINGS_MODULE=config.settings.local
+DJANGO_SECRET_KEY=my-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=127.0.0.1,192.168.0.2\
+""")
     assert result.stderr == ""
 
 
-def test_unsupported_resource(snapshot: Snapshot) -> None:
+def test_unsupported_resource() -> None:
     """If unsupported resource ARN provided, should exit with error."""
     # Arrange
     # ...
@@ -215,7 +267,16 @@ def test_unsupported_resource(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 1
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+🔔 Summary:
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ ARN                              ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0     │ arn:aws:s3:::my-bucket/my-object │
+└───────┴──────────────────────────────────┘
+🔔 Retrieving variables from AWS resources...
+🚨 Failed to load the variables: Unsupported resource: 'arn:aws:s3:::my-bucket/my-object'\
+""")
 
 
 @pytest.mark.parametrize(
@@ -229,7 +290,7 @@ def test_unsupported_resource(snapshot: Snapshot) -> None:
         "ssm",
     ],
 )
-def test_resource_not_found(snapshot: Snapshot, arn: str) -> None:
+def test_resource_not_found(arn: str) -> None:
     """Test with resource does not exists."""
     # Arrange
     setup = setup_resources()
@@ -248,5 +309,16 @@ def test_resource_not_found(snapshot: Snapshot, arn: str) -> None:
 
     # Assert
     assert result.returncode == 1
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("""\
+🔔 Summary:
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ ARN                                                                  ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 0     │ arn:aws:secretsmanager:us-east-1:000000000000:secret:my-app/django-… │
+│ 1     │ arn:aws:ssm:us-east-1:000000000000:parameter/my-app/django-settings  │
+│ 2     │ arn:aws:ssm:us-east-1:123456789012:parameter/unknown-parameter       │
+└───────┴──────────────────────────────────────────────────────────────────────┘
+🔔 Retrieving variables from AWS resources...
+🚨 Failed to load the variables: Failed to retrieve parameters: ['unknown-parameter']\
+""")
     assert result.stderr == ""
