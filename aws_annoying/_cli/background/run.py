@@ -60,26 +60,56 @@ def run(
     # NOTE: This(background run) is a wrapper around the main CLI command
     command = [sys.executable, "-m", "aws_annoying._cli.main", *command]
 
-    # Handle existing PID file if specified
-    if pid_file.exists():
-        if not terminate_running_process:
-            logger.error("PID file already exists: %s", pid_file)
-            raise typer.Exit(1)
-
+    if terminate_running_process and pid_file.exists():
         terminate_process_by_pid_file(pid_file, remove=True)
 
-    stdout = log_file.open(mode="at+", buffering=1)
-    logger.info("Starting background process: %s", " ".join(command))
-    pid = _spawn_process(command, stdout)
-    if hasattr(stdout, "close"):
-        stdout.close()
+    _claim_pid_file(pid_file)
 
-    logger.info("Process started with PID %d. Outputs will be logged to %s.", pid, log_file.absolute())
-    pid_file.write_text(str(pid))
-    logger.info("PID file written to %s.", pid_file.absolute())
+    try:
+        with log_file.open(mode="at+", buffering=1) as stdout:
+            logger.info("Starting background process: %s", " ".join(command))
+            pid = _spawn_process(command, stdout=stdout)
+
+        logger.info("Process started with PID %d. Outputs will be logged to %s.", pid, log_file.absolute())
+
+        # Write the PID to the PID file after the process has started successfully
+        pid_file.write_text(str(pid))
+        logger.info("PID file written to %s.", pid_file.absolute())
+    except Exception:
+        pid_file.unlink(missing_ok=True)
+        raise
 
 
-def _spawn_process(command: list[str], stdout: subprocess._FILE) -> int:
+def _claim_pid_file(pid_file: Path) -> None:
+    """Atomically create and claim a PID file before spawning a process.
+
+    Uses `Path.touch(exist_ok=False)` which opens the file with exclusive creation
+    flags (`O_CREAT | O_EXCL`) at the OS level. This ensures atomic access so that
+    only one concurrent invocation can claim the PID file and proceed.
+
+    Args:
+        pid_file: Path to the PID file to claim.
+
+    Raises:
+        typer.Exit: If the PID file already exists.
+    """
+    try:
+        pid_file.touch(exist_ok=False)
+    except FileExistsError:
+        logger.error("PID file already exists: %s", pid_file)  # noqa: TRY400
+        raise typer.Exit(1) from None
+
+
+def _spawn_process(command: list[str], *, stdout: subprocess._FILE) -> int:
+    """Spawn a detached background subprocess and return its PID.
+
+    Args:
+        command: The command arguments to execute.
+        stdout: File handle for redirecting subprocess output.
+
+    Returns:
+        The process ID (PID) of the spawned subprocess.
+    """
     if is_windows():
         proc = subprocess.Popen(  # noqa: S603
             command,

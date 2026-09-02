@@ -38,6 +38,10 @@ def terminate_process_by_pid_file(
         logger.error("PID file content is invalid; expected integer, but got: %r", pid_content)  # noqa: TRY400
         raise typer.Exit(1) from None
 
+    if pid <= 0:
+        logger.error("PID must be strictly positive, but got: %d", pid)
+        raise typer.Exit(1)
+
     try:
         logger.warning("Terminating running process with PID %d.", pid)
         os.kill(pid, signal.SIGTERM)
