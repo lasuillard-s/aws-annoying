@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import re
 
 import boto3
@@ -18,6 +16,8 @@ pytestmark = [
 
 
 def test_is_valid_instance_id() -> None:
+    """Test validating various valid and invalid EC2 instance ID strings."""
+    # Arrange & Act & Assert
     # Valid instance IDs
     assert is_valid_instance_id("i-12345678")
     assert is_valid_instance_id("i-0123456789abcdef0")
@@ -40,6 +40,7 @@ def test_is_valid_instance_id() -> None:
 
 class Test_get_instance_id_by_name:
     def test_get_by_name(self) -> None:
+        """Test retrieving instance ID by Name tag."""
         # Arrange
         ec2 = boto3.client("ec2")
         ec2.run_instances(
@@ -59,6 +60,7 @@ class Test_get_instance_id_by_name:
         assert re.match(r"^i-[0-9a-zA-Z]+$", instance_id) is not None
 
     def test_get_by_name_default_client(self) -> None:
+        """Test retrieving instance ID by Name tag using the default boto3 client."""
         # Arrange
         ec2 = boto3.client("ec2")
         ec2.run_instances(
@@ -77,6 +79,7 @@ class Test_get_instance_id_by_name:
         assert re.match(r"^i-[0-9a-zA-Z]+$", instance_id) is not None
 
     def test_get_by_name_not_found(self) -> None:
+        """Test retrieving instance ID when no matching instance exists."""
         # Arrange
         ec2 = boto3.client("ec2")
 
@@ -88,6 +91,7 @@ class Test_get_instance_id_by_name:
         assert instance_id is None
 
     def test_get_by_instance_id(self) -> None:
+        """Test retrieving instance ID directly when instance ID is passed as name."""
         # Arrange
         ec2 = boto3.client("ec2")
         response = ec2.run_instances(
@@ -107,6 +111,7 @@ class Test_get_instance_id_by_name:
         assert fetched_instance_id == instance_id
 
     def test_if_multiple_instances_exists_default(self) -> None:
+        """Test retrieving first instance ID when multiple instances match Name tag."""
         # Arrange
         ec2 = boto3.client("ec2")
         for _ in range(3):
@@ -127,6 +132,7 @@ class Test_get_instance_id_by_name:
         assert re.match(r"^i-[0-9a-zA-Z]+$", instance_id) is not None
 
     def test_if_multiple_instances_exists_expect_one(self) -> None:
+        """Test error raised when multiple instances found with expect_one=True."""
         # Arrange
         ec2 = boto3.client("ec2")
         for _ in range(2):

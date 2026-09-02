@@ -1,14 +1,9 @@
-from __future__ import annotations
-
 import socket
 import threading
 import time
-from typing import TYPE_CHECKING
+from collections.abc import Generator
 
 import pytest
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
 
 from aws_annoying.utils.network import get_free_port
 from aws_annoying.utils.tcp_proxy import Address, TCPProxy
@@ -138,6 +133,7 @@ def test_tcp_proxy_half_close() -> None:
     time.sleep(0.05)
 
     try:
+        # Act & Assert
         with socket.create_connection(("127.0.0.1", proxy_port), timeout=2.0) as client:
             client.sendall(b"ping")
             client.shutdown(socket.SHUT_WR)
@@ -151,5 +147,8 @@ def test_tcp_proxy_half_close() -> None:
 
 def test_tcp_proxy_stop_when_not_started() -> None:
     """Test that stopping a proxy instance that has not been started succeeds without error."""
+    # Arrange
     proxy = TCPProxy(Address("127.0.0.1", 12345), Address("127.0.0.1", 54321))
+
+    # Act & Assert
     proxy.stop()  # Should not raise

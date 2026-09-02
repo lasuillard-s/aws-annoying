@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from unittest import mock
 
 import boto3
@@ -20,6 +18,7 @@ pytestmark = [
 
 class Test_InstanceReadinessWaiter:
     def test_invalid_instance_id(self) -> None:
+        """Test waiting with an invalid EC2 instance ID raises InvalidInstanceIdError."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("AWS-RunShellScript", {"commands": ["echo 'ready'"]}, client=ssm)
@@ -29,6 +28,7 @@ class Test_InstanceReadinessWaiter:
             waiter.wait_for_ready("not-an-id")
 
     def test_wait_for_ready_success(self) -> None:
+        """Test waiting succeeds on the first attempt when instance is ready."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("AWS-RunShellScript", {"commands": ["echo 'ready'"]}, client=ssm)
@@ -42,6 +42,7 @@ class Test_InstanceReadinessWaiter:
         mock_check.assert_called_once_with("i-0123456789abcdef0")
 
     def test_wait_for_ready_multiple_attempts(self) -> None:
+        """Test waiting succeeds after multiple retry attempts."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("AWS-RunShellScript", {"commands": ["echo 'ready'"]}, client=ssm)
@@ -59,6 +60,7 @@ class Test_InstanceReadinessWaiter:
         mock_sleep.assert_called_once_with(0.1)
 
     def test_wait_for_ready_max_attempts_exceeded(self) -> None:
+        """Test waiting raises InstanceNotReadyError when max attempts are exceeded."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("AWS-RunShellScript", {"commands": ["echo 'ready'"]}, client=ssm)
@@ -72,6 +74,7 @@ class Test_InstanceReadinessWaiter:
             waiter.wait_for_ready("i-0123456789abcdef0", max_attempts=2, delay=0.1)
 
     def test_check_ready_success(self) -> None:
+        """Test check_ready returns True when command invocation succeeds."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter(
@@ -109,6 +112,7 @@ class Test_InstanceReadinessWaiter:
             mock_wait.assert_called_once()
 
     def test_check_ready_transient_failure_send_command(self) -> None:
+        """Test check_ready returns False when send_command fails with a transient error."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("MyCustomDoc", {"commands": ["exit 0"]}, client=ssm)
@@ -130,6 +134,7 @@ class Test_InstanceReadinessWaiter:
             assert waiter.check_ready("i-0123456789abcdef0") is False
 
     def test_check_ready_transient_failure_get_command_invocation(self) -> None:
+        """Test check_ready returns False when get_command_invocation fails with InvocationDoesNotExist."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("MyCustomDoc", {"commands": ["exit 0"]}, client=ssm)
@@ -159,6 +164,7 @@ class Test_InstanceReadinessWaiter:
             assert waiter.check_ready("i-0123456789abcdef0") is False
 
     def test_check_ready_non_transient_failure_raises(self) -> None:
+        """Test check_ready re-raises non-transient ClientErrors."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("MyCustomDoc", {"commands": ["exit 0"]}, client=ssm)
@@ -180,6 +186,7 @@ class Test_InstanceReadinessWaiter:
             waiter.check_ready("i-0123456789abcdef0")
 
     def test_is_transient_error(self) -> None:
+        """Test identifying transient vs non-transient SSM ClientErrors."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("MyCustomDoc", {}, client=ssm)
@@ -198,6 +205,7 @@ class Test_InstanceReadinessWaiter:
         assert waiter.is_transient_error(non_transient_err) is False
 
     def test_wait(self) -> None:
+        """Test wait helper pauses execution for the configured wait_duration."""
         # Arrange
         ssm = boto3.client("ssm", region_name="us-east-1")
         waiter = InstanceReadinessWaiter("MyCustomDoc", {}, client=ssm, wait_duration=3.5)

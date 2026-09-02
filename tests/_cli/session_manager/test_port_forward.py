@@ -1,18 +1,13 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
 from unittest import mock
 
 import boto3
 import pytest
+from inline_snapshot import snapshot
 from typer.testing import CliRunner
 
 from aws_annoying._cli.main import app
 from aws_annoying.utils.tcp_proxy import Address
 from tests._cli._helpers import normalize_console_output
-
-if TYPE_CHECKING:
-    from pytest_snapshot.plugin import Snapshot
 
 runner = CliRunner()
 
@@ -22,8 +17,9 @@ pytestmark = [
 ]
 
 
-def test_instance_not_found(snapshot: Snapshot) -> None:
-    # Arrange & Act
+def test_instance_not_found() -> None:
+    """Test that attempting to port forward through a non-existent instance fails."""
+    # Act
     result = runner.invoke(
         app,
         [
@@ -44,11 +40,14 @@ def test_instance_not_found(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 1
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot(
+        "🚨 Instance with name 'nonexistent-instance' not found."
+    )
     assert result.stderr == ""
 
 
-def test_port_forward_localhost(snapshot: Snapshot) -> None:
+def test_port_forward_localhost() -> None:
+    """Test starting port forwarding targeting localhost."""
     # Arrange
     ec2 = boto3.client("ec2")
     response = ec2.run_instances(
@@ -103,14 +102,15 @@ def test_port_forward_localhost(snapshot: Snapshot) -> None:
     )
     mock_popen.assert_called_once()
     mock_proc.wait.assert_called_once()
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}),
-        "stdout.txt",
-    )
+    assert normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}) == snapshot("""\
+🔔 Instance ID resolved: <instance_id>
+🔔 Starting port forwarding session through my-instance with reason: 'Testing port forwarding'.\
+""")
     assert result.stderr == ""
 
 
-def test_port_forward_non_localhost(snapshot: Snapshot) -> None:
+def test_port_forward_non_localhost() -> None:
+    """Test starting port forwarding targeting non-localhost with TCPProxy."""
     # Arrange
     ec2 = boto3.client("ec2")
     response = ec2.run_instances(
@@ -175,14 +175,16 @@ def test_port_forward_non_localhost(snapshot: Snapshot) -> None:
     mock_popen.assert_called_once()
     mock_proc.wait.assert_called_once()
     mock_proxy.stop.assert_called_once()
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}),
-        "stdout.txt",
-    )
+    assert normalize_console_output(result.stdout, replace={instance_id: "<instance_id>"}) == snapshot("""\
+🔔 Instance ID resolved: <instance_id>
+🔔 Starting port forwarding session through my-instance with reason: 'Testing port forwarding'.
+🔔 TCP Proxy started on 0.0.0.0:8080 -> 127.0.0.1:54321\
+""")
     assert result.stderr == ""
 
 
 def test_port_forward_exit_code_failure() -> None:
+    """Test that non-zero exit code from subprocess is propagated."""
     # Arrange
     ec2 = boto3.client("ec2")
     ec2.run_instances(

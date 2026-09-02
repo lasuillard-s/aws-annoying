@@ -1,17 +1,12 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
 from unittest import mock
 
 import boto3
 import pytest
+from inline_snapshot import snapshot
 from typer.testing import CliRunner
 
 from aws_annoying._cli.main import app
 from tests._cli._helpers import normalize_console_output
-
-if TYPE_CHECKING:
-    from pytest_snapshot.plugin import Snapshot
 
 runner = CliRunner()
 
@@ -21,7 +16,8 @@ pytestmark = [
 ]
 
 
-def test_invalid_instance_id(snapshot: Snapshot) -> None:
+def test_invalid_instance_id() -> None:
+    """Test that specifying an invalid EC2 instance ID returns an error."""
     # Act
     result = runner.invoke(
         app,
@@ -35,11 +31,12 @@ def test_invalid_instance_id(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 1
-    snapshot.assert_match(normalize_console_output(result.stdout), "stdout.txt")
+    assert normalize_console_output(result.stdout) == snapshot("🚨 Invalid EC2 instance ID 'invalid-instance-name'")
     assert result.stderr == ""
 
 
-def test_invalid_document_parameters_json(snapshot: Snapshot) -> None:
+def test_invalid_document_parameters_json() -> None:
+    """Test that providing invalid JSON for document parameters causes a CLI error."""
     # Act
     result = runner.invoke(
         app,
@@ -56,10 +53,17 @@ def test_invalid_document_parameters_json(snapshot: Snapshot) -> None:
     # Assert
     assert result.exit_code == 2
     assert result.stdout == ""
-    snapshot.assert_match(normalize_console_output(result.stderr), "stderr.txt")
+    assert normalize_console_output(result.stderr) == snapshot("""\
+Usage: root ec2 wait-for-ready [OPTIONS]
+Try 'root ec2 wait-for-ready --help' for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Invalid value for '--document-parameters': Failed to parse JSON argument                                                                                                                             │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\
+""")
 
 
 def test_document_name_without_parameters() -> None:
+    """Test that providing document name without parameters raises an error."""
     # Act
     result = runner.invoke(
         app,
@@ -81,6 +85,7 @@ def test_document_name_without_parameters() -> None:
 
 
 def test_document_parameters_without_name() -> None:
+    """Test that providing document parameters without name raises an error."""
     # Act
     result = runner.invoke(
         app,
@@ -101,7 +106,8 @@ def test_document_parameters_without_name() -> None:
     )
 
 
-def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
+def test_invalid_document_parameters_not_dict() -> None:
+    """Test that document parameters passed as a JSON array instead of an object raises an error."""
     # Act
     result = runner.invoke(
         app,
@@ -120,7 +126,13 @@ def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
     # Assert
     assert result.exit_code == 2
     assert result.stdout == ""
-    snapshot.assert_match(normalize_console_output(result.stderr), "stderr.txt")
+    assert normalize_console_output(result.stderr) == snapshot("""\
+Usage: root ec2 wait-for-ready [OPTIONS]
+Try 'root ec2 wait-for-ready --help' for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Invalid value for '--document-parameters': Parameters must be a JSON object (key-value mapping)                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\
+""")
 
 
 @pytest.mark.parametrize(
@@ -133,6 +145,7 @@ def test_invalid_document_parameters_not_dict(snapshot: Snapshot) -> None:
     ],
 )
 def test_invalid_document_parameters_non_dict_types(invalid_parameters: str) -> None:
+    """Test that non-dict JSON document parameters raise a validation error."""
     # Act
     result = runner.invoke(
         app,
@@ -154,6 +167,7 @@ def test_invalid_document_parameters_non_dict_types(invalid_parameters: str) -> 
 
 
 def test_invalid_max_attempts_bound() -> None:
+    """Test that specifying max attempts less than 1 raises a validation error."""
     # Act
     result = runner.invoke(
         app,
@@ -173,6 +187,7 @@ def test_invalid_max_attempts_bound() -> None:
 
 
 def test_invalid_delay_bound() -> None:
+    """Test that specifying a negative delay raises a validation error."""
     # Act
     result = runner.invoke(
         app,
@@ -191,7 +206,8 @@ def test_invalid_delay_bound() -> None:
     assert "Invalid value for '--delay': -1.0 is not in the range x>=0.0." in normalize_console_output(result.stderr)
 
 
-def test_wait_for_ready_success_auto(snapshot: Snapshot) -> None:
+def test_wait_for_ready_success_auto() -> None:
+    """Test successfully waiting for an EC2 instance to become ready with auto platform detection."""
     # Arrange
     ec2 = boto3.client("ec2")
     res = ec2.run_instances(
@@ -220,14 +236,16 @@ def test_wait_for_ready_success_auto(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}),
-        "stdout.txt",
-    )
+    assert normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}) == snapshot("""\
+🔔 Waiting for instance i-0123456789abcdef0 to be ready...
+🔔 Attempt 1/5...
+🔔 Instance i-0123456789abcdef0 is ready.\
+""")
     assert result.stderr == ""
 
 
-def test_wait_for_ready_success_windows(snapshot: Snapshot) -> None:
+def test_wait_for_ready_success_windows() -> None:
+    """Test successfully waiting for an EC2 instance with explicit windows platform."""
     # Arrange
     ec2 = boto3.client("ec2")
     res = ec2.run_instances(
@@ -254,14 +272,16 @@ def test_wait_for_ready_success_windows(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}),
-        "stdout.txt",
-    )
+    assert normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}) == snapshot("""\
+🔔 Waiting for instance i-0123456789abcdef0 to be ready...
+🔔 Attempt 1/10...
+🔔 Instance i-0123456789abcdef0 is ready.\
+""")
     assert result.stderr == ""
 
 
-def test_wait_for_ready_custom_document_with_parameters(snapshot: Snapshot) -> None:
+def test_wait_for_ready_custom_document_with_parameters() -> None:
+    """Test successfully waiting for an EC2 instance using a custom SSM document and parameters."""
     # Arrange
     ec2 = boto3.client("ec2")
     res = ec2.run_instances(
@@ -290,14 +310,16 @@ def test_wait_for_ready_custom_document_with_parameters(snapshot: Snapshot) -> N
 
     # Assert
     assert result.exit_code == 0
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}),
-        "stdout.txt",
-    )
+    assert normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}) == snapshot("""\
+🔔 Waiting for instance i-0123456789abcdef0 to be ready...
+🔔 Attempt 1/10...
+🔔 Instance i-0123456789abcdef0 is ready.\
+""")
     assert result.stderr == ""
 
 
 def test_wait_for_ready_not_found_failure() -> None:
+    """Test waiting for a non-existent instance fails with exit code 1."""
     # Act
     result = runner.invoke(
         app,
@@ -315,7 +337,8 @@ def test_wait_for_ready_not_found_failure() -> None:
     assert result.stderr == ""
 
 
-def test_wait_for_ready_not_ready_failure(snapshot: Snapshot) -> None:
+def test_wait_for_ready_not_ready_failure() -> None:
+    """Test waiting for an instance fails if it does not become ready within max attempts."""
     # Arrange
     ec2 = boto3.client("ec2")
     res = ec2.run_instances(
@@ -352,8 +375,11 @@ def test_wait_for_ready_not_ready_failure(snapshot: Snapshot) -> None:
 
     # Assert
     assert result.exit_code == 1
-    snapshot.assert_match(
-        normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}),
-        "stdout.txt",
-    )
+    assert normalize_console_output(result.stdout, replace={instance_id: "i-0123456789abcdef0"}) == snapshot("""\
+🔔 Waiting for instance i-0123456789abcdef0 to be ready...
+🔔 Attempt 1/2...
+🔔 Attempt 2/2...
+🚨 Maximum attempts reached. Instance i-0123456789abcdef0 is not ready.
+🚨 Failed waiting for instance to be ready: Instance 'i-0123456789abcdef0' failed to become ready after 2 attempts.\
+""")
     assert result.stderr == ""

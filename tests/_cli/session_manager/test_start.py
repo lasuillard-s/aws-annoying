@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 from unittest import mock
 
@@ -161,6 +159,7 @@ def test_start_interactive_invoked(monkeypatch: pytest.MonkeyPatch) -> None:
 
 class Test_select_ec2_instance:
     def test_select_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting an EC2 instance interactively."""
         # Arrange
         ec2 = boto3.client("ec2")
         res = ec2.run_instances(
@@ -191,6 +190,7 @@ class Test_select_ec2_instance:
         mock_prompt.assert_called_once()
 
     def test_select_empty(self) -> None:
+        """Test selecting EC2 instance when no instances exist."""
         # Arrange
         ec2 = boto3.client("ec2")
 
@@ -203,6 +203,7 @@ class Test_select_ec2_instance:
 
 class Test_select_ecs_cluster:
     def test_select_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting an ECS cluster interactively."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = ecs.create_cluster(clusterName="main-cluster")["cluster"]["clusterArn"]
@@ -218,6 +219,7 @@ class Test_select_ecs_cluster:
         mock_prompt.assert_called_once()
 
     def test_select_empty(self) -> None:
+        """Test selecting ECS cluster when no clusters exist."""
         # Arrange
         ecs = boto3.client("ecs")
 
@@ -230,6 +232,7 @@ class Test_select_ecs_cluster:
 
 class Test_select_ecs_service:
     def test_select_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting an ECS service interactively."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = ecs.create_cluster(clusterName="main-cluster")["cluster"]["clusterArn"]
@@ -254,6 +257,7 @@ class Test_select_ecs_service:
         assert selected == service_arn
 
     def test_select_empty(self) -> None:
+        """Test selecting ECS service when no services exist."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = ecs.create_cluster(clusterName="empty-cluster")["cluster"]["clusterArn"]
@@ -267,6 +271,7 @@ class Test_select_ecs_service:
 
 class Test_select_ecs_task:
     def test_select_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting an ECS task interactively."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = ecs.create_cluster(clusterName="main-cluster")["cluster"]["clusterArn"]
@@ -299,6 +304,7 @@ class Test_select_ecs_task:
         mock_prompt.assert_called_once()
 
     def test_select_empty(self) -> None:
+        """Test selecting ECS task when no tasks exist."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = ecs.create_cluster(clusterName="empty-cluster")["cluster"]["clusterArn"]
@@ -316,6 +322,7 @@ class Test_select_ecs_task:
 
 class Test_select_ecs_container_in_task:
     def test_select_success_with_runtime_id(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting ECS container that has a runtimeId."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = ecs.create_cluster(clusterName="main-cluster")["cluster"]["clusterArn"]
@@ -355,6 +362,7 @@ class Test_select_ecs_container_in_task:
         assert selected == "container-runtime-123"
 
     def test_select_success_without_runtime_id(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting ECS container when runtimeId is absent."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/main-cluster"
@@ -385,6 +393,7 @@ class Test_select_ecs_container_in_task:
         assert selected == "sidecar"
 
     def test_select_cancelled(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting container when user cancels prompt."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/main-cluster"
@@ -415,6 +424,7 @@ class Test_select_ecs_container_in_task:
         assert selected is None
 
     def test_select_no_tasks_found(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting container when describe_tasks returns no tasks."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/main"
@@ -429,6 +439,7 @@ class Test_select_ecs_container_in_task:
         assert selected is None
 
     def test_select_no_containers_in_task(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test selecting container when task has no containers."""
         # Arrange
         ecs = boto3.client("ecs")
         cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/main"
@@ -449,6 +460,7 @@ class Test_select_ecs_container_in_task:
 
 class Test_handle_interactive_start:
     def test_interactive_ec2_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test full interactive flow for selecting an EC2 instance."""
         # Arrange
         monkeypatch.setattr(
             "aws_annoying._cli.session_manager.start._prompt_select",
@@ -466,6 +478,7 @@ class Test_handle_interactive_start:
         assert result == "i-1234567890abcdef0"
 
     def test_interactive_ecs_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test full interactive flow for selecting an ECS container."""
         # Arrange
         monkeypatch.setattr(
             "aws_annoying._cli.session_manager.start._prompt_select",
@@ -495,6 +508,7 @@ class Test_handle_interactive_start:
         assert result == "ecs:my-cluster_task-123_runtime-456"
 
     def test_interactive_back_navigation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test interactive back navigation between selection steps."""
         # Arrange
         target_type_mock = mock.MagicMock(side_effect=["ec2", "ecs", "ec2"])
         select_ec2_mock = mock.MagicMock(side_effect=[None, "i-99999999"])
@@ -520,6 +534,7 @@ class Test_handle_interactive_start:
         assert result == "i-99999999"
 
     def test_interactive_container_back_navigation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test interactive back navigation during container selection."""
         # Arrange
         target_type_mock = mock.MagicMock(return_value="ecs")
         select_ecs_cluster_mock = mock.MagicMock(return_value="arn:aws:ecs:us-east-1:123456789012:cluster/cluster-1")
@@ -555,6 +570,7 @@ class Test_handle_interactive_start:
 
 class Test_prompt_select:
     def test_select_value(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test prompt_select returns the chosen value."""
         # Arrange
         mock_q = mock.MagicMock()
         mock_q.ask.return_value = "val1"
@@ -567,6 +583,7 @@ class Test_prompt_select:
         assert result == "val1"
 
     def test_select_cancel_with_allow_back(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test prompt_select returns None when cancelled and allow_back is True."""
         # Arrange
         mock_q = mock.MagicMock()
         mock_q.ask.return_value = None
@@ -579,6 +596,7 @@ class Test_prompt_select:
         assert result is None
 
     def test_select_cancel_without_allow_back(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test prompt_select raises typer.Exit when cancelled and allow_back is False."""
         # Arrange
         mock_q = mock.MagicMock()
         mock_q.ask.return_value = None
@@ -592,6 +610,7 @@ class Test_prompt_select:
         assert exc_info.value.exit_code == 1
 
     def test_escape_key_binding(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that the escape key binding is registered properly on prompt."""
         # Arrange
         kb = KeyBindings()
         mock_q = mock.MagicMock()
@@ -613,6 +632,7 @@ class Test_prompt_select:
 
 
 def test_is_ecs_target() -> None:
+    """Test validating ECS target string patterns."""
     # Arrange
     valid_target = "ecs:cluster_task_container"
     invalid_targets = [
@@ -633,19 +653,27 @@ def test_is_ecs_target() -> None:
 
 
 def test_build_ecs_target() -> None:
+    """Test formatting cluster, task, and container into an ECS target string."""
+    # Act & Assert
     assert _build_ecs_target("my-cluster", "my-task", "my-container") == "ecs:my-cluster_my-task_my-container"
 
 
 def test_get_cluster_name() -> None:
+    """Test parsing cluster name from ARN or plain name."""
+    # Act & Assert
     assert _get_cluster_name("arn:aws:ecs:us-east-1:123456789012:cluster/prod-cluster") == "prod-cluster"
     assert _get_cluster_name("prod-cluster") == "prod-cluster"
 
 
 def test_get_service_name() -> None:
+    """Test parsing service name from ARN or plain name."""
+    # Act & Assert
     assert _get_service_name("arn:aws:ecs:us-east-1:123456789012:service/prod-cluster/web-service") == "web-service"
     assert _get_service_name("web-service") == "web-service"
 
 
 def test_get_task_id() -> None:
+    """Test parsing task ID from ARN or plain ID."""
+    # Act & Assert
     assert _get_task_id("arn:aws:ecs:us-east-1:123456789012:task/prod-cluster/1234567890abcdef0") == "1234567890abcdef0"
     assert _get_task_id("1234567890abcdef0") == "1234567890abcdef0"
