@@ -31,7 +31,7 @@ Example usage of the `session-manager` command to automate [DBeaver](https://dbe
     ![Before Connect](./before-connect.png)
 
     ```shell
-    aws-annoying session-manager port-forward --local-port ${port} --through "<EC2 instance name or ID>" --remote-host "<Database hostname>" --remote-port "<Database port>" --pid-file /tmp/dbeaver-${port}.pid --terminate-running-process --log-file /tmp/dbeaver-${port}.log
+    aws-annoying background run --pid-file /tmp/dbeaver-${port}.pid --terminate-running-process --log-file /tmp/dbeaver-${port}.log -- session-manager port-forward --local-port ${port} --through "<EC2 instance name or ID>" --remote-host "<Database hostname>" --remote-port "<Database port>"
     ```
 
     Update `--through`, `--remote-host`, and `--remote-port` as needed, based on your infrastructure and database engine. Additionally, the **Pause after execute (ms)** setting may need adjustment based on your network conditions.
@@ -41,7 +41,7 @@ Example usage of the `session-manager` command to automate [DBeaver](https://dbe
     ![After Disconnect](./after-disconnect.png)
 
     ```shell
-    aws-annoying session-manager stop --pid-file /tmp/dbeaver-${port}.pid
+    aws-annoying background kill --pid-file /tmp/dbeaver-${port}.pid
     ```
 
 6. Run **Test Connection ...** to verify the setup.

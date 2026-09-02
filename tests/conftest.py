@@ -32,15 +32,15 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 
 @pytest.fixture
-def set_terminal_width() -> int:
+def terminal_width() -> int:
     """Set console width."""
     return 200
 
 
 @pytest.fixture(autouse=True)
-def patch_terminal_width(monkeypatch: pytest.MonkeyPatch, set_terminal_width: int) -> None:
+def set_terminal_preferences(monkeypatch: pytest.MonkeyPatch, terminal_width: int) -> None:
     """Patch the console width."""
-    monkeypatch.setenv("COLUMNS", str(set_terminal_width))
+    monkeypatch.setenv("COLUMNS", str(terminal_width))
 
 
 # AWS
@@ -84,7 +84,7 @@ def use_moto(monkeypatch: pytest.MonkeyPatch, aws_credentials: None) -> Iterator
 @pytest.fixture(scope="module")
 def moto_server() -> Iterator[str]:
     """Run a Moto server for AWS mocking."""
-    server = ThreadedMotoServer()
+    server = ThreadedMotoServer(port=0)
     server.start()
     host, port = server.get_host_and_port()
     yield f"http://{host}:{port}"
