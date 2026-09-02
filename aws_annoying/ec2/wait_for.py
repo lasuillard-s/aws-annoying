@@ -1,13 +1,15 @@
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import botocore.client
 import botocore.exceptions
-from mypy_boto3_ssm import SSMClient
 
 from .common import is_valid_instance_id
 from .errors import InstanceNotReadyError, InvalidInstanceIdError
+
+if TYPE_CHECKING:
+    from mypy_boto3_ssm import SSMClient
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ class InstanceReadinessWaiter:
         document_name: str,
         parameters: dict[str, Any],
         *,
-        client: SSMClient,
+        client: "SSMClient",
         wait_duration: float = 5.0,
     ) -> None:
         """Initialize the waiter.
