@@ -62,7 +62,7 @@ def start(
     if target is None:
         target = _handle_interactive_start()
 
-    if not target.startswith("ecs:"):
+    if not _is_ecs_target(target):
         # EC2 logic: Resolve the instance name or ID
         instance_id = get_instance_id_by_name(target)
         if instance_id:
@@ -129,6 +129,7 @@ def _handle_interactive_start() -> str:
                 instance_id = _select_ec2_instance(ec2)
                 if instance_id:
                     return instance_id
+
                 step = _Step.TARGET_TYPE
             case _Step.ECS_CLUSTER:
                 cluster_arn = _select_ecs_cluster(ecs)
@@ -147,7 +148,7 @@ def _handle_interactive_start() -> str:
 
                 cluster_name = _get_cluster_name(cluster_arn or "")
                 task_id = _get_task_id(task_arn or "")
-                return f"ecs:{cluster_name}_{task_id}_{runtime_id}"
+                return _build_ecs_target(cluster_name, task_id, runtime_id)
 
 
 def _select_ec2_instance(ec2: EC2Client) -> str | None:
@@ -348,3 +349,17 @@ def _get_service_name(service_arn: str) -> str:
 def _get_task_id(task_arn: str) -> str:
     """Extract task ID from ECS task ARN."""
     return task_arn.rsplit("/", maxsplit=1)[-1]
+
+
+def _is_ecs_target(target: str) -> bool:
+    """Check if the given string is an ECS connection string (ecs:*_*_*)."""
+    if not target.startswith("ecs:"):
+        return False
+
+    parts = target[4:].split("_")
+    return len(parts) == 3 and all(parts)  # noqa: PLR2004
+
+
+def _build_ecs_target(cluster: str, task: str, container: str) -> str:
+    """Build an ECS connection string (ecs:<cluster>_<task>_<container>)."""
+    return f"ecs:{cluster}_{task}_{container}"
