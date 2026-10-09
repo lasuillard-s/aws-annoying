@@ -23,13 +23,13 @@ cli = [
 
 [dependency-groups]
 dev = [
-  "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]==1.43.101",
+  "boto3-stubs[ecs,secretsmanager,ssm,sts,ec2]==1.43.102",
   "mike==2.2.0",
   "mkdocs==1.6.1",
   "mkdocs-material==9.7.7",
   "mkdocstrings[python]==1.0.6",
   "mypy==2.3.1",
-  "ruff==0.16.8",
+  "ruff==0.16.9",
   "types-requests==2.33.0.20260906",
   "coverage==7.16.1",
   "moto[secretsmanager,server,ssm,ecs]==5.2.3",
