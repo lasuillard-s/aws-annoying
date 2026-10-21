@@ -30,7 +30,7 @@ dev = [
   "mkdocstrings[python]==1.0.6",
   "mypy==2.4.0",
   "ruff==0.16.10",
-  "types-requests==2.33.0.20260906",
+  "types-requests==2.33.0.20261006",
   "coverage==7.16.2",
   "moto[secretsmanager,server,ssm,ecs]==5.2.3",
   "nox==2026.8.17",
