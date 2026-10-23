@@ -177,7 +177,7 @@ provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts", "ec2"], specifier = "==1.43.109" },
+    { name = "boto3-stubs", extras = ["ecs", "secretsmanager", "ssm", "sts", "ec2"], specifier = "==1.43.110" },
     { name = "coverage", specifier = "==7.16.2" },
     { name = "inline-snapshot", specifier = "==0.36.0" },
     { name = "mike", specifier = "==2.2.0" },
@@ -274,16 +274,16 @@ wheels = [
 
 [[package]]
 name = "boto3-stubs"
-version = "1.43.109"
+version = "1.43.110"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore-stubs" },
     { name = "types-s3transfer" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/57/39/ad11618878f0066533d4fd51791b2f4d2a75ecca6424242fee5e944f4d67/boto3_stubs-1.43.109.tar.gz", hash = "sha256:ee1901bd298c59800c816f67411081dfb0e5d8a5510d85d22bd1481180f49ba2", size = 105669, upload-time = "2026-10-07T19:29:33.285Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/73/25a4e0027a00523144c53d97f9c75764fbba68dc0052d60a323303708e27/boto3_stubs-1.43.110.tar.gz", hash = "sha256:566a1938c158c438b65b1187b195891dcc314569d64e4d59c51dc18ac8d38ca5", size = 105656, upload-time = "2026-10-08T22:26:50.767Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/54/b09cef023c90ea91f061c2afd1f7e7691c1dbcbe4e8ad7886a3827655b77/boto3_stubs-1.43.109-py3-none-any.whl", hash = "sha256:2529814863088a266e15b2eb3366095970fb5c270417032a53ef11d07fb61eee", size = 72038, upload-time = "2026-10-07T19:29:29.078Z" },
+    { url = "https://files.pythonhosted.org/packages/99/a8/320d0ae31abf149a47af831694b92f1c3aec2c90de77782cbcab8f77f896/boto3_stubs-1.43.110-py3-none-any.whl", hash = "sha256:018463a1d0fac3ee8c02515656fcdf16df388d2adadc457d12b3394022162a43", size = 72037, upload-time = "2026-10-08T22:26:45.883Z" },
 ]
 
 [package.optional-dependencies]
