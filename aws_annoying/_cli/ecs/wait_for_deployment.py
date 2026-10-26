@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Optional
 
 import typer
@@ -109,7 +109,7 @@ def wait_for_deployment(  # noqa: PLR0913
     - `ecs:DescribeServiceDeployments`
     - `ecs:DescribeServices`
     """
-    start = datetime.now(tz=timezone.utc)
+    start = datetime.now(tz=UTC)
     try:
         with Timeout(timeout_seconds):
             _wait_for_deployment(
@@ -126,7 +126,7 @@ def wait_for_deployment(  # noqa: PLR0913
         )
         raise typer.Exit(1) from None
     except DeploymentFailedError as err:
-        elapsed = datetime.now(tz=timezone.utc) - start
+        elapsed = datetime.now(tz=UTC) - start
         logger.error(  # noqa: TRY400
             "Deployment failed in [bold]%.2f[/bold] seconds with error: %s",
             elapsed.total_seconds(),
@@ -134,7 +134,7 @@ def wait_for_deployment(  # noqa: PLR0913
         )
         raise typer.Exit(1) from None
     else:
-        elapsed = datetime.now(tz=timezone.utc) - start
+        elapsed = datetime.now(tz=UTC) - start
         logger.info(
             "Deployment completed in [bold]%.2f[/bold] seconds.",
             elapsed.total_seconds(),

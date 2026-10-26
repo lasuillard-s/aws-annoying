@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Optional
 
 import boto3
@@ -22,7 +22,7 @@ from aws_annoying.ec2 import (
 logger = logging.getLogger(__name__)
 
 
-class PlatformChoice(str, Enum):
+class PlatformChoice(StrEnum):
     """Platform choice for EC2 instance OS."""
 
     AUTO = "auto"

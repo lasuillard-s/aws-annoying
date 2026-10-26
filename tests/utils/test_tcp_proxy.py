@@ -32,7 +32,7 @@ def echo_server() -> Generator[int, None, None]:
                 if data:
                     client.sendall(data)
                 client.close()
-            except TimeoutError:  # noqa: PERF203
+            except TimeoutError:
                 continue
             except OSError:
                 break

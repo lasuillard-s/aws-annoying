@@ -20,7 +20,7 @@ This project provides utilities and examples to help with common, annoying AWS t
 
 This project uses the following technologies:
 
-- [Python](https://www.python.org) 3.10+
+- [Python](https://www.python.org) 3.11+
 - [uv](https://docs.astral.sh/uv/) for dependency management and packaging
 - [Typer](https://typer.tiangolo.com) for command-line interface
 - [Ruff](https://docs.astral.sh/ruff/) for linting and formatting, and [Mypy](https://mypy-lang.org) for type checking
