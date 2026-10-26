@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from time import sleep
 
 import boto3
@@ -82,7 +82,7 @@ def wait_for_deployment_start(
         running_deployments,
         key=lambda dep: dep.get(
             "startedAt",
-            datetime.min.replace(tzinfo=timezone.utc),
+            datetime.min.replace(tzinfo=UTC),
         ),
     )
     if len(running_deployments) > 1:
