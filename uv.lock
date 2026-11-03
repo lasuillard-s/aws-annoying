@@ -126,7 +126,7 @@ wheels = [
 
 [[package]]
 name = "aws-annoying"
-version = "0.12.0"
+version = "0.12.1"
 source = { editable = "." }
 dependencies = [
     { name = "boto3", extra = ["crt"] },
