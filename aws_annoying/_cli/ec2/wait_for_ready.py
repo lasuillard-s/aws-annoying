@@ -8,6 +8,7 @@ from typing import Any, Optional
 import boto3
 import botocore.exceptions
 import typer
+from typer.core import _TyperParameter  # noqa: TC002  # Needed at runtime for Typer to inject the callback param
 
 from aws_annoying._cli.ec2._app import ec2_app
 from aws_annoying.ec2 import (
@@ -30,7 +31,7 @@ class PlatformChoice(StrEnum):
     WINDOWS = "windows"
 
 
-def _validate_json_str(ctx: typer.Context, param: typer.CallbackParam, value: Optional[str]) -> Any:
+def _validate_json_str(ctx: typer.Context, param: _TyperParameter, value: Optional[str]) -> Any:
     """Validate if the provided string is a valid JSON object string."""
     if value is None:
         return value
